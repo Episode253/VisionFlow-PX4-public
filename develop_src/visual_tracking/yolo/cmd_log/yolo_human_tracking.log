@@ -1,0 +1,13 @@
+[INFO] [1771907198.382234733] [yolo_human_tracking]: Yolo Human Tracking Node Initialized
+[INFO] [1771907198.411337245] [yolo_human_tracking]: Airborne detected (z=1.24m). Holding current altitude.
+[INFO] [1771907198.461584064] [yolo_human_tracking]: Phase: HOVER
+[INFO] [1771907198.511547607] [yolo_human_tracking]: Phase: TRACK
+[INFO] [1771907199.362121702] [yolo_human_tracking]: Requesting OFFBOARD mode...
+Traceback (most recent call last):
+  File "/home/renwang/PX4-Autopilot/develop/visual_tracking/yolo/yolo_target_tracking/yolo_human_tracking.py", line 534, in <module>
+    main()
+  File "/home/renwang/PX4-Autopilot/develop/visual_tracking/yolo/yolo_target_tracking/yolo_human_tracking.py", line 528, in main
+    node.vel_pub.publish(stop_vel)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/publisher.py", line 70, in publish
+    self.__publisher.publish(msg)
+rclpy._rclpy_pybind11.RCLError: Failed to publish: publisher's context is invalid, at ./src/rcl/publisher.c:389

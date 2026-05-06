@@ -1,5 +1,22 @@
 #!/usr/bin/env python3
 
+"""
+1. Low-Latency Video Capture:
+   Utilizes a GStreamer pipeline to receive and decode H.264 UDP video streams.
+
+2. Real-Time Object Detection:
+   Loads a custom YOLO model to detect targets and generate annotated frames bounding boxes.
+
+3. Local Video Recording:
+   Provides interactive terminal prompts to optionally record the raw video stream and/or the YOLO-annotated results to local MP4 files for post-flight analysis.
+
+4. ROS 2 Republishing:
+   It compresses the raw video frames into JPEG format and continuously publishes them as `sensor_msgs/CompressedImage` to the `/gazebo_camera/image_raw/compressed` topic.
+
+5. GUI Visualization & Monitoring:
+   Optionally displays a downscaled real-time preview window of the tracking results and dynamically prints system status in the terminal.
+"""
+
 import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst
@@ -88,7 +105,7 @@ def main(args=None):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"[INFO] YOLO device: {device}")
 
-    model_path = os.path.expanduser("/home/renwang/PX4-Autopilot/develop/visual_tracking/yolo/yolo_model/version1.pt")
+    model_path = os.path.expanduser("/home/renwang/data_storage/PX4-Autopilot/develop/visual_tracking/yolo/yolo_model/gazebo_target.pt")
     model = YOLO(model_path)
     model.to(device)
 
