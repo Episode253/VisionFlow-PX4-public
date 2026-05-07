@@ -1,7 +1,13 @@
 ## 启动gz sim仿真
 
+### 基础仿真环境测试
+make px4_sitl gz_x500
+
 ### 室外场景
 make px4_sitl gz_x500_gimbal
+
+### 无头仿真环境测试
+HEADLESS=1 make px4_sitl gz_x500_gimbal
 
 ### 室内场景
 make px4_sitl gz_x500_depth_baylands
@@ -11,6 +17,8 @@ make px4_sitl gz_x500_depth_baylands
 ### Mavros主节点
 
 ros2 launch mavros px4.launch
+
+ros2 launch mavros px4.launch fcu_url:=udp://:14540@localhost:14557
 
 ### mavros通信验证
 
