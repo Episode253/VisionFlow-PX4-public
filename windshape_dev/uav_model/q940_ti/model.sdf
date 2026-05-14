@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <model name="q940_ti">
+    <static>false</static>
+    <self_collide>false</self_collide>
+    <enable_wind>false</enable_wind>
+
+    <include merge="true">
+      <uri>model://q940</uri>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>ti5_arm</name>
+      <uri>model://ti5_arm</uri>
+      <pose>0 0 0 3.14159 0 -1.5708</pose>
+    </include>
+
+    <joint name="q940_ti_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>ti5_arm::base_link</child>
+    </joint>
+
+    <include>
+      <name>gripper3</name>
+      <uri>model://gripper3</uri>
+      <pose relative_to="ti5_arm::F_Link">-0.025 0.025 0 -3.14159 0 0</pose>
+    </include>
+
+    <joint name="ti5_gripper_joint" type="fixed">
+      <parent>ti5_arm::F_Link</parent>
+      <child>gripper3::base_link</child>
+    </joint>
+
+  </model>
+</sdf>
