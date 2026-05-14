@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version="1.9">
+  <model name="ti5_arm">
+    <static>false</static>
+    <self_collide>false</self_collide>
+    <enable_wind>false</enable_wind>
+    <link name="base_link">
+      <inertial>
+        <pose>0.000202 -0 0.03962 0 -0 0</pose>
+        <mass>0.42</mass>
+        <inertia>
+          <ixx>0.00032289</ixx>
+          <ixy>5.28848e-08</ixy>
+          <ixz>7.6451e-07</ixz>
+          <iyy>0.00032183</iyy>
+          <iyz>-6.98327e-10</iyz>
+          <izz>0.00019377</izz>
+        </inertia>
+      </inertial>
+      <visual name="base_link_visual">
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://ti5_arm/meshes/arm1/base_link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.72 0.72 0.70 1</ambient>
+          <diffuse>0.82 0.82 0.78 1</diffuse>
+          <specular>0.05 0.05 0.05 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <cast_shadows>true</cast_shadows>
+      </visual>
+    </link>
+    <joint name="A" type="revolute">
+      <pose relative_to="base_link">-0.000181 0 0.097 0 0 0</pose>
+      <parent>base_link</parent>
+      <child>A_Link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-3.14</lower>
+          <upper>3.14</upper>
+          <effort>10</effort>
+          <velocity>3.0</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.5</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0.05</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="A_Link">
+      <pose relative_to="A">0 0 0 0 -0 0</pose>
+      <gravity>false</gravity>
+      <inertial>
+        <pose>0.029013 3e-06 0.030656 0 -0 0</pose>
+        <mass>0.54</mass>
+        <inertia>
+          <ixx>0.00014682</ixx>
+          <ixy>7.8151e-09</ixy>
+          <ixz>-5.421e-05</ixz>
+          <iyy>0.00020934</iyy>
+          <iyz>-1.9182e-08</iyz>
+          <izz>0.00020415</izz>
+        </inertia>
+      </inertial>
+      <visual name="A_Link_visual">
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://ti5_arm/meshes/arm1/A_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.08 0.24 0.85 0.85</ambient>
+          <diffuse>0.12 0.38 0.95 0.85</diffuse>
+          <specular>0.02 0.02 0.04 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <transparency>0.18</transparency>
+        <cast_shadows>true</cast_shadows>
+      </visual>
+    </link>
+    <joint name="B" type="revolute">
+      <pose relative_to="A_Link">0.076181 0 0.039711 1.5708 -0 1.5708</pose>
+      <parent>A_Link</parent>
+      <child>B_Link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1.9</lower>
+          <upper>1.9</upper>
+          <effort>10</effort>
+          <velocity>3.0</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.5</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0.05</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="B_Link">
+      <pose relative_to="B">0 0 0 0 -0 0</pose>
+      <gravity>false</gravity>
+      <inertial>
+        <pose>2e-06 0.11028 0.006764 0 -0 0</pose>
+        <mass>0.41</mass>
+        <inertia>
+          <ixx>0.0018313</ixx>
+          <ixy>-9.1439e-09</ixy>
+          <ixz>-1.1859e-09</ixz>
+          <iyy>0.00014331</iyy>
+          <iyz>0.00013472</iyz>
+          <izz>0.0018654</izz>
+        </inertia>
+      </inertial>
+      <visual name="B_Link_visual">
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://ti5_arm/meshes/arm1/B_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.72 0.72 0.70 1</ambient>
+          <diffuse>0.82 0.82 0.78 1</diffuse>
+          <specular>0.05 0.05 0.05 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <cast_shadows>true</cast_shadows>
+      </visual>
+    </link>
+    <joint name="C" type="revolute">
+      <pose relative_to="B_Link">0 0.21038 -0.041 -3.14159 -0 0</pose>
+      <parent>B_Link</parent>
+      <child>C_Link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-2.86</lower>
+          <upper>2.86</upper>
+          <effort>10</effort>
+          <velocity>3.0</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.01</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0.2</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="C_Link">
+      <pose relative_to="C">0 0 0 0 -0 0</pose>
+      <gravity>false</gravity>
+      <inertial>
+        <pose>-5e-06 -0.026863 0.027126 0 -0 0</pose>
+        <mass>0.28</mass>
+        <inertia>
+          <ixx>9.5672e-05</ixx>
+          <ixy>4.2051e-09</ixy>
+          <ixz>2.2694e-08</ixz>
+          <iyy>6.2054e-05</iyy>
+          <iyz>2.6805e-05</iyz>
+          <izz>8.7384e-05</izz>
+        </inertia>
+      </inertial>
+      <visual name="C_Link_visual">
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://ti5_arm/meshes/arm1/C_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.08 0.24 0.85 0.85</ambient>
+          <diffuse>0.12 0.38 0.95 0.85</diffuse>
+          <specular>0.02 0.02 0.04 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <transparency>0.18</transparency>
+        <cast_shadows>true</cast_shadows>
+      </visual>
+    </link>
+    <joint name="D" type="revolute">
+      <pose relative_to="C_Link">0 -0.065909 0.035 1.57079 1.57079 0</pose>
+      <parent>C_Link</parent>
+      <child>D_Link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-3.14</lower>
+          <upper>3.14</upper>
+          <effort>10</effort>
+          <velocity>3.0</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.01</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="D_Link">
+      <pose relative_to="D">0 0 0 0 -0 0</pose>
+      <gravity>false</gravity>
+      <inertial>
+        <pose>0.043748 -1e-06 0.059027 0 -0 0</pose>
+        <mass>0.4</mass>
+        <inertia>
+          <ixx>0.00049775</ixx>
+          <ixy>6.0303e-09</ixy>
+          <ixz>-0.0002222</ixz>
+          <iyy>0.00066058</iyy>
+          <iyz>-1.5951e-08</iyz>
+          <izz>0.00028236</izz>
+        </inertia>
+      </inertial>
+      <visual name="D_Link_visual">
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://ti5_arm/meshes/arm1/D_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.72 0.72 0.70 1</ambient>
+          <diffuse>0.82 0.82 0.78 1</diffuse>
+          <specular>0.05 0.05 0.05 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <cast_shadows>true</cast_shadows>
+      </visual>
+    </link>
+    <joint name="E" type="revolute">
+      <pose relative_to="D_Link">0.035 0 0.124 -1.57079 1.57079 1.57079</pose>
+      <parent>D_Link</parent>
+      <child>E_Link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-2.9</lower>
+          <upper>2.9</upper>
+          <effort>10</effort>
+          <velocity>3.0</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.001</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0.1</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="E_Link">
+      <pose relative_to="E">0 0 0 0 -0 0</pose>
+      <gravity>false</gravity>
+      <inertial>
+        <pose>-0.026863 5e-06 0.027126 0 -0 0</pose>
+        <mass>0.1028</mass>
+        <inertia>
+          <ixx>6.2054e-05</ixx>
+          <ixy>-4.2051e-09</ixy>
+          <ixz>2.6805e-05</ixz>
+          <iyy>9.5672e-05</iyy>
+          <iyz>-2.2694e-08</iyz>
+          <izz>8.7384e-05</izz>
+        </inertia>
+      </inertial>
+      <visual name="E_Link_visual">
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://ti5_arm/meshes/arm1/E_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.08 0.24 0.85 0.85</ambient>
+          <diffuse>0.12 0.38 0.95 0.85</diffuse>
+          <specular>0.02 0.02 0.04 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <transparency>0.18</transparency>
+        <cast_shadows>true</cast_shadows>
+      </visual>
+    </link>
+    <joint name="F" type="revolute">
+      <pose relative_to="E_Link">-0.065909 0 0.035 1.57079 0 1.57079 </pose>
+      <parent>E_Link</parent>
+      <child>F_Link</child>
+      <axis>
+        <xyz>0 0 -1</xyz>
+        <limit>
+          <lower>-3.14</lower>
+          <upper>3.14</upper>
+          <effort>10</effort>
+          <velocity>3.0</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.0001</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="F_Link">
+      <pose relative_to="F">0 0 0 0 -0 0</pose>
+      <gravity>false</gravity>
+      <inertial>
+        <pose>-7.3e-05 -0 0.002486 0 -0 0</pose>
+        <mass>0.17</mass>
+        <inertia>
+          <ixx>5.4913e-07</ixx>
+          <ixy>7.475e-15</ixy>
+          <ixz>1.0861e-09</ixz>
+          <iyy>5.4216e-07</iyy>
+          <iyz>4.6867e-16</iyz>
+          <izz>1.0527e-06</izz>
+        </inertia>
+      </inertial>
+      <visual name="F_Link_visual">
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://ti5_arm/meshes/arm1/F_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.72 0.72 0.70 1</ambient>
+          <diffuse>0.82 0.82 0.78 1</diffuse>
+          <specular>0.05 0.05 0.05 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <cast_shadows>true</cast_shadows>
+      </visual>
+    </link>
+    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
+      <topic>/model/ti5_arm/joint_state</topic>
+      <joint_name>A</joint_name>
+      <joint_name>B</joint_name>
+      <joint_name>C</joint_name>
+      <joint_name>D</joint_name>
+      <joint_name>E</joint_name>
+      <joint_name>F</joint_name>
+    </plugin>
+    <plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher">
+      <publish_link_pose>true</publish_link_pose>
+      <publish_visual_pose>false</publish_visual_pose>
+      <publish_collision_pose>false</publish_collision_pose>
+      <publish_sensor_pose>false</publish_sensor_pose>
+      <publish_model_pose>false</publish_model_pose>
+      <publish_nested_model_pose>false</publish_nested_model_pose>
+      <use_pose_vector_msg>true</use_pose_vector_msg>
+      <update_frequency>100</update_frequency>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+      <joint_name>A</joint_name>
+      <joint_index>0</joint_index>
+      <topic>/joint/1/position_cmd</topic>
+      <p_gain>8.0</p_gain>
+      <i_gain>0.3</i_gain>
+      <d_gain>0.1</d_gain>
+      <i_max>1.0</i_max>
+      <i_min>-1.0</i_min>
+      <cmd_max>10.0</cmd_max>
+      <cmd_min>-10.0</cmd_min>
+      <initial_position>0.0</initial_position>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+      <joint_name>B</joint_name>
+      <joint_index>0</joint_index>
+      <topic>/joint/2/position_cmd</topic>
+      <p_gain>10.0</p_gain>
+      <i_gain>0.1</i_gain>
+      <d_gain>0.03</d_gain>
+      <i_max>1.0</i_max>
+      <i_min>-1.0</i_min>
+      <cmd_max>10.0</cmd_max>
+      <cmd_min>-10.0</cmd_min>
+      <initial_position>0.0</initial_position>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+      <joint_name>C</joint_name>
+      <joint_index>0</joint_index>
+      <topic>/joint/3/position_cmd</topic>
+      <p_gain>12.0</p_gain>
+      <i_gain>0.0</i_gain>
+      <d_gain>0.0</d_gain>
+      <i_max>1.0</i_max>
+      <i_min>-1.0</i_min>
+      <cmd_max>10.0</cmd_max>
+      <cmd_min>-10.0</cmd_min>
+      <initial_position>0.0</initial_position>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+      <joint_name>D</joint_name>
+      <joint_index>0</joint_index>
+      <topic>/joint/4/position_cmd</topic>
+      <p_gain>8.0</p_gain>
+      <i_gain>0.0</i_gain>
+      <d_gain>0.0</d_gain>
+      <i_max>1.0</i_max>
+      <i_min>-1.0</i_min>
+      <cmd_max>10.0</cmd_max>
+      <cmd_min>-10.0</cmd_min>
+      <initial_position>0.0</initial_position>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+      <joint_name>E</joint_name>
+      <joint_index>0</joint_index>
+      <topic>/joint/5/position_cmd</topic>
+      <p_gain>5.0</p_gain>
+      <i_gain>0.0</i_gain>
+      <d_gain>0.0</d_gain>
+      <i_max>1.0</i_max>
+      <i_min>-1.0</i_min>
+      <cmd_max>10.0</cmd_max>
+      <cmd_min>-10.0</cmd_min>
+      <initial_position>-0.7854</initial_position>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+      <joint_name>F</joint_name>
+      <joint_index>0</joint_index>
+      <topic>/joint/6/position_cmd</topic>
+      <p_gain>0.2</p_gain>
+      <i_gain>0.0</i_gain>
+      <d_gain>0.0</d_gain>
+      <i_max>1.0</i_max>
+      <i_min>-1.0</i_min>
+      <cmd_max>10.0</cmd_max>
+      <cmd_min>-10.0</cmd_min>
+      <initial_position>0.0</initial_position>
+    </plugin>
+  </model>
+</sdf>
