@@ -15,7 +15,8 @@
 #include "stream/output_reliable_stream_internal.h"
 #include "stream/seq_num_internal.h"
 #include "../serialization/xrce_subheader_internal.h"
-#include "../log/log_internal.h"
+// #include "../log/log_internal.h"
+#include "../../log/log_internal.h"
 #include "../../util/time_internal.h"
 #include <uxr/client/profile/multithread/multithread.h>
 #include "../../profile/shared_memory/shared_memory_internal.h"
