@@ -57,7 +57,6 @@ posix-configs/SITL/init/test/*_generated
 /airframes.xml
 /parameters.md
 /parameters.xml
-/modules
 /msg/ros/*.msg
 
 *.gcov
@@ -101,7 +100,6 @@ msg/topics_sources/
 platforms/posix/apps.cpp
 platforms/posix/apps.h
 src/lib/version/build_git_version.h
-src/modules/simulator/simulator_config.h
 src/systemcmds/topic_listener/listener_generated.cpp
 
 !src/drivers/distance_sensor/broadcom/afbrs50/Lib/*
