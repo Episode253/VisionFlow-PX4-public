@@ -1,0 +1,155 @@
+<sdf version='1.6'>
+  <model name='Landing box'>
+  <static>true</static>
+    <link name='base_link'>
+      <pose frame=''>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0 0.003044 0.366956 0 -0 0</pose>
+        <mass>2.1469</mass>
+        <inertia>
+          <ixx>0.251683</ixx>
+          <ixy>0.00621323</ixy>
+          <ixz>-0.015183</ixz>
+          <iyy>0.268915</iyy>
+          <iyz>-0.00799762</iyz>
+          <izz>0.110272</izz>
+        </inertia>
+      </inertial>
+      <collision name='base_link_collision'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+         <cylinder>
+            <length>0.02</length>
+            <radius>0.26</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='base_link_visual'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://landing_box/meshes/base_link.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <link name='Link_1'>
+      <collision name='base_link_fixed_joint_lump__Link_1_collision_1'>
+        <pose frame=''>-0.235167 0.112679 0.37 1.5708 -0 2.61799</pose>
+        <geometry>
+          <box>
+              <size>0.02 0.7 0.02</size>
+          </box>
+        </geometry>
+      </collision>
+       <visual name='base_link_fixed_joint_lump__Link_1_visual_1'>
+        <pose frame=''>-0.235167 0.112679 0.02 1.5708 -0 2.61799</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://landing_box/meshes/Link_1.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <link name='Link_2'>
+      <collision name='base_link_fixed_joint_lump__Link_2_collision_2'>
+        <pose frame=''>0.02 -0.26 0.37 -1.5708 -0 -1.5708</pose>
+        <geometry>
+           <box>
+              <size>0.02 0.7 0.02</size>
+          </box>
+        </geometry>
+      </collision>
+     <visual name='base_link_fixed_joint_lump__Link_2_visual_2'>
+        <pose frame=''>0.02 -0.26 0.02 -1.5708 -0 -1.5708</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://landing_box/meshes/Link_2.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <link name='Link_3'>
+     <collision name='base_link_fixed_joint_lump__Link_3_collision_3'>
+        <pose frame=''>0.215167 0.147321 0.37 1.5708 -0 0.523599</pose>
+        <geometry>
+           <box>
+              <size>0.02 0.7 0.02</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name='base_link_fixed_joint_lump__Link_3_visual_3'>
+        <pose frame=''>0.215167 0.147321 0.02 1.5708 -0 0.523599</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://landing_box/meshes/Link_3.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <link name='Link_4'>
+      <collision name='base_link_fixed_joint_lump__Link_1_collision_4'>
+        <pose frame=''>-0.235167 0.112679 0.73 1.5708 -0 2.61799</pose>
+        <geometry>
+          <box>
+              <size>0.02 0.02 0.3</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+    <link name='Link_5'>
+      <collision name='base_link_fixed_joint_lump__Link_2_collision_5'>
+        <pose frame=''>0.02 -0.26 0.73 -1.5708 -0 -1.5708</pose>
+        <geometry>
+           <box>
+              <size>0.02 0.02 0.3</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+    <link name='Link_6'>
+     <collision name='base_link_fixed_joint_lump__Link_3_collision_6'>
+        <pose frame=''>0.215167 0.147321 0.73 1.5708 -0 0.523599</pose>
+        <geometry>
+           <box>
+              <size>0.02 0.02 0.3</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+    <link name='Link_7'>
+      <collision name='base_link_fixed_joint_lump__Link_1_collision_7'>
+        <pose frame=''>0.235167 -0.112679 0.73 1.5708 -0 2.61799</pose>
+        <geometry>
+          <box>
+              <size>0.02 0.02 0.3</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+    <link name='Link_8'>
+      <collision name='base_link_fixed_joint_lump__Link_2_collision_8'>
+        <pose frame=''>-0.02 0.26 0.73 -1.5708 -0 -1.5708</pose>
+        <geometry>
+           <box>
+              <size>0.02 0.02 0.3</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+    <link name='Link_9'>
+     <collision name='base_link_fixed_joint_lump__Link_3_collision_9'>
+        <pose frame=''>-0.215167 -0.147321 0.73 1.5708 -0 0.523599</pose>
+        <geometry>
+           <box>
+              <size>0.02 0.02 0.3</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>

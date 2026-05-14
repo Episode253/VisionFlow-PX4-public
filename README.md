@@ -1,58 +1,141 @@
-## 启动gz sim仿真
+<p align="center">
+  <a href="https://px4.io">
+    <img src="docs/assets/site/px4_logo.svg" alt="PX4 Autopilot" width="240">
+  </a>
+</p>
 
-### 基础仿真环境测试
-make px4_sitl gz_x500
+<p align="center">
+  <em>The autopilot stack the industry builds on.</em>
+</p>
 
-### 室外场景
-make px4_sitl gz_x500_gimbal
+<p align="center">
+  <a href="https://github.com/PX4/PX4-Autopilot/releases"><img src="https://img.shields.io/github/release/PX4/PX4-Autopilot.svg" alt="Release"></a>
+  <a href="https://zenodo.org/badge/latestdoi/22634/PX4/PX4-Autopilot"><img src="https://zenodo.org/badge/22634/PX4/PX4-Autopilot.svg" alt="DOI"></a>
+  <a href="https://discord.gg/dronecode"><img src="https://img.shields.io/discord/1022170275984457759?label=discord&logo=discord&logoColor=white&color=5865F2" alt="Discord"></a>
+</p>
 
-### 无头仿真环境测试
-HEADLESS=1 make px4_sitl gz_x500_gimbal
+<p align="center">
+  <a href="https://www.bestpractices.dev/projects/6520"><img src="https://www.bestpractices.dev/projects/6520/badge" alt="OpenSSF Best Practices"></a>
+  <a href="https://insights.linuxfoundation.org/project/px4"><img src="https://insights.linuxfoundation.org/api/badge/health-score?project=px4" alt="LFX Health Score"></a>
+  <a href="https://insights.linuxfoundation.org/project/px4"><img src="https://insights.linuxfoundation.org/api/badge/contributors?project=px4" alt="LFX Contributors"></a>
+  <a href="https://insights.linuxfoundation.org/project/px4"><img src="https://insights.linuxfoundation.org/api/badge/active-contributors?project=px4" alt="LFX Active Contributors"></a>
+</p>
 
-### 室内场景
-make px4_sitl gz_x500_depth_baylands
+---
 
-## 启动mavros通信
+## About
 
-### Mavros主节点
+PX4 is an open-source autopilot stack for drones and unmanned vehicles. It supports multirotors, fixed-wing, VTOL, rovers, and many more experimental platforms from racing quads to industrial survey aircraft. It runs on [NuttX](https://nuttx.apache.org/), Linux, and macOS. Licensed under [BSD 3-Clause](LICENSE).
 
-ros2 launch mavros px4.launch
+## Why PX4
 
-ros2 launch mavros px4.launch fcu_url:=udp://:14540@localhost:14557
+**Modular architecture.** PX4 is built around [uORB](https://docs.px4.io/main/en/middleware/uorb.html), a [DDS](https://docs.px4.io/main/en/middleware/uxrce_dds.html)-compatible publish/subscribe middleware. Modules are fully parallelized and thread safe. You can build custom configurations and trim what you don't need.
 
-### mavros通信验证
+**Wide hardware support.** PX4 runs on a wide range of [autopilot boards](https://docs.px4.io/main/en/flight_controller/) and supports an extensive set of sensors, telemetry radios, and actuators through the [Pixhawk](https://pixhawk.org/) ecosystem.
 
-ros2 topic echo /mavros/imu/data_raw
+**Developer friendly.** First-class support for [MAVLink](https://mavlink.io/) and [DDS / ROS 2](https://docs.px4.io/main/en/ros2/) integration. Comprehensive [SITL simulation](https://docs.px4.io/main/en/simulation/), hardware-in-the-loop testing, and [log analysis](https://docs.px4.io/main/en/log/flight_log_analysis.html) tools. An active developer community on [Discord](https://discord.gg/dronecode) and the [weekly dev call](https://docs.px4.io/main/en/contribute/).
 
-## gazebo数据流
+**Vendor neutral governance.** PX4 is hosted under the [Dronecode Foundation](https://www.dronecode.org/), part of the Linux Foundation. Business-friendly BSD-3 license. No single vendor controls the roadmap.
 
-### 查看所有的gazebo内部话题
+## Supported Vehicles
 
-gz topic -l
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://docs.px4.io/main/en/frames_multicopter/">
+        <img src="docs/assets/airframes/types/QuadRotorX.svg" width="50" alt="Multicopter"><br>
+        <sub>Multicopter</sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://docs.px4.io/main/en/frames_plane/">
+        <img src="docs/assets/airframes/types/Plane.svg" width="50" alt="Fixed Wing"><br>
+        <sub>Fixed Wing</sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://docs.px4.io/main/en/frames_vtol/">
+        <img src="docs/assets/airframes/types/VTOLPlane.svg" width="50" alt="VTOL"><br>
+        <sub>VTOL</sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://docs.px4.io/main/en/frames_rover/">
+        <img src="docs/assets/airframes/types/Rover.svg" width="50" alt="Rover"><br>
+        <sub>Rover</sub>
+      </a>
+    </td>
+  </tr>
+</table>
 
-### 查看详细的gazebo话题数据流
-gz topic --info --topic /world/default/model/x500_gimbal_0/link/camera_link/sensor/camera/image
+<sub>…and many more: helicopters, autogyros, airships, submarines, boats, and other experimental platforms. These frames have basic support but are not part of the regular flight-test program. See the <a href="https://docs.px4.io/main/en/airframes/airframe_reference.html">full airframe reference</a>.</sub>
 
-## Gstream视频流操作
+## Try PX4
 
-### 获取视频流---用于验证视频流正常
+Run PX4 in simulation with a single command. No build tools, no dependencies beyond Docker:
 
-gst-launch-1.0 udpsrc port=5600 caps="application/x-rtp, media=video, encoding-name=H264, payload=96" ! rtpjitterbuffer !  rtph264depay ! avdec_h264 ! autovideosink
+```bash
+docker run --rm -it -p 14550:14550/udp px4io/px4-sitl:latest
+```
 
-### 进入YOLO环境---目前使用系统YOLO环境
+Open [QGroundControl](https://qgroundcontrol.com) and fly. See [PX4 Simulation Quickstart](../dev_setup/px4_simulation_quickstart.md) for more options.
 
-source yolo_stable/bin/activate
+## Build from Source
 
-### 开启YOLO检测---包含视频流录制交互
+```bash
+git clone https://github.com/PX4/PX4-Autopilot.git --recursive
+cd PX4-Autopilot
+make px4_sitl
+```
 
-python3 /home/renwang/PX4-Autopilot/visual_tracking/yolo/video_stream_capture/yolo_stream_version2.py
+> [!NOTE]
+> See the [Development Guide](https://docs.px4.io/main/en/development/development.html) for toolchain setup and build options.
 
-## offboard 测试
+## Documentation & Resources
 
-### 启用offboard官方测试例程
+| Resource | Description |
+| --- | --- |
+| [User Guide](https://docs.px4.io/main/en/) | Build, configure, and fly with PX4 |
+| [Developer Guide](https://docs.px4.io/main/en/development/development.html) | Modify the flight stack, add peripherals, port to new hardware |
+| [Airframe Reference](https://docs.px4.io/main/en/airframes/airframe_reference.html) | Full list of supported frames |
+| [Autopilot Hardware](https://docs.px4.io/main/en/flight_controller/) | Compatible flight controllers |
+| [Release Notes](https://docs.px4.io/main/en/releases/) | What's new in each release |
+| [Contribution Guide](https://docs.px4.io/main/en/contribute/) | How to contribute to PX4 |
 
-python3 /home/renwang/PX4-Autopilot/control/offboard/official_offboard.py
+## Community
 
-### echo无人机目前的状态
+- **Weekly Dev Call** — open to all developers ([Dronecode calendar](https://www.dronecode.org/calendar/))
+- **Discord** — [Join the Dronecode server](https://discord.gg/dronecode)
+- **Discussion Forum** — [PX4 Discuss](https://discuss.px4.io/)
+- **Maintainers** — see [`MAINTAINERS.md`](MAINTAINERS.md)
+- **Contributor Stats** — [LFX Insights](https://insights.lfx.linuxfoundation.org/foundation/dronecode)
 
-ros2 topic echo /mavros/state
+## Contributing
+
+We welcome contributions of all kinds — bug reports, documentation, new features, and code reviews. Please read the [Contribution Guide](https://docs.px4.io/main/en/contribute/) to get started.
+
+## Citation
+
+If you use PX4 in academic work, please cite it. BibTeX:
+
+```bibtex
+@software{px4_autopilot,
+  author    = {Meier, Lorenz and {The PX4 Contributors}},
+  title     = {{PX4 Autopilot}},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.595432},
+  url       = {https://px4.io}
+}
+```
+
+The DOI above is a Zenodo concept DOI that always resolves to the latest release. For a version-pinned citation, see the [Zenodo record](https://doi.org/10.5281/zenodo.595432) or our [`CITATION.cff`](CITATION.cff).
+
+## Governance
+
+The PX4 Autopilot project is hosted by the [Dronecode Foundation](https://www.dronecode.org/), a [Linux Foundation](https://www.linuxfoundation.org/) Collaborative Project. Dronecode holds all PX4 trademarks and serves as the project's legal guardian, ensuring vendor-neutral stewardship — no single company owns the name or controls the roadmap. The source code is licensed under the [BSD 3-Clause](LICENSE) license, so you are free to use, modify, and distribute it in your own projects.
+
+<p align="center">
+  <a href="https://www.dronecode.org/">
+    <img src="docs/assets/site/dronecode_logo.svg" alt="Dronecode Logo" width="180">
+  </a>
+</p>
