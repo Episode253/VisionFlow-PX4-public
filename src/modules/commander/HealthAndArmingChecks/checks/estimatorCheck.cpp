@@ -42,6 +42,7 @@ EstimatorChecks::EstimatorChecks()
 	_last_lpos_relaxed_fail_time_us = _last_lpos_fail_time_us;
 	_last_gpos_fail_time_us = _last_lpos_fail_time_us;
 	_last_lvel_fail_time_us = _last_lpos_fail_time_us;
+	_start_time_us = _last_lpos_fail_time_us;
 }
 
 void EstimatorChecks::checkAndReport(const Context &context, Report &reporter)
@@ -108,7 +109,11 @@ void EstimatorChecks::checkAndReport(const Context &context, Report &reporter)
 		param_get(param_ekf2_en_handle, &param_ekf2_en);
 	}
 
-	if (missing_data && (param_ekf2_en == 1)) {
+	// Skip EKF2 missing data check during initial 10 second startup delay
+	const hrt_abstime now = hrt_absolute_time();
+	const bool in_ekf_init_period = (now - _start_time_us) < (10 * 1000 * 1000); // 10 second delay
+
+	if (missing_data && (param_ekf2_en == 1) && !in_ekf_init_period) {
 		/* EVENT
 		 */
 		reporter.armingCheckFailure(required_groups, health_component_t::local_position_estimate,

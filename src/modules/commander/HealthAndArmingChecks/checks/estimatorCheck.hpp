@@ -100,6 +100,7 @@ private:
 	hrt_abstime	_last_lpos_fail_time_us{0};	///< Last time that the local position validity recovery check failed (usec)
 	hrt_abstime	_last_lpos_relaxed_fail_time_us{0};	///< Last time that the relaxed local position validity recovery check failed (usec)
 	hrt_abstime	_last_lvel_fail_time_us{0};	///< Last time that the local velocity validity recovery check failed (usec)
+	hrt_abstime	_start_time_us{0};	///< System start time for EKF init delay (usec)
 
 	bool _gps_was_fused{false};
 	bool _gnss_spoofed{false};
