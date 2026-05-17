@@ -115,3 +115,6 @@ _emscripten_sdk/
 
 # Claude Code local settings
 .claude/settings.local.json
+
+.vscode/
+.github/
