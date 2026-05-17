@@ -77,14 +77,13 @@ void init_once()
 void init(int argc, char *argv[], const char *app_name)
 {
 	printf("\n");
-	printf("______  __   __    ___ \n");
-	printf("| ___ \\ \\ \\ / /   /   |\n");
-	printf("| |_/ /  \\ V /   / /| |\n");
-	printf("|  __/   /   \\  / /_| |\n");
-	printf("| |     / /^\\ \\ \\___  |\n");
-	printf("\\_|     \\/   \\/     |_/\n");
+	printf("__     ___     _             _____ _                 ____  __  __ _  _   \n");
+	printf("\\ \\   / (_)___(_) ___  _ __ |  ___| | _____      __ |  _ \\ \\ \\/ /| || |  \n");
+	printf(" \\ \\ / /| / __| |/ _ \\| '_ \\| |_  | |/ _ \\ \\ /\\ / / | |_) | \\  / | || |_ \n");
+	printf("  \\ V / | \\__ \\ | (_) | | | |  _| | | (_) \\ V  V /  |  __/  /  \\ |__   _|\n");
+	printf("   \\_/  |_|___/_|\\___/|_| |_|_|   |_|\\___/ \\_/\\_/   |_|    /_/\\_\\   |_|  \n");
 	printf("\n");
-	printf("%s starting.\n", app_name);
+	printf("VisionFlow-PX4 starting.\n");
 	printf("\n");
 
 	// set the threads name
