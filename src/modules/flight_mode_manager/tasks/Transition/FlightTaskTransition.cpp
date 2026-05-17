@@ -41,9 +41,26 @@ using namespace matrix;
 
 FlightTaskTransition::FlightTaskTransition()
 {
-	param_get(param_find("FW_PSP_OFF"), &_param_fw_psp_off);
-	param_get(param_find("VT_B_DEC_I"), &_param_vt_b_dec_i);
-	param_get(param_find("VT_B_DEC_MSS"), &_param_vt_b_dec_mss);
+	_param_fw_psp_off = 0.f;
+	_param_vt_b_dec_i = 0.f;
+	_param_vt_b_dec_mss = 0.f;
+
+	param_t param_handle;
+
+	param_handle = param_find("FW_PSP_OFF");
+	if (param_handle != PARAM_INVALID) {
+		param_get(param_handle, &_param_fw_psp_off);
+	}
+
+	param_handle = param_find("VT_B_DEC_I");
+	if (param_handle != PARAM_INVALID) {
+		param_get(param_handle, &_param_vt_b_dec_i);
+	}
+
+	param_handle = param_find("VT_B_DEC_MSS");
+	if (param_handle != PARAM_INVALID) {
+		param_get(param_handle, &_param_vt_b_dec_mss);
+	}
 }
 
 bool FlightTaskTransition::activate(const trajectory_setpoint_s &last_setpoint)
