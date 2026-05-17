@@ -18,7 +18,7 @@
 
     <joint name="q940_ti_joint" type="fixed">
       <parent>base_link</parent>
-      <child>ti5_arm::base_link</child>
+      <child>ti5_arm::ti5_arm_base_link</child>
     </joint>
 
     <include>
@@ -29,7 +29,7 @@
 
     <joint name="ti5_gripper_joint" type="fixed">
       <parent>ti5_arm::F_Link</parent>
-      <child>gripper3::base_link</child>
+      <child>gripper3::gripper3_base_link</child>
     </joint>
 
   </model>

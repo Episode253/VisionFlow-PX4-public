@@ -51,7 +51,7 @@
       <sensor name="air_pressure_sensor" type="air_pressure">
         <always_on>true</always_on>
         <update_rate>50</update_rate>
-        <!-- <gz_frame_id>base_link</gz_frame_id> -->
+        <gz_frame_id>base_link</gz_frame_id>
         <air_pressure>
           <pressure>
             <noise type="gaussian">
@@ -64,7 +64,7 @@
       <sensor name="magnetometer_sensor" type="magnetometer">
         <always_on>true</always_on>
         <update_rate>100</update_rate>
-        <!-- <gz_frame_id>base_link</gz_frame_id> -->
+        <gz_frame_id>base_link</gz_frame_id>
         <magnetometer>
           <x>
             <noise type="gaussian">
@@ -86,7 +86,7 @@
       <sensor name="imu_sensor" type="imu">
         <always_on>true</always_on>
         <update_rate>250</update_rate>
-        <!-- <gz_frame_id>base_link</gz_frame_id> -->
+        <gz_frame_id>base_link</gz_frame_id>
         <imu>
           <angular_velocity>
             <x>
@@ -133,7 +133,7 @@
       <sensor name="navsat_sensor" type="navsat">
         <always_on>true</always_on>
         <update_rate>30</update_rate>
-        <!-- <gz_frame_id>base_link</gz_frame_id> -->
+        <gz_frame_id>base_link</gz_frame_id>
       </sensor>
     </link>
     <joint name="battery_joint" type="fixed">

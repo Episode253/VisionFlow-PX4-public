@@ -4,7 +4,8 @@
     <static>false</static>
     <self_collide>false</self_collide>
     <enable_wind>false</enable_wind>
-    <link name="base_link">
+    <!-- <link name="base_link"> -->
+    <link name="ti5_arm_base_link">
       <inertial>
         <pose>0.000202 -0 0.03962 0 -0 0</pose>
         <mass>0.42</mass>
@@ -35,8 +36,10 @@
       </visual>
     </link>
     <joint name="A" type="revolute">
-      <pose relative_to="base_link">-0.000181 0 0.097 0 0 0</pose>
-      <parent>base_link</parent>
+      <!-- <pose relative_to="base_link">-0.000181 0 0.097 0 0 0</pose>
+      <parent>base_link</parent> -->
+      <pose relative_to="ti5_arm_base_link">-0.000181 0 0.097 0 0 0</pose>
+      <parent>ti5_arm_base_link</parent>
       <child>A_Link</child>
       <axis>
         <xyz>0 0 1</xyz>
