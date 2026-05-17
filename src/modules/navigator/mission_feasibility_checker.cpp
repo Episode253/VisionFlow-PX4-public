@@ -64,8 +64,6 @@ MissionFeasibilityChecker::checkMissionFeasible(const mission_s &mission)
 
 	// trivial case: A mission with length zero cannot be valid
 	if ((int)mission.count <= 0) {
-		mavlink_log_critical(_navigator->get_mavlink_log_pub(), "Mission rejected: empty\t");
-		events::send(events::ID("navigator_mis_empty"), {events::Log::Error, events::LogInternal::Info}, "Mission rejected: empty");
 		return false;
 	}
 
