@@ -32,5 +32,53 @@
       <child>gripper3::gripper3_base_link</child>
     </joint>
 
+    <!-- OakD-Lite camera One mounted on UAV body -->
+    <include>
+      <name>oakd_lite_one</name>
+      <uri>model://OakD-lite</uri>
+      <pose relative_to="base_link">0.10 0.028 0.06 0 0.785398 0</pose>
+    </include>
+
+    <joint name="base_oakd_lite_one_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>oakd_lite_one::camera_link</child>
+    </joint>
+
+    <!-- OakD-Lite camera Two mounted on UAV body -->
+    <include>
+      <name>oakd_lite_two</name>
+      <uri>model://OakD-lite</uri>
+      <pose relative_to="base_link">0.10 0.028 0.098 0 0 0</pose>
+    </include>
+
+    <joint name="base_oakd_lite_two_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>oakd_lite_two::camera_link</child>
+    </joint>
+
+    <!-- OakD-Lite camera Three mounted on UAV body -->
+    <include>
+      <name>oakd_lite_three</name>
+      <uri>model://OakD-lite</uri>
+      <pose relative_to="base_link">0.055 0.028 0 0 1.5708 0</pose>
+    </include>
+
+    <joint name="base_oakd_lite_three_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>oakd_lite_three::camera_link</child>
+    </joint>
+
+    <!-- OakD-Lite camera Four mounted on UAV body -->
+    <include>
+      <name>oakd_lite_four</name>
+      <uri>model://OakD-lite</uri>
+      <pose relative_to="base_link">0.030 -0.008 -0.62 0 1.5708 -1.5708</pose>
+    </include>
+
+    <joint name="base_oakd_lite_four_joint" type="fixed">
+      <parent>gripper3::gripper3_base_link</parent>
+      <child>oakd_lite_four::camera_link</child>
+    </joint>
+
   </model>
 </sdf>
