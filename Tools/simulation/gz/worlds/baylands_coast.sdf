@@ -1,0 +1,125 @@
+<sdf version='1.9'>
+  <world name='baylands_coast'>
+    <physics type="ode">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>250</real_time_update_rate>
+    </physics>
+
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type='adiabatic'/>
+
+    <scene>
+      <ambient>0.8 0.5 1</ambient>
+      <grid>false</grid>
+      <sky> <clouds>true</clouds> </sky>
+      <shadows>1</shadows>
+    </scene>
+
+    <light name='sunUTC' type='directional'>
+      <pose>0 0 500 0 -0 0</pose>
+      <cast_shadows>false</cast_shadows>
+      <intensity>1</intensity>
+      <direction>0.001 0.625 -0.78</direction>
+      <diffuse>0.904 0.904 0.904 1</diffuse>
+      <specular>0.271 0.271 0.271 1</specular>
+      <attenuation>
+        <range>2000</range>
+        <linear>0</linear>
+        <constant>1</constant>
+        <quadratic>0</quadratic>
+      </attenuation>
+    </light>
+
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/baylands</uri>
+      <name>park</name>
+      <pose>205 155 -1 0 0 0</pose>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Coast Water</uri>
+      <pose>0 0 -2 0 0 0
+        <relative_to>park</relative_to>
+      </pose>
+    </include>
+
+    <actor name="actor_walking">
+      <skin>
+        <filename>https://fuel.gazebosim.org/1.0/Mingfei/models/actor/tip/files/meshes/walk.dae</filename>
+        <scale>1.0</scale>
+      </skin>
+      <animation name="walk">
+        <filename>https://fuel.gazebosim.org/1.0/Mingfei/models/actor/tip/files/meshes/walk.dae</filename>
+        <interpolate_x>true</interpolate_x>
+      </animation>
+      <script>
+        <loop>true</loop>
+        <delay_start>0.0</delay_start>
+        <auto_start>true</auto_start>
+
+        <trajectory id="0" type="walk" tension="0.6">
+
+            <waypoint>
+                <time>0</time>
+                <pose>1.2911 -3.5848 1.2 0 0 -1.0</pose> </waypoint>
+
+            <waypoint>
+                <time>8</time>
+                <pose>8.0 -10.0 1.1 0 0 -1.5</pose> </waypoint>
+
+            <waypoint>
+                <time>17</time>
+                <pose>10.1106 -21.6381 1.0 0 0 -2.5</pose> </waypoint>
+
+            <waypoint>
+                <time>24</time>
+                <pose>5.0 -28.0 1.1 0 0 -3.0</pose> </waypoint>
+
+            <waypoint>
+                <time>30</time>
+                <pose>-3.5545 -28.3196 1.2 0 0 -3.0</pose> </waypoint>
+
+            <waypoint>
+                <time>32</time>
+                <pose>-3.5545 -28.3196 1.2 0 0 0.5</pose>
+            </waypoint>
+
+            <waypoint>
+                <time>38</time>
+                <pose>0.0 -25.0 1.1 0 0 0.8</pose>
+            </waypoint>
+
+            <waypoint>
+                <time>45</time>
+                <pose>10.1106 -21.6381 1.0 0 0 1.2</pose>
+            </waypoint>
+
+            <waypoint>
+                <time>55</time>
+                <pose>5.0 -15.0 1.1 0 0 2.0</pose>
+            </waypoint>
+
+            <waypoint>
+                <time>64</time>
+                <pose>1.2911 -3.5848 1.2 0 0 2.5</pose>
+            </waypoint>
+
+            <waypoint>
+                <time>66</time>
+                <pose>1.2911 -3.5848 1.2 0 0 -1.0</pose>
+            </waypoint>
+
+        </trajectory>
+      </script>
+    </actor>
+
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>37.412173071650805</latitude_deg>
+      <longitude_deg>-121.998878727967</longitude_deg>
+      <elevation>38</elevation>
+    </spherical_coordinates>
+  </world>
+</sdf>
