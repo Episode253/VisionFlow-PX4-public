@@ -447,7 +447,7 @@
       <i_min>-1.0</i_min>
       <cmd_max>10.0</cmd_max>
       <cmd_min>-10.0</cmd_min>
-      <initial_position>0.0</initial_position>
+      <initial_position>-1.5708</initial_position>
     </plugin>
   </model>
 </sdf>
