@@ -1,0 +1,2324 @@
+<?xml version='1.0' encoding='utf-8'?>
+<sdf version="1.9">
+  <world name="laboratory">
+    <physics type="ode">
+      <ode>
+        <solver>
+          <type>quick</type>
+          <iters>10</iters>
+          <sor>1.3</sor>
+          <use_dynamic_moi_rescaling>0</use_dynamic_moi_rescaling>
+        </solver>
+        <constraints>
+          <cfm>0</cfm>
+          <erp>0.2</erp>
+          <contact_max_correcting_vel>100</contact_max_correcting_vel>
+          <contact_surface_layer>0.001</contact_surface_layer>
+        </constraints>
+      </ode>
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>250</real_time_update_rate>
+    </physics>
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type="adiabatic" />
+    <scene>
+      <grid>false</grid>
+      <ambient>0.58 0.58 0.56 1</ambient>
+      <background>0.78 0.80 0.82 1</background>
+      <shadows>true</shadows>
+    </scene>
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>500 500</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>50</mu2>
+              </ode>
+              <torsional>
+                <ode />
+              </torsional>
+            </friction>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>500 500</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.74 0.74 0.70 1</ambient>
+            <diffuse>0.74 0.74 0.70 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+          <cast_shadows>true</cast_shadows>
+        </visual>
+        <pose>0 0 0 0 0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
+      <pose>0 0 0 0 0 0</pose>
+      <self_collide>false</self_collide>
+    </model>
+    <light name="sunUTC" type="directional">
+      <pose>0 0 500 0 0 0</pose>
+      <cast_shadows>true</cast_shadows>
+      <intensity>1.15</intensity>
+      <direction>-0.25 0.45 -0.86</direction>
+      <diffuse>0.98 0.94 0.86 1</diffuse>
+      <specular>0.28 0.28 0.25 1</specular>
+      <attenuation>
+        <range>2000</range>
+        <linear>0</linear>
+        <constant>1</constant>
+        <quadratic>0</quadratic>
+      </attenuation>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>47.397971057728974</latitude_deg>
+      <longitude_deg>8.546163739800146</longitude_deg>
+      <elevation>0</elevation>
+    </spherical_coordinates>
+    <model name="Floor_room">
+      <link name="main">
+        <pose>0 0 0.01 0 -0 0</pose>
+        <collision name="main_Collision">
+          <geometry>
+            <box>
+              <size>20 20 0.001</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+            <friction>
+              <torsional>
+                <ode />
+              </torsional>
+              <ode />
+            </friction>
+          </surface>
+        </collision>
+        <visual name="main_Visual">
+          <geometry>
+            <box>
+              <size>20 20 0.001</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.56 0.58 0.56 1</ambient>
+            <diffuse>0.60 0.61 0.58 1</diffuse>
+            <specular>0.02 0.02 0.02 1</specular>
+          </material>
+          <cast_shadows>true</cast_shadows>
+        </visual>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <static>true</static>
+      <pose>0.043797 -0.01325 0 0 -0 0</pose>
+    </model>
+    <model name="window">
+      <link name="link_2">
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <pose>-3.65586 -0.020997 0.361529 0 -0 0</pose>
+        <gravity>true</gravity>
+        <inertial>
+          <mass>1</mass>
+          <pose>0 0 0 0 -0 0</pose>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <pose>0 0 0.9 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>8 0.15 2</size>
+            </box>
+          </geometry>
+          <material>
+            <lighting>true</lighting>
+            <ambient>0.20 0.50 0.60 0.7</ambient>
+            <diffuse>0.22 0.62 0.75 0.7</diffuse>
+            <specular>0.18 0.18 0.18 1</specular>
+            <emissive>0.02 0.06 0.08 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0.55</transparency>
+        </visual>
+        <collision name="collision">
+          <laser_retro>0</laser_retro>
+          <max_contacts>10</max_contacts>
+          <pose>0 0 0.9 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>8 0.15 2</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>1</mu>
+                <mu2>1</mu2>
+                <fdir1>0 0 0</fdir1>
+                <slip1>0</slip1>
+                <slip2>0</slip2>
+              </ode>
+              <torsional>
+                <coefficient>1</coefficient>
+                <patch_radius>0</patch_radius>
+                <surface_radius>0</surface_radius>
+                <use_patch_radius>1</use_patch_radius>
+                <ode>
+                  <slip>0</slip>
+                </ode>
+              </torsional>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+              <threshold>1e+06</threshold>
+            </bounce>
+            <contact>
+              <collide_without_contact>0</collide_without_contact>
+              <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+              <collide_bitmask>1</collide_bitmask>
+              <ode>
+                <soft_cfm>0</soft_cfm>
+                <soft_erp>0.2</soft_erp>
+                <kp>1e+13</kp>
+                <kd>1</kd>
+                <max_vel>0.01</max_vel>
+                <min_depth>0</min_depth>
+              </ode>
+              <bullet>
+                <split_impulse>1</split_impulse>
+                <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+                <soft_cfm>0</soft_cfm>
+                <soft_erp>0.2</soft_erp>
+                <kp>1e+13</kp>
+                <kd>1</kd>
+              </bullet>
+            </contact>
+          </surface>
+        </collision>
+      </link>
+      <static>true</static>
+      <allow_auto_disable>true</allow_auto_disable>
+      <pose>3.62277 -4.97689 1.7565 0 -0 0</pose>
+    </model>
+    <model name="drawer_white">
+      <link name="link_0">
+        <pose>-0.004287 -0.020202 0 0 -0 0</pose>
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://drawer_white/meshes/base.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <ambient>0.86 0.84 0.78 1</ambient>
+            <diffuse>0.92 0.90 0.84 1</diffuse>
+            <specular>0.03 0.03 0.03 1</specular>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <collision name="collision">
+          <pose>0 0 0.41 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.62 0.48 0.82</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <friction>
+              <ode />
+              <torsional>
+                <ode />
+              </torsional>
+            </friction>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+          </surface>
+        </collision>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <link name="link_1">
+        <pose>0.004286 0.020202 0 0 -0 0</pose>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://drawer_white/meshes/handle.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <lighting>1</lighting>
+            <ambient>0.16 0.16 0.15 1</ambient>
+            <diffuse>0.20 0.20 0.18 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <static>true</static>
+      <allow_auto_disable>true</allow_auto_disable>
+      <pose>0.20 -4.42 0.020462 0 0 0</pose>
+    </model>
+    <model name="drawer_white_2">
+      <link name="link_0">
+        <pose>-0.004287 -0.020202 0 0 -0 0</pose>
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://drawer_white/meshes/base.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <ambient>0.86 0.84 0.78 1</ambient>
+            <diffuse>0.92 0.90 0.84 1</diffuse>
+            <specular>0.03 0.03 0.03 1</specular>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <collision name="collision">
+          <pose>0 0 0.41 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.62 0.48 0.82</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <friction>
+              <ode />
+              <torsional>
+                <ode />
+              </torsional>
+            </friction>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+          </surface>
+        </collision>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <link name="link_1">
+        <pose>0.004286 0.020202 0 0 -0 0</pose>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://drawer_white/meshes/handle.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <lighting>1</lighting>
+            <ambient>0.16 0.16 0.15 1</ambient>
+            <diffuse>0.20 0.20 0.18 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <static>true</static>
+      <allow_auto_disable>true</allow_auto_disable>
+      <pose>0.82 -4.42 0.020462 0 0 0</pose>
+    </model>
+    <model name="drawer_white_3">
+      <link name="link_0">
+        <pose>-0.004287 -0.020202 0 0 -0 0</pose>
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://drawer_white/meshes/base.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <ambient>0.86 0.84 0.78 1</ambient>
+            <diffuse>0.92 0.90 0.84 1</diffuse>
+            <specular>0.03 0.03 0.03 1</specular>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <collision name="collision">
+          <pose>0 0 0.41 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.62 0.48 0.82</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <friction>
+              <ode />
+              <torsional>
+                <ode />
+              </torsional>
+            </friction>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+          </surface>
+        </collision>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <link name="link_1">
+        <pose>0.004286 0.020202 0 0 -0 0</pose>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://drawer_white/meshes/handle.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <lighting>1</lighting>
+            <ambient>0.16 0.16 0.15 1</ambient>
+            <diffuse>0.20 0.20 0.18 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <static>true</static>
+      <allow_auto_disable>true</allow_auto_disable>
+      <pose>1.44 -4.42 0.020462 0 0 0</pose>
+    </model>
+    <model name="drawer_white_4">
+      <link name="link_0">
+        <pose>-0.004287 -0.020202 0 0 -0 0</pose>
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://drawer_white/meshes/base.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <ambient>0.86 0.84 0.78 1</ambient>
+            <diffuse>0.92 0.90 0.84 1</diffuse>
+            <specular>0.03 0.03 0.03 1</specular>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <collision name="collision">
+          <pose>0 0 0.41 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.62 0.48 0.82</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <friction>
+              <ode />
+              <torsional>
+                <ode />
+              </torsional>
+            </friction>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+          </surface>
+        </collision>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <link name="link_1">
+        <pose>0.004286 0.020202 0 0 -0 0</pose>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://drawer_white/meshes/handle.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <lighting>1</lighting>
+            <ambient>0.16 0.16 0.15 1</ambient>
+            <diffuse>0.20 0.20 0.18 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <static>true</static>
+      <allow_auto_disable>true</allow_auto_disable>
+      <pose>2.06 -4.42 0.020462 0 0 0</pose>
+    </model>
+    <model name="Workshop">
+      <link name="Wall_10">
+        <pose>-2.5053 2.09449 2 0 0 -1.5708</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <gravity>true</gravity>
+        <inertial>
+          <mass>1</mass>
+          <pose>0 0 0 0 -0 0</pose>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <visual name="Wall_10_Visual">
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>10 0.15 5</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.88 0.88 0.84 1</ambient>
+            <diffuse>0.92 0.92 0.88 1</diffuse>
+            <specular>0.02 0.02 0.02 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+          <transparency>0</transparency>
+          <cast_shadows>true</cast_shadows>
+        </visual>
+        <collision name="Wall_10_Collision">
+          <laser_retro>0</laser_retro>
+          <max_contacts>10</max_contacts>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>10 0.15 5</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>1</mu>
+                <mu2>1</mu2>
+                <fdir1>0 0 0</fdir1>
+                <slip1>0</slip1>
+                <slip2>0</slip2>
+              </ode>
+              <torsional>
+                <coefficient>1</coefficient>
+                <patch_radius>0</patch_radius>
+                <surface_radius>0</surface_radius>
+                <use_patch_radius>1</use_patch_radius>
+                <ode>
+                  <slip>0</slip>
+                </ode>
+              </torsional>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+              <threshold>1e+06</threshold>
+            </bounce>
+            <contact>
+              <collide_without_contact>0</collide_without_contact>
+              <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+              <collide_bitmask>1</collide_bitmask>
+              <ode>
+                <soft_cfm>0</soft_cfm>
+                <soft_erp>0.2</soft_erp>
+                <kp>1e+13</kp>
+                <kd>1</kd>
+                <max_vel>0.01</max_vel>
+                <min_depth>0</min_depth>
+              </ode>
+              <bullet>
+                <split_impulse>1</split_impulse>
+                <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+                <soft_cfm>0</soft_cfm>
+                <soft_erp>0.2</soft_erp>
+                <kp>1e+13</kp>
+                <kd>1</kd>
+              </bullet>
+            </contact>
+          </surface>
+        </collision>
+      </link>
+      <link name="Wall_11">
+        <pose>1.46131 -2.90507 0.516113 0 -0 3.14159</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <inertial>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+          <mass>1</mass>
+          <pose>0 0 0 0 -0 0</pose>
+        </inertial>
+        <gravity>true</gravity>
+        <visual name="Wall_11_Visual">
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>8 0.15 2</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.72 0.74 0.72 1</ambient>
+            <emissive>0 0 0 1</emissive>
+            <diffuse>0.78 0.80 0.78 1</diffuse>
+            <specular>0.02 0.02 0.02 1</specular>
+          </material>
+          <transparency>0</transparency>
+          <cast_shadows>true</cast_shadows>
+        </visual>
+        <collision name="Wall_11_Collision">
+          <laser_retro>0</laser_retro>
+          <max_contacts>10</max_contacts>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>8 0.15 2</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>1</mu>
+                <mu2>1</mu2>
+                <fdir1>0 0 0</fdir1>
+                <slip1>0</slip1>
+                <slip2>0</slip2>
+              </ode>
+              <torsional>
+                <coefficient>1</coefficient>
+                <patch_radius>0</patch_radius>
+                <surface_radius>0</surface_radius>
+                <use_patch_radius>1</use_patch_radius>
+                <ode>
+                  <slip>0</slip>
+                </ode>
+              </torsional>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+              <threshold>1e+06</threshold>
+            </bounce>
+            <contact>
+              <collide_without_contact>0</collide_without_contact>
+              <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+              <collide_bitmask>1</collide_bitmask>
+              <ode>
+                <soft_cfm>0</soft_cfm>
+                <soft_erp>0.2</soft_erp>
+                <kp>1e+13</kp>
+                <kd>1</kd>
+                <max_vel>0.01</max_vel>
+                <min_depth>0</min_depth>
+              </ode>
+              <bullet>
+                <split_impulse>1</split_impulse>
+                <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+                <soft_cfm>0</soft_cfm>
+                <soft_erp>0.2</soft_erp>
+                <kp>1e+13</kp>
+                <kd>1</kd>
+              </bullet>
+            </contact>
+          </surface>
+        </collision>
+      </link>
+      <link name="Wall_11_clone">
+        <pose>1.4947 -2.90551 4 0 -0 3.14159</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <inertial>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+          <mass>1</mass>
+          <pose>0 0 0 0 -0 0</pose>
+        </inertial>
+        <gravity>true</gravity>
+        <visual name="Wall_11_Visual">
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>8 0.15 1</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.72 0.74 0.72 1</ambient>
+            <emissive>0 0 0 1</emissive>
+            <diffuse>0.78 0.80 0.78 1</diffuse>
+            <specular>0.02 0.02 0.02 1</specular>
+          </material>
+          <transparency>0</transparency>
+          <cast_shadows>true</cast_shadows>
+        </visual>
+        <collision name="Wall_11_Collision">
+          <laser_retro>0</laser_retro>
+          <max_contacts>10</max_contacts>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>7.71217 0.15 1</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>1</mu>
+                <mu2>1</mu2>
+                <fdir1>0 0 0</fdir1>
+                <slip1>0</slip1>
+                <slip2>0</slip2>
+              </ode>
+              <torsional>
+                <coefficient>1</coefficient>
+                <patch_radius>0</patch_radius>
+                <surface_radius>0</surface_radius>
+                <use_patch_radius>1</use_patch_radius>
+                <ode>
+                  <slip>0</slip>
+                </ode>
+              </torsional>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+              <threshold>1e+06</threshold>
+            </bounce>
+            <contact>
+              <collide_without_contact>0</collide_without_contact>
+              <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+              <collide_bitmask>1</collide_bitmask>
+              <ode>
+                <soft_cfm>0</soft_cfm>
+                <soft_erp>0.2</soft_erp>
+                <kp>1e+13</kp>
+                <kd>1</kd>
+                <max_vel>0.01</max_vel>
+                <min_depth>0</min_depth>
+              </ode>
+              <bullet>
+                <split_impulse>1</split_impulse>
+                <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+                <soft_cfm>0</soft_cfm>
+                <soft_erp>0.2</soft_erp>
+                <kp>1e+13</kp>
+                <kd>1</kd>
+              </bullet>
+            </contact>
+          </surface>
+        </collision>
+      </link>
+      <link name="Wall_13">
+        <pose>1.4947 7.09449 2 0 -0 3.14159</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <gravity>true</gravity>
+        <inertial>
+          <mass>1</mass>
+          <pose>0 0 0 0 -0 0</pose>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <visual name="Wall_13_Visual">
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>8 0.15 5</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.72 0.74 0.72 1</ambient>
+            <diffuse>0.78 0.80 0.78 1</diffuse>
+            <specular>0.02 0.02 0.02 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+          <transparency>0</transparency>
+          <cast_shadows>true</cast_shadows>
+        </visual>
+        <collision name="Wall_13_Collision">
+          <laser_retro>0</laser_retro>
+          <max_contacts>10</max_contacts>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>8 0.15 5</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>1</mu>
+                <mu2>1</mu2>
+                <fdir1>0 0 0</fdir1>
+                <slip1>0</slip1>
+                <slip2>0</slip2>
+              </ode>
+              <torsional>
+                <coefficient>1</coefficient>
+                <patch_radius>0</patch_radius>
+                <surface_radius>0</surface_radius>
+                <use_patch_radius>1</use_patch_radius>
+                <ode>
+                  <slip>0</slip>
+                </ode>
+              </torsional>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+              <threshold>1e+06</threshold>
+            </bounce>
+            <contact>
+              <collide_without_contact>0</collide_without_contact>
+              <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+              <collide_bitmask>1</collide_bitmask>
+              <ode>
+                <soft_cfm>0</soft_cfm>
+                <soft_erp>0.2</soft_erp>
+                <kp>1e+13</kp>
+                <kd>1</kd>
+                <max_vel>0.01</max_vel>
+                <min_depth>0</min_depth>
+              </ode>
+              <bullet>
+                <split_impulse>1</split_impulse>
+                <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+                <soft_cfm>0</soft_cfm>
+                <soft_erp>0.2</soft_erp>
+                <kp>1e+13</kp>
+                <kd>1</kd>
+              </bullet>
+            </contact>
+          </surface>
+        </collision>
+      </link>
+      <link name="link_0">
+        <inertial>
+          <mass>1</mass>
+          <inertia>
+            <ixx>0.166667</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.166667</iyy>
+            <iyz>0</iyz>
+            <izz>0.166667</izz>
+          </inertia>
+          <pose>0 0 0 0 -0 0</pose>
+        </inertial>
+        <pose>1.49282 2.06191 0.012848 0 0 -1.5708</pose>
+        <gravity>true</gravity>
+        <self_collide>false</self_collide>
+        <kinematic>false</kinematic>
+        <enable_wind>false</enable_wind>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>10 8 0.013</size>
+            </box>
+          </geometry>
+          <material>
+            <lighting>1</lighting>
+            <ambient>0.20 0.33 0.36 1</ambient>
+            <diffuse>0.24 0.40 0.43 1</diffuse>
+            <specular>0.02 0.02 0.02 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+          <transparency>0</transparency>
+          <cast_shadows>true</cast_shadows>
+        </visual>
+        <collision name="collision">
+          <laser_retro>0</laser_retro>
+          <max_contacts>10</max_contacts>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>10 8 0.013</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode />
+              <torsional>
+                <ode />
+              </torsional>
+            </friction>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+          </surface>
+        </collision>
+      </link>
+      <static>true</static>
+      <allow_auto_disable>true</allow_auto_disable>
+      <pose>-1.4947 -2.09449 0 0 -0 0</pose>
+    </model>
+    <model name="bookshelf_large_2">
+      <link name="link_1">
+        <pose>-0.000121 -2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <gravity>true</gravity>
+        <inertial>
+          <mass>1</mass>
+          <pose>0 0 0 0 -0 0</pose>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <ambient>0.88 0.85 0.76 1</ambient>
+            <diffuse>0.95 0.91 0.80 1</diffuse>
+            <specular>0.025 0.025 0.025 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <collision name="collision">
+          <pose>0 0 0.95 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.45 0.38 1.90</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <friction>
+              <ode />
+              <torsional>
+                <ode />
+              </torsional>
+            </friction>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+          </surface>
+        </collision>
+      </link>
+      <link name="link_2">
+        <pose>0.000122 2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <lighting>true</lighting>
+            <ambient>0.26 0.58 0.64 0.45</ambient>
+            <diffuse>0.33 0.78 0.86 0.45</diffuse>
+            <specular>0.10 0.10 0.10 1</specular>
+            <emissive>0.00 0.02 0.025 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0.45</transparency>
+        </visual>
+      </link>
+      <static>true</static>
+      <allow_auto_disable>true</allow_auto_disable>
+      <pose>-3.43 -2.12 0 0 0 1.5708</pose>
+    </model>
+    <model name="bookshelf_large_3">
+      <link name="link_1">
+        <pose>-0.000121 -2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <gravity>true</gravity>
+        <inertial>
+          <mass>1</mass>
+          <pose>0 0 0 0 -0 0</pose>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <ambient>0.88 0.85 0.76 1</ambient>
+            <diffuse>0.95 0.91 0.80 1</diffuse>
+            <specular>0.025 0.025 0.025 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <collision name="collision">
+          <pose>0 0 0.95 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.45 0.38 1.90</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <friction>
+              <ode />
+              <torsional>
+                <ode />
+              </torsional>
+            </friction>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+          </surface>
+        </collision>
+      </link>
+      <link name="link_2">
+        <pose>0.000122 2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <lighting>true</lighting>
+            <ambient>0.26 0.58 0.64 0.45</ambient>
+            <diffuse>0.33 0.78 0.86 0.45</diffuse>
+            <specular>0.10 0.10 0.10 1</specular>
+            <emissive>0.00 0.02 0.025 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0.45</transparency>
+        </visual>
+        <collision name="collision">
+          <laser_retro>0</laser_retro>
+          <max_contacts>10</max_contacts>
+          <pose>0 0 0.875 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.45 0.04 1.75</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode />
+              <torsional>
+                <ode />
+              </torsional>
+            </friction>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+          </surface>
+        </collision>
+      </link>
+      <static>true</static>
+      <allow_auto_disable>true</allow_auto_disable>
+      <pose>-3.43 -0.82 0 0 0 1.5708</pose>
+    </model>
+    <model name="bookshelf_large_4">
+      <link name="link_1">
+        <pose>-0.000121 -2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <gravity>true</gravity>
+        <inertial>
+          <mass>1</mass>
+          <pose>0 0 0 0 -0 0</pose>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <ambient>0.88 0.85 0.76 1</ambient>
+            <diffuse>0.95 0.91 0.80 1</diffuse>
+            <specular>0.025 0.025 0.025 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <collision name="collision">
+          <pose>0 0 0.95 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.45 0.38 1.90</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <friction>
+              <ode />
+              <torsional>
+                <ode />
+              </torsional>
+            </friction>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+          </surface>
+        </collision>
+      </link>
+      <link name="link_2">
+        <pose>0.000122 2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <lighting>true</lighting>
+            <ambient>0.26 0.58 0.64 0.45</ambient>
+            <diffuse>0.33 0.78 0.86 0.45</diffuse>
+            <specular>0.10 0.10 0.10 1</specular>
+            <emissive>0.00 0.02 0.025 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0.45</transparency>
+        </visual>
+      </link>
+      <static>true</static>
+      <allow_auto_disable>true</allow_auto_disable>
+      <pose>-3.43 0.48 0 0 0 1.5708</pose>
+    </model>
+    <model name="bookshelf_large_6">
+      <link name="link_1">
+        <pose>-0.000121 -2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <gravity>true</gravity>
+        <inertial>
+          <mass>1</mass>
+          <pose>0 0 0 0 -0 0</pose>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <ambient>0.88 0.85 0.76 1</ambient>
+            <diffuse>0.95 0.91 0.80 1</diffuse>
+            <specular>0.025 0.025 0.025 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <collision name="collision">
+          <pose>0 0 0.95 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.45 0.38 1.90</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <friction>
+              <ode />
+              <torsional>
+                <ode />
+              </torsional>
+            </friction>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+          </surface>
+        </collision>
+      </link>
+      <link name="link_2">
+        <pose>0.000122 2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <lighting>true</lighting>
+            <ambient>0.26 0.58 0.64 0.45</ambient>
+            <diffuse>0.33 0.78 0.86 0.45</diffuse>
+            <specular>0.10 0.10 0.10 1</specular>
+            <emissive>0.00 0.02 0.025 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0.45</transparency>
+        </visual>
+      </link>
+      <static>true</static>
+      <allow_auto_disable>true</allow_auto_disable>
+      <pose>-3.43 1.78 0 0 0 1.5708</pose>
+    </model>
+    <model name="bookshelf_large_5">
+      <link name="link_1">
+        <pose>-0.000121 -2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <gravity>true</gravity>
+        <inertial>
+          <mass>1</mass>
+          <pose>0 0 0 0 -0 0</pose>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <ambient>0.88 0.85 0.76 1</ambient>
+            <diffuse>0.95 0.91 0.80 1</diffuse>
+            <specular>0.025 0.025 0.025 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <collision name="collision">
+          <pose>0 0 0.95 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.45 0.38 1.90</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <friction>
+              <ode />
+              <torsional>
+                <ode />
+              </torsional>
+            </friction>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+          </surface>
+        </collision>
+      </link>
+      <link name="link_2">
+        <pose>0.000122 2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <lighting>true</lighting>
+            <ambient>0.26 0.58 0.64 0.45</ambient>
+            <diffuse>0.33 0.78 0.86 0.45</diffuse>
+            <specular>0.10 0.10 0.10 1</specular>
+            <emissive>0.00 0.02 0.025 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0.45</transparency>
+        </visual>
+      </link>
+      <static>true</static>
+      <allow_auto_disable>true</allow_auto_disable>
+      <pose>-3.43 -3.42 0 0 0 1.5708</pose>
+    </model>
+    <model name="bookshelf_large_7">
+      <link name="link_1">
+        <pose>-0.000121 -2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <gravity>true</gravity>
+        <inertial>
+          <mass>1</mass>
+          <pose>0 0 0 0 -0 0</pose>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <ambient>0.88 0.85 0.76 1</ambient>
+            <diffuse>0.95 0.91 0.80 1</diffuse>
+            <specular>0.025 0.025 0.025 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <collision name="collision">
+          <pose>0 0 0.95 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.45 0.38 1.90</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <friction>
+              <ode />
+              <torsional>
+                <ode />
+              </torsional>
+            </friction>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+          </surface>
+        </collision>
+      </link>
+      <link name="link_2">
+        <pose>0.000122 2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <lighting>true</lighting>
+            <ambient>0.26 0.58 0.64 0.45</ambient>
+            <diffuse>0.33 0.78 0.86 0.45</diffuse>
+            <specular>0.10 0.10 0.10 1</specular>
+            <emissive>0.00 0.02 0.025 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0.45</transparency>
+        </visual>
+      </link>
+      <static>true</static>
+      <allow_auto_disable>true</allow_auto_disable>
+      <pose>-3.43 3.08 0 0 0 1.5708</pose>
+    </model>
+    <model name="bookshelf_large_10">
+      <link name="link_1">
+        <pose>-0.000121 -2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <gravity>true</gravity>
+        <inertial>
+          <mass>1</mass>
+          <pose>0 0 0 0 -0 0</pose>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <ambient>0.88 0.85 0.76 1</ambient>
+            <diffuse>0.95 0.91 0.80 1</diffuse>
+            <specular>0.025 0.025 0.025 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <collision name="collision">
+          <pose>0 0 0.95 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.45 0.38 1.90</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <friction>
+              <ode />
+              <torsional>
+                <ode />
+              </torsional>
+            </friction>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+          </surface>
+        </collision>
+      </link>
+      <link name="link_2">
+        <pose>0.000122 2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <lighting>true</lighting>
+            <ambient>0.26 0.58 0.64 0.45</ambient>
+            <diffuse>0.33 0.78 0.86 0.45</diffuse>
+            <specular>0.10 0.10 0.10 1</specular>
+            <emissive>0.00 0.02 0.025 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0.45</transparency>
+        </visual>
+      </link>
+      <static>true</static>
+      <allow_auto_disable>true</allow_auto_disable>
+      <pose>-2.45 4.48 0 0 0 0</pose>
+    </model>
+    <model name="bookshelf_large_8">
+      <link name="link_1">
+        <pose>-0.000121 -2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <gravity>true</gravity>
+        <inertial>
+          <mass>1</mass>
+          <pose>0 0 0 0 -0 0</pose>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <ambient>0.88 0.85 0.76 1</ambient>
+            <diffuse>0.95 0.91 0.80 1</diffuse>
+            <specular>0.025 0.025 0.025 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <collision name="collision">
+          <pose>0 0 0.95 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.45 0.38 1.90</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <friction>
+              <ode />
+              <torsional>
+                <ode />
+              </torsional>
+            </friction>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+          </surface>
+        </collision>
+      </link>
+      <link name="link_2">
+        <pose>0.000122 2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <lighting>true</lighting>
+            <ambient>0.26 0.58 0.64 0.45</ambient>
+            <diffuse>0.33 0.78 0.86 0.45</diffuse>
+            <specular>0.10 0.10 0.10 1</specular>
+            <emissive>0.00 0.02 0.025 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0.45</transparency>
+        </visual>
+      </link>
+      <static>true</static>
+      <allow_auto_disable>true</allow_auto_disable>
+      <pose>-1.12 4.48 0 0 0 0</pose>
+    </model>
+    <model name="bookshelf_large_9">
+      <link name="link_1">
+        <pose>-0.000121 -2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <gravity>true</gravity>
+        <inertial>
+          <mass>1</mass>
+          <pose>0 0 0 0 -0 0</pose>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <ambient>0.88 0.85 0.76 1</ambient>
+            <diffuse>0.95 0.91 0.80 1</diffuse>
+            <specular>0.025 0.025 0.025 1</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <collision name="collision">
+          <pose>0 0 0.95 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>1.45 0.38 1.90</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <friction>
+              <ode />
+              <torsional>
+                <ode />
+              </torsional>
+            </friction>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+          </surface>
+        </collision>
+      </link>
+      <link name="link_2">
+        <pose>0.000122 2.1e-05 0 0 -0 0</pose>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+        <visual name="visual">
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <lighting>true</lighting>
+            <ambient>0.26 0.58 0.64 0.45</ambient>
+            <diffuse>0.33 0.78 0.86 0.45</diffuse>
+            <specular>0.10 0.10 0.10 1</specular>
+            <emissive>0.00 0.02 0.025 1</emissive>
+          </material>
+          <cast_shadows>true</cast_shadows>
+          <transparency>0.45</transparency>
+        </visual>
+      </link>
+      <static>true</static>
+      <allow_auto_disable>true</allow_auto_disable>
+      <pose>0.22 4.48 0 0 0 0</pose>
+    </model>
+    <model name="Landing box">
+      <static>true</static>
+      <link name="base_link">
+        <pose>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0.003044 0.366956 0 -0 0</pose>
+          <mass>2.1469</mass>
+          <inertia>
+            <ixx>0.251683</ixx>
+            <ixy>0.00621323</ixy>
+            <ixz>-0.015183</ixz>
+            <iyy>0.268915</iyy>
+            <iyz>-0.00799762</iyz>
+            <izz>0.110272</izz>
+          </inertia>
+        </inertial>
+        <collision name="base_link_collision">
+          <pose>0 0 0.03 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <length>0.02</length>
+              <radius>0.26</radius>
+            </cylinder>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+            <friction>
+              <torsional>
+                <ode />
+              </torsional>
+              <ode />
+            </friction>
+          </surface>
+        </collision>
+        <visual name="base_link_visual">
+          <pose>0 0 0.03 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>model://landing_box/meshes/base_link.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <ambient>0.02 0.24 0.16 1</ambient>
+            <diffuse>0.03 0.48 0.30 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+          <cast_shadows>true</cast_shadows>
+        </visual>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <link name="Link_1">
+        <collision name="base_link_fixed_joint_lump__Link_1_collision_1">
+          <pose>-0.235167 0.112679 0.37 1.5708 -0 2.61799</pose>
+          <geometry>
+            <box>
+              <size>0.02 0.7 0.02</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+            <friction>
+              <torsional>
+                <ode />
+              </torsional>
+              <ode />
+            </friction>
+          </surface>
+        </collision>
+        <visual name="base_link_fixed_joint_lump__Link_1_visual_1">
+          <pose>-0.235167 0.112679 0.02 1.5708 -0 2.61799</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>model://landing_box/meshes/Link_1.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <ambient>0.95 0.68 0.10 1</ambient>
+            <diffuse>1.00 0.78 0.12 1</diffuse>
+            <specular>0.05 0.04 0.02 1</specular>
+          </material>
+          <cast_shadows>true</cast_shadows>
+        </visual>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <link name="Link_2">
+        <collision name="base_link_fixed_joint_lump__Link_2_collision_2">
+          <pose>0.02 -0.26 0.37 -1.5708 -0 -1.5708</pose>
+          <geometry>
+            <box>
+              <size>0.02 0.7 0.02</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+            <friction>
+              <torsional>
+                <ode />
+              </torsional>
+              <ode />
+            </friction>
+          </surface>
+        </collision>
+        <visual name="base_link_fixed_joint_lump__Link_2_visual_2">
+          <pose>0.02 -0.26 0.02 -1.5708 -0 -1.5708</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>model://landing_box/meshes/Link_2.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <ambient>0.95 0.68 0.10 1</ambient>
+            <diffuse>1.00 0.78 0.12 1</diffuse>
+            <specular>0.05 0.04 0.02 1</specular>
+          </material>
+          <cast_shadows>true</cast_shadows>
+        </visual>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <link name="Link_3">
+        <collision name="base_link_fixed_joint_lump__Link_3_collision_3">
+          <pose>0.215167 0.147321 0.37 1.5708 -0 0.523599</pose>
+          <geometry>
+            <box>
+              <size>0.02 0.7 0.02</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+            <friction>
+              <torsional>
+                <ode />
+              </torsional>
+              <ode />
+            </friction>
+          </surface>
+        </collision>
+        <visual name="base_link_fixed_joint_lump__Link_3_visual_3">
+          <pose>0.215167 0.147321 0.02 1.5708 -0 0.523599</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>model://landing_box/meshes/Link_3.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <ambient>0.95 0.68 0.10 1</ambient>
+            <diffuse>1.00 0.78 0.12 1</diffuse>
+            <specular>0.05 0.04 0.02 1</specular>
+          </material>
+          <cast_shadows>true</cast_shadows>
+        </visual>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <link name="Link_4">
+        <collision name="base_link_fixed_joint_lump__Link_1_collision_4">
+          <pose>-0.235167 0.112679 0.73 1.5708 -0 2.61799</pose>
+          <geometry>
+            <box>
+              <size>0.02 0.02 0.3</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+            <friction>
+              <torsional>
+                <ode />
+              </torsional>
+              <ode />
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <link name="Link_5">
+        <collision name="base_link_fixed_joint_lump__Link_2_collision_5">
+          <pose>0.02 -0.26 0.73 -1.5708 -0 -1.5708</pose>
+          <geometry>
+            <box>
+              <size>0.02 0.02 0.3</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+            <friction>
+              <torsional>
+                <ode />
+              </torsional>
+              <ode />
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <link name="Link_6">
+        <collision name="base_link_fixed_joint_lump__Link_3_collision_6">
+          <pose>0.215167 0.147321 0.73 1.5708 -0 0.523599</pose>
+          <geometry>
+            <box>
+              <size>0.02 0.02 0.3</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+            <friction>
+              <torsional>
+                <ode />
+              </torsional>
+              <ode />
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <link name="Link_7">
+        <collision name="base_link_fixed_joint_lump__Link_1_collision_7">
+          <pose>0.235167 -0.112679 0.73 1.5708 -0 2.61799</pose>
+          <geometry>
+            <box>
+              <size>0.02 0.02 0.3</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+            <friction>
+              <torsional>
+                <ode />
+              </torsional>
+              <ode />
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <link name="Link_8">
+        <collision name="base_link_fixed_joint_lump__Link_2_collision_8">
+          <pose>-0.02 0.26 0.73 -1.5708 -0 -1.5708</pose>
+          <geometry>
+            <box>
+              <size>0.02 0.02 0.3</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+            <friction>
+              <torsional>
+                <ode />
+              </torsional>
+              <ode />
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <link name="Link_9">
+        <collision name="base_link_fixed_joint_lump__Link_3_collision_9">
+          <pose>-0.215167 -0.147321 0.73 1.5708 -0 0.523599</pose>
+          <geometry>
+            <box>
+              <size>0.02 0.02 0.3</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+            <friction>
+              <torsional>
+                <ode />
+              </torsional>
+              <ode />
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>false</self_collide>
+        <enable_wind>false</enable_wind>
+        <kinematic>false</kinematic>
+      </link>
+      <pose>0 0 0.012 0 0 0</pose>
+    </model>
+    <light name="soft_ceiling_fill" type="point">
+      <pose>0 0 4.5 0 0 0</pose>
+      <cast_shadows>false</cast_shadows>
+      <intensity>0.65</intensity>
+      <diffuse>0.92 0.96 1 1</diffuse>
+      <specular>0.15 0.15 0.15 1</specular>
+      <attenuation>
+        <range>12</range>
+        <constant>0.7</constant>
+        <linear>0.08</linear>
+        <quadratic>0.01</quadratic>
+      </attenuation>
+    </light>
+    <light name="landing_zone_fill" type="point">
+      <pose>0 0 2.2 0 0 0</pose>
+      <cast_shadows>false</cast_shadows>
+      <intensity>0.45</intensity>
+      <diffuse>0.75 0.95 0.85 1</diffuse>
+      <specular>0.10 0.10 0.10 1</specular>
+      <attenuation>
+        <range>5</range>
+        <constant>0.8</constant>
+        <linear>0.15</linear>
+        <quadratic>0.03</quadratic>
+      </attenuation>
+    </light>
+    <model name="landing_zone_mat">
+      <static>true</static>
+      <pose>0 0 0.018 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1.80 1.80 0.006</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.05 0.09 0.10 1</ambient>
+            <diffuse>0.06 0.12 0.13 1</diffuse>
+            <specular>0.02 0.02 0.02 1</specular>
+          </material>
+          <transparency>0.10</transparency>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+      </link>
+    </model>
+    <model name="landing_zone_center">
+      <static>true</static>
+      <pose>0 0 0.024 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.72 0.72 0.004</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.00 0.35 0.22 1</ambient>
+            <diffuse>0.00 0.60 0.36 1</diffuse>
+            <specular>0.02 0.02 0.02 1</specular>
+          </material>
+          <transparency>0.18</transparency>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+      </link>
+    </model>
+    <model name="landing_zone_border_n">
+      <static>true</static>
+      <pose>0 0.92 0.03 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1.90 0.06 0.008</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>1.00 0.74 0.10 1</ambient>
+            <diffuse>1.00 0.74 0.10 1</diffuse>
+            <specular>0.02 0.02 0.02 1</specular>
+          </material>
+          <transparency>0</transparency>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+      </link>
+    </model>
+    <model name="landing_zone_border_s">
+      <static>true</static>
+      <pose>0 -0.92 0.03 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1.90 0.06 0.008</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>1.00 0.74 0.10 1</ambient>
+            <diffuse>1.00 0.74 0.10 1</diffuse>
+            <specular>0.02 0.02 0.02 1</specular>
+          </material>
+          <transparency>0</transparency>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+      </link>
+    </model>
+    <model name="landing_zone_border_e">
+      <static>true</static>
+      <pose>0.92 0 0.03 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.06 1.90 0.008</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>1.00 0.74 0.10 1</ambient>
+            <diffuse>1.00 0.74 0.10 1</diffuse>
+            <specular>0.02 0.02 0.02 1</specular>
+          </material>
+          <transparency>0</transparency>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+      </link>
+    </model>
+    <model name="landing_zone_border_w">
+      <static>true</static>
+      <pose>-0.92 0 0.03 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.06 1.90 0.008</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>1.00 0.74 0.10 1</ambient>
+            <diffuse>1.00 0.74 0.10 1</diffuse>
+            <specular>0.02 0.02 0.02 1</specular>
+          </material>
+          <transparency>0</transparency>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+      </link>
+    </model>
+    <model name="clearance_mark_x">
+      <static>true</static>
+      <pose>0 0 0.034 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1.55 0.035 0.006</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.95 0.95 0.90 1</ambient>
+            <diffuse>0.95 0.95 0.90 1</diffuse>
+            <specular>0.02 0.02 0.02 1</specular>
+          </material>
+          <transparency>0.05</transparency>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+      </link>
+    </model>
+    <model name="clearance_mark_y">
+      <static>true</static>
+      <pose>0 0 0.035 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.035 1.55 0.006</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.95 0.95 0.90 1</ambient>
+            <diffuse>0.95 0.95 0.90 1</diffuse>
+            <specular>0.02 0.02 0.02 1</specular>
+          </material>
+          <transparency>0.05</transparency>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+      </link>
+    </model>
+    <model name="clearance_lane_left">
+      <static>true</static>
+      <pose>-0.55 -2.65 0.026 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.06 2.0 0.005</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.18 0.75 0.55 1</ambient>
+            <diffuse>0.18 0.75 0.55 1</diffuse>
+            <specular>0.02 0.02 0.02 1</specular>
+          </material>
+          <transparency>0.25</transparency>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+      </link>
+    </model>
+    <model name="clearance_lane_right">
+      <static>true</static>
+      <pose>0.55 -2.65 0.026 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.06 2.0 0.005</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.18 0.75 0.55 1</ambient>
+            <diffuse>0.18 0.75 0.55 1</diffuse>
+            <specular>0.02 0.02 0.02 1</specular>
+          </material>
+          <transparency>0.25</transparency>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>
