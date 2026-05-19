@@ -1,44 +1,11 @@
-############################################################################
-#
-#   Copyright (c) 2019 PX4 Development Team. All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-#
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in
-#    the documentation and/or other materials provided with the
-#    distribution.
-# 3. Neither the name PX4 nor the names of its contributors may be
-#    used to endorse or promote products derived from this software
-#    without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
-# OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
-# AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-#
-############################################################################
-
 # Metadata - helpers for generating documentation
 
 add_custom_target(metadata_airframes
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${PX4_BINARY_DIR}/docs
-	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/px_process_airframes.py
+	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/python_scripts/px_process_airframes.py
 		-v -a ${PX4_SOURCE_DIR}/ROMFS/px4fmu_common/init.d
 		--markdown ${PX4_BINARY_DIR}/docs/airframes.md
-	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/px_process_airframes.py
+	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/python_scripts/px_process_airframes.py
 		-v -a ${PX4_SOURCE_DIR}/ROMFS/px4fmu_common/init.d
 		--xml ${PX4_BINARY_DIR}/docs/airframes.xml
 	COMMENT "Generating full airframe metadata (markdown and xml)"
@@ -86,18 +53,18 @@ add_custom_target(metadata_parameters
 	USES_TERMINAL
 )
 
-add_custom_target(metadata_module_documentation
-	COMMAND ${CMAKE_COMMAND} -E make_directory ${PX4_BINARY_DIR}/docs
-	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/px_process_module_doc.py -v --src-path ${PX4_SOURCE_DIR}/src
-		--markdown ${PX4_BINARY_DIR}/docs/modules
-	COMMENT "Generating module documentation"
-	USES_TERMINAL
-)
+# add_custom_target(metadata_module_documentation
+# 	COMMAND ${CMAKE_COMMAND} -E make_directory ${PX4_BINARY_DIR}/docs
+# 	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/python_scripts/px_process_module_doc.py -v --src-path ${PX4_SOURCE_DIR}/src
+# 		--markdown ${PX4_BINARY_DIR}/docs/modules
+# 	COMMENT "Generating module documentation"
+# 	USES_TERMINAL
+# )
 
 set(events_src_path "${PX4_SOURCE_DIR}/src/lib/events")
 add_custom_target(metadata_extract_events
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${PX4_BINARY_DIR}/events
-	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/px_process_events.py
+	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/python_scripts/px_process_events.py
 		--src-path ${PX4_SOURCE_DIR}/src
 		--json ${PX4_BINARY_DIR}/events/px4_full.json #--verbose
 	COMMAND ${PYTHON_EXECUTABLE} ${events_src_path}/libevents/scripts/combine.py
@@ -107,7 +74,7 @@ add_custom_target(metadata_extract_events
 		--output ${PX4_BINARY_DIR}/events/all_events_full.json
 	COMMAND ${PYTHON_EXECUTABLE} ${events_src_path}/libevents/scripts/validate.py
 		${PX4_BINARY_DIR}/events/all_events_full.json
-	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/compress.py
+	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/python_scripts/compress.py
 		${PX4_BINARY_DIR}/events/all_events_full.json
 	COMMENT "Extracting events from full source"
 	USES_TERMINAL
@@ -117,6 +84,5 @@ add_custom_target(all_metadata
 	DEPENDS
 		metadata_airframes
 		metadata_parameters
-		metadata_module_documentation
 		metadata_extract_events
 )

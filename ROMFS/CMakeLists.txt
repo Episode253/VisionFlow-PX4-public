@@ -126,7 +126,7 @@ add_custom_command(
 		${jinja_templates}
 		${module_config_files}
 		${romfs_cmake_files}
-		${PX4_SOURCE_DIR}/Tools/px_process_airframes.py
+		${PX4_SOURCE_DIR}/Tools/python_scripts/px_process_airframes.py
 		${PX4_SOURCE_DIR}/Tools/px4airframes/markdownout.py
 		${PX4_SOURCE_DIR}/Tools/px4airframes/rcout.py
 		${PX4_SOURCE_DIR}/Tools/px4airframes/srcparser.py
@@ -146,7 +146,7 @@ add_custom_command(
 		${romfs_copy_stamp}
 	COMMAND ${CMAKE_COMMAND} -E remove_directory ${romfs_gen_root_dir}/*
 	COMMAND ${CMAKE_COMMAND} -E tar xf ${romfs_tar_file}
-	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/px_process_airframes.py
+	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/python_scripts/px_process_airframes.py
 		--airframes-path ${romfs_gen_root_dir}/init.d
 		--start-script ${romfs_gen_root_dir}/init.d/rc.autostart
 		--board ${PX4_BOARD}
@@ -399,12 +399,12 @@ add_custom_target(romfs_gen_files_target
 
 add_custom_command(
 	OUTPUT romfs_pruned.stamp
-	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/px_romfs_pruner.py --folder ${romfs_gen_root_dir} --board ${PX4_BOARD}
+	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/python_scripts/px_romfs_pruner.py --folder ${romfs_gen_root_dir} --board ${PX4_BOARD}
 	COMMAND ${CMAKE_COMMAND} -E touch romfs_pruned.stamp
 	DEPENDS
 		romfs_copy.stamp
 		romfs_extras.stamp
-		${PX4_SOURCE_DIR}/Tools/px_romfs_pruner.py
+		${PX4_SOURCE_DIR}/Tools/python_scripts/px_romfs_pruner.py
 	COMMENT "ROMFS: pruning"
 	)
 

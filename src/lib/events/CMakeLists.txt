@@ -47,13 +47,13 @@ set(generated_events_px4_file ${generated_events_dir}/px4.json)
 set(generated_events_common_enums_file ${generated_events_dir}/common_with_enums.json)
 add_custom_command(OUTPUT ${generated_events_px4_file}
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_events_dir}
-	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/px_process_events.py
+	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/python_scripts/px_process_events.py
 		--base-path ${PX4_SOURCE_DIR}/src
 		--src-path ${all_px4_src_files_relative}
 		--json ${generated_events_px4_file} #--verbose
 	DEPENDS
 		${all_px4_src_files}
-		${PX4_SOURCE_DIR}/Tools/px_process_events.py
+		${PX4_SOURCE_DIR}/Tools/python_scripts/px_process_events.py
 		${PX4_SOURCE_DIR}/Tools/px4events/jsonout.py
 		${PX4_SOURCE_DIR}/Tools/px4events/srcparser.py
 		${PX4_SOURCE_DIR}/Tools/px4events/srcscanner.py
@@ -70,14 +70,14 @@ add_custom_command(OUTPUT ${generated_events_file} ${generated_events_file}.xz
 		--output ${generated_events_file}
 	COMMAND ${PYTHON_EXECUTABLE} libevents/scripts/validate.py
 		${generated_events_file}
-	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/compress.py
+	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/python_scripts/compress.py
 		${generated_events_file}
 	DEPENDS
 		${generated_events_px4_file}
 		${generated_events_common_enums_file}
 		libevents/scripts/combine.py
 		libevents/scripts/validate.py
-		${PX4_SOURCE_DIR}/Tools/compress.py
+		${PX4_SOURCE_DIR}/Tools/python_scripts/compress.py
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	COMMENT "Generating combined event json file"
 )

@@ -120,7 +120,7 @@ add_custom_command(OUTPUT ${parameters_xml} ${parameters_json} ${parameters_json
 		--board ${PX4_BOARD}
 		${READONLY_PARAMS_ARG}
 		#--verbose
-	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/validate_json.py
+	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/python_scripts/validate_json.py
 		--schema-file ${PX4_SOURCE_DIR}/src/modules/mavlink/mavlink/component_information/parameter.schema.json
 		${parameters_json}
 		--skip-if-no-schema # mavlink submodule might not exist for current target if built in CI
