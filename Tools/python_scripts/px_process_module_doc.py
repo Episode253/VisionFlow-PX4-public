@@ -43,6 +43,12 @@ from __future__ import print_function
 import sys
 import os
 import argparse
+
+# Add parent directory to path to find px4moduledoc module
+script_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(script_dir)
+sys.path.insert(0, parent_dir)
+
 from px4moduledoc import srcscanner, srcparser, markdownout
 
 import re
