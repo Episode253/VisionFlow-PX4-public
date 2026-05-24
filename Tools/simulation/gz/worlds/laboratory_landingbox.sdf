@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <sdf version="1.9">
-  <world name="laboratory">
+  <world name="laboratory_landingbox">
     <physics type="ode">
       <ode>
         <solver>
