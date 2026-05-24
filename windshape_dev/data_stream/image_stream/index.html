@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TI5 Camera Monitor</title>
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #1f2937;
+      --line: #374151;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #38bdf8;
+      --danger: #f97316;
+      --ok: #22c55e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: radial-gradient(circle at top, #1e293b, var(--bg));
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 22px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    .subtitle {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1.4fr 0.8fr auto auto auto auto;
+      gap: 10px;
+      align-items: center;
+      padding: 14px;
+      margin-bottom: 16px;
+      background: rgba(17, 24, 39, 0.88);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    input, select {
+      width: 100%;
+      background: #0b1220;
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 10px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    button {
+      border: 0;
+      padding: 10px 13px;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #08111f;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button.secondary {
+      background: #94a3b8;
+    }
+
+    button.danger {
+      background: var(--danger);
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--ok);
+      box-shadow: 0 0 12px rgba(34,197,94,.8);
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .layout-1 {
+      grid-template-columns: 1fr;
+    }
+
+    .layout-2 {
+      grid-template-columns: repeat(2, minmax(360px, 1fr));
+    }
+
+    .layout-4 {
+      grid-template-columns: repeat(2, minmax(360px, 1fr));
+    }
+
+    .layout-8 {
+      grid-template-columns: repeat(4, minmax(260px, 1fr));
+    }
+
+    .card {
+      background: rgba(31, 41, 55, 0.88);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(0,0,0,.18);
+    }
+
+    .card-head {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(15, 23, 42, 0.75);
+    }
+
+    .title {
+      font-weight: 800;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .topic {
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .view {
+      width: 100%;
+      height: 360px;
+      object-fit: contain;
+      display: block;
+      background: #020617;
+    }
+
+    .layout-1 .view {
+      height: 720px;
+    }
+
+    .layout-2 .view {
+      height: 520px;
+    }
+
+    .layout-8 .view {
+      height: 260px;
+    }
+
+    .small-btn {
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+
+    .hint {
+      margin-top: 16px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      color: var(--muted);
+      background: rgba(17, 24, 39, 0.7);
+      line-height: 1.65;
+      font-size: 13px;
+    }
+
+    code {
+      color: #bae6fd;
+    }
+
+    @media (max-width: 1100px) {
+      .toolbar {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .layout-8 {
+        grid-template-columns: repeat(2, minmax(300px, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .layout-2,
+      .layout-4,
+      .layout-8 {
+        grid-template-columns: 1fr;
+      }
+
+      .view,
+      .layout-1 .view,
+      .layout-2 .view,
+      .layout-8 .view {
+        height: 300px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Camera Monitor</h1>
+    <p class="subtitle">
+      Multi-view image monitor based on ROS 2 web_video_server. RGB and depth streams can be switched freely.
+    </p>
+
+    <div class="toolbar">
+      <div>
+        <label for="videoServer">web_video_server</label>
+        <input id="videoServer" type="text" value="http://127.0.0.1:8080" />
+      </div>
+
+      <div>
+        <label for="layoutSelect">Layout</label>
+        <select id="layoutSelect">
+          <option value="1">1 View</option>
+          <option value="2">2 Views</option>
+          <option value="4" selected>4 Views</option>
+          <option value="8">8 Views</option>
+        </select>
+      </div>
+
+      <button id="rgbBtn">Show 4 RGB</button>
+      <button id="depthBtn" class="secondary">Show 4 Depth</button>
+      <button id="mixedBtn" class="secondary">Mixed</button>
+      <button id="refreshBtn" class="danger">Refresh</button>
+    </div>
+
+    <div class="status">
+      <span class="dot"></span>
+      <span id="statusText">Using stream server: http://127.0.0.1:8080</span>
+    </div>
+
+    <br />
+
+    <div id="grid" class="grid layout-4"></div>
+
+    <!-- <div class="hint">
+      <div>Direct stream test: <code>http://127.0.0.1:8080/stream?topic=/oakd2/rgb/image</code></div>
+      <div>This page must use absolute stream URLs from port <code>8080</code>. Do not use relative paths like <code>/stream?topic=...</code> on port <code>8000</code>.</div>
+    </div> -->
+  </div>
+
+<script>
+const allStreams = [
+  { name: "OAKD1 RGB",   topic: "/oakd1/rgb/image" },
+  { name: "OAKD2 RGB",   topic: "/oakd2/rgb/image" },
+  { name: "OAKD3 RGB",   topic: "/oakd3/rgb/image" },
+  { name: "OAKD4 RGB",   topic: "/oakd4/rgb/image" },
+  { name: "OAKD1 Depth", topic: "/oakd1/depth/image" },
+  { name: "OAKD2 Depth", topic: "/oakd2/depth/image" },
+  { name: "OAKD3 Depth", topic: "/oakd3/depth/image" },
+  { name: "OAKD4 Depth", topic: "/oakd4/depth/image" },
+];
+
+const rgbStreams = allStreams.slice(0, 4);
+const depthStreams = allStreams.slice(4, 8);
+const mixedStreams = [
+  allStreams[0],
+  allStreams[4],
+  allStreams[1],
+  allStreams[5],
+];
+
+let activeStreams = [...rgbStreams];
+
+const grid = document.getElementById("grid");
+const layoutSelect = document.getElementById("layoutSelect");
+const videoServerInput = document.getElementById("videoServer");
+const statusText = document.getElementById("statusText");
+
+function getVideoServer() {
+  return videoServerInput.value.trim().replace(/\/$/, "");
+}
+
+function streamUrl(topic) {
+  const base = getVideoServer();
+  return `${base}/stream?topic=${topic}&t=${Date.now()}`;
+}
+
+function optionList(selectedTopic) {
+  return allStreams.map(s => {
+    const selected = s.topic === selectedTopic ? "selected" : "";
+    return `<option value="${s.topic}" ${selected}>${s.name}</option>`;
+  }).join("");
+}
+
+function render() {
+  const layout = Number(layoutSelect.value);
+  grid.className = `grid layout-${layout}`;
+
+  const streams = activeStreams.slice(0, layout);
+
+  while (streams.length < layout) {
+    streams.push(allStreams[streams.length % allStreams.length]);
+  }
+
+  grid.innerHTML = "";
+
+  streams.forEach((stream, index) => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+      <div class="card-head">
+        <div>
+          <div class="title" id="title-${index}">${stream.name}</div>
+          <div class="topic" id="topic-${index}">${stream.topic}</div>
+        </div>
+
+        <select id="select-${index}">
+          ${optionList(stream.topic)}
+        </select>
+
+        <button class="small-btn secondary" id="reload-${index}">Reload</button>
+      </div>
+
+      <img
+        id="img-${index}"
+        class="view"
+        alt="${stream.name}"
+        src="${streamUrl(stream.topic)}"
+      />
+    `;
+
+    grid.appendChild(card);
+
+    const select = document.getElementById(`select-${index}`);
+    const img = document.getElementById(`img-${index}`);
+    const title = document.getElementById(`title-${index}`);
+    const topicEl = document.getElementById(`topic-${index}`);
+    const reload = document.getElementById(`reload-${index}`);
+
+    select.addEventListener("change", () => {
+      const topic = select.value;
+      const found = allStreams.find(s => s.topic === topic) || { name: topic, topic };
+
+      activeStreams[index] = found;
+      title.textContent = found.name;
+      topicEl.textContent = found.topic;
+      img.src = streamUrl(found.topic);
+    });
+
+    reload.addEventListener("click", () => {
+      img.src = streamUrl(select.value);
+    });
+
+    img.addEventListener("dblclick", () => {
+      activeStreams = [allStreams.find(s => s.topic === select.value) || stream];
+      layoutSelect.value = "1";
+      render();
+    });
+  });
+
+  statusText.textContent = `Using stream server: ${getVideoServer()}`;
+}
+
+document.getElementById("rgbBtn").addEventListener("click", () => {
+  activeStreams = [...rgbStreams];
+  layoutSelect.value = "4";
+  render();
+});
+
+document.getElementById("depthBtn").addEventListener("click", () => {
+  activeStreams = [...depthStreams];
+  layoutSelect.value = "4";
+  render();
+});
+
+document.getElementById("mixedBtn").addEventListener("click", () => {
+  activeStreams = [...mixedStreams];
+  layoutSelect.value = "4";
+  render();
+});
+
+document.getElementById("refreshBtn").addEventListener("click", render);
+
+layoutSelect.addEventListener("change", render);
+videoServerInput.addEventListener("change", render);
+
+render();
+</script>
+</body>
+</html>
