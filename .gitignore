@@ -118,3 +118,5 @@ _emscripten_sdk/
 
 .vscode/
 .github/
+
+windshape_dev/arm_control/log/
