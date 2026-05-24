@@ -1,36 +1,3 @@
-/****************************************************************************
- *
- *   Copyright (c) 2013-2023 PX4 Development Team. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name PX4 nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- ****************************************************************************/
-
 /**
  * @file Commander.cpp
  *
@@ -633,9 +600,21 @@ transition_result_t Commander::arm(arm_disarm_reason_t calling_reason, bool run_
 			if (!_failsafe_flags.manual_control_signal_lost) {
 				bool throttle_safe;
 
-				if (_vehicle_status.vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROVER) {
-					// Rovers: center stick = stop, safe to arm near center
-					throttle_safe = (fabsf(_last_manual_throttle) < 0.2f);
+				int32_t mav_type = 0;
+
+				if (_param_mav_type != PARAM_INVALID) {
+					param_get(_param_mav_type, &mav_type);
+				}
+
+				const bool is_rover = (_vehicle_status.vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROVER)
+						       || (mav_type == 10); // MAV_TYPE_GROUND_ROVER
+
+				if (is_rover) {
+					// Custom rover SITL:
+					// - Centered throttle means stop for bidirectional driving.
+					// - Bottom throttle is also accepted for compatibility with PX4/QGC arming checks.
+					// - Forward throttle remains unsafe to avoid arming while commanding forward motion.
+					throttle_safe = (fabsf(_last_manual_throttle) < 0.2f) || (_last_manual_throttle < -0.8f);
 
 				} else if (_vehicle_control_mode.flag_control_climb_rate_enabled) {
 					// Climb-rate modes (AltCtl, PosCtl, etc.): center = hover, safe at or below center
