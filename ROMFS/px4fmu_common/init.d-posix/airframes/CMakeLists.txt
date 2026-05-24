@@ -4,6 +4,7 @@ px4_add_romfs_files(
 	4002_gz_x500_depth
 	4005_gz_x500_vision
 	4006_gz_px4vision
+	4009_gz_differential_rover
 	4010_gz_x500_mono_cam
 	4011_gz_lawnmower
 	4013_gz_x500_lidar_2d
