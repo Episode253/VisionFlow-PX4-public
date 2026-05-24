@@ -72,7 +72,7 @@
     <include>
       <name>oakd_lite_four</name>
       <uri>model://OakD-lite</uri>
-      <pose relative_to="base_link">0.030 -0.008 -0.62 0 1.5708 -1.5708</pose>
+      <pose relative_to="base_link">0.030 -0.015 -0.62 0 1.5708 -1.5708</pose>
     </include>
 
     <joint name="base_oakd_lite_four_joint" type="fixed">
