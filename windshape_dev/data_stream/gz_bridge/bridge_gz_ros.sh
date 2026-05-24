@@ -3,7 +3,8 @@ set -eo pipefail
 
 source /opt/ros/humble/setup.bash
 
-WORLD="/world/laboratory/model/q940_ti_0"
+# Update the world model names in a timely manner
+WORLD="/world/laboratory_landingbox/model/q940_ti_0"
 
 OAKD1="${WORLD}/model/oakd_lite_one/link/camera_link/sensor"
 OAKD2="${WORLD}/model/oakd_lite_two/link/camera_link/sensor"
