@@ -46,14 +46,14 @@
         <limit>
           <lower>-3.14</lower>
           <upper>3.14</upper>
-          <effort>10</effort>
+          <effort>180</effort>
           <velocity>3.0</velocity>
         </limit>
         <dynamics>
           <damping>0.5</damping>
-          <friction>0</friction>
+          <friction>0.01</friction>
           <spring_reference>0</spring_reference>
-          <spring_stiffness>0.05</spring_stiffness>
+          <spring_stiffness>0</spring_stiffness>
         </dynamics>
       </axis>
     </joint>
@@ -99,14 +99,14 @@
         <limit>
           <lower>-1.9</lower>
           <upper>1.9</upper>
-          <effort>10</effort>
+          <effort>200</effort>
           <velocity>3.0</velocity>
         </limit>
         <dynamics>
           <damping>0.5</damping>
-          <friction>0</friction>
+          <friction>0.01</friction>
           <spring_reference>0</spring_reference>
-          <spring_stiffness>0.05</spring_stiffness>
+          <spring_stiffness>0</spring_stiffness>
         </dynamics>
       </axis>
     </joint>
@@ -151,14 +151,14 @@
         <limit>
           <lower>-2.86</lower>
           <upper>2.86</upper>
-          <effort>10</effort>
+          <effort>80</effort>
           <velocity>3.0</velocity>
         </limit>
         <dynamics>
-          <damping>0.01</damping>
-          <friction>0</friction>
+          <damping>0.5</damping>
+          <friction>0.01</friction>
           <spring_reference>0</spring_reference>
-          <spring_stiffness>0.2</spring_stiffness>
+          <spring_stiffness>0</spring_stiffness>
         </dynamics>
       </axis>
     </joint>
@@ -204,12 +204,12 @@
         <limit>
           <lower>-3.14</lower>
           <upper>3.14</upper>
-          <effort>10</effort>
+          <effort>20</effort>
           <velocity>3.0</velocity>
         </limit>
         <dynamics>
-          <damping>0.01</damping>
-          <friction>0</friction>
+          <damping>0.5</damping>
+          <friction>0.01</friction>
           <spring_reference>0</spring_reference>
           <spring_stiffness>0</spring_stiffness>
         </dynamics>
@@ -260,10 +260,10 @@
           <velocity>3.0</velocity>
         </limit>
         <dynamics>
-          <damping>0.001</damping>
-          <friction>0</friction>
+          <damping>0.5</damping>
+          <friction>0.01</friction>
           <spring_reference>0</spring_reference>
-          <spring_stiffness>0.1</spring_stiffness>
+          <spring_stiffness>0</spring_stiffness>
         </dynamics>
       </axis>
     </joint>
@@ -309,12 +309,12 @@
         <limit>
           <lower>-3.14</lower>
           <upper>3.14</upper>
-          <effort>10</effort>
+          <effort>20</effort>
           <velocity>3.0</velocity>
         </limit>
         <dynamics>
-          <damping>0.0001</damping>
-          <friction>0</friction>
+          <damping>0.5</damping>
+          <friction>0.01</friction>
           <spring_reference>0</spring_reference>
           <spring_stiffness>0</spring_stiffness>
         </dynamics>
@@ -375,63 +375,63 @@
       <joint_name>A</joint_name>
       <joint_index>0</joint_index>
       <topic>/joint/1/position_cmd</topic>
-      <p_gain>8.0</p_gain>
-      <i_gain>0.3</i_gain>
-      <d_gain>0.1</d_gain>
-      <i_max>1.0</i_max>
-      <i_min>-1.0</i_min>
-      <cmd_max>10.0</cmd_max>
-      <cmd_min>-10.0</cmd_min>
+      <p_gain>85.0</p_gain>
+      <i_gain>0.0</i_gain>
+      <d_gain>0.65</d_gain>
+      <i_max>0.0</i_max>
+      <i_min>0.0</i_min>
+      <cmd_max>180.0</cmd_max>
+      <cmd_min>-180.0</cmd_min>
       <initial_position>0.0</initial_position>
     </plugin>
     <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
       <joint_name>B</joint_name>
       <joint_index>0</joint_index>
       <topic>/joint/2/position_cmd</topic>
-      <p_gain>10.0</p_gain>
-      <i_gain>0.1</i_gain>
-      <d_gain>0.03</d_gain>
-      <i_max>1.0</i_max>
-      <i_min>-1.0</i_min>
-      <cmd_max>10.0</cmd_max>
-      <cmd_min>-10.0</cmd_min>
+      <p_gain>95.0</p_gain>
+      <i_gain>0.0</i_gain>
+      <d_gain>0.65</d_gain>
+      <i_max>0.0</i_max>
+      <i_min>0.0</i_min>
+      <cmd_max>200.0</cmd_max>
+      <cmd_min>-200.0</cmd_min>
       <initial_position>0.0</initial_position>
     </plugin>
     <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
       <joint_name>C</joint_name>
       <joint_index>0</joint_index>
       <topic>/joint/3/position_cmd</topic>
-      <p_gain>12.0</p_gain>
+      <p_gain>50.0</p_gain>
       <i_gain>0.0</i_gain>
-      <d_gain>0.0</d_gain>
-      <i_max>1.0</i_max>
-      <i_min>-1.0</i_min>
-      <cmd_max>10.0</cmd_max>
-      <cmd_min>-10.0</cmd_min>
+      <d_gain>0.55</d_gain>
+      <i_max>0.0</i_max>
+      <i_min>0.0</i_min>
+      <cmd_max>80.0</cmd_max>
+      <cmd_min>-80.0</cmd_min>
       <initial_position>0.0</initial_position>
     </plugin>
     <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
       <joint_name>D</joint_name>
       <joint_index>0</joint_index>
       <topic>/joint/4/position_cmd</topic>
-      <p_gain>8.0</p_gain>
+      <p_gain>10.0</p_gain>
       <i_gain>0.0</i_gain>
-      <d_gain>0.0</d_gain>
-      <i_max>1.0</i_max>
-      <i_min>-1.0</i_min>
-      <cmd_max>10.0</cmd_max>
-      <cmd_min>-10.0</cmd_min>
+      <d_gain>0.20</d_gain>
+      <i_max>0.0</i_max>
+      <i_min>0.0</i_min>
+      <cmd_max>20.0</cmd_max>
+      <cmd_min>-20.0</cmd_min>
       <initial_position>0.0</initial_position>
     </plugin>
     <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
       <joint_name>E</joint_name>
       <joint_index>0</joint_index>
       <topic>/joint/5/position_cmd</topic>
-      <p_gain>5.0</p_gain>
+      <p_gain>5.5</p_gain>
       <i_gain>0.0</i_gain>
-      <d_gain>0.0</d_gain>
-      <i_max>1.0</i_max>
-      <i_min>-1.0</i_min>
+      <d_gain>0.18</d_gain>
+      <i_max>0.0</i_max>
+      <i_min>0.0</i_min>
       <cmd_max>10.0</cmd_max>
       <cmd_min>-10.0</cmd_min>
       <initial_position>-0.7854</initial_position>
@@ -440,13 +440,13 @@
       <joint_name>F</joint_name>
       <joint_index>0</joint_index>
       <topic>/joint/6/position_cmd</topic>
-      <p_gain>0.2</p_gain>
+      <p_gain>10.0</p_gain>
       <i_gain>0.0</i_gain>
-      <d_gain>0.0</d_gain>
-      <i_max>1.0</i_max>
-      <i_min>-1.0</i_min>
-      <cmd_max>10.0</cmd_max>
-      <cmd_min>-10.0</cmd_min>
+      <d_gain>0.28</d_gain>
+      <i_max>0.0</i_max>
+      <i_min>0.0</i_min>
+      <cmd_max>20.0</cmd_max>
+      <cmd_min>-20.0</cmd_min>
       <initial_position>-1.5708</initial_position>
     </plugin>
   </model>
