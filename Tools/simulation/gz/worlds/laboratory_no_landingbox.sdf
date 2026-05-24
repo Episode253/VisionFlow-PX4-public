@@ -29,6 +29,141 @@
       <background>0.78 0.80 0.82 1</background>
       <shadows>true</shadows>
     </scene>
+
+    <model name="debug_world_axes">
+      <static>true</static>
+      <pose>-0.92 -0.92 0 0 0 0</pose>
+
+      <link name="axes_link">
+
+        <!-- local origin marker: small soft yellow dot -->
+        <visual name="origin_dot">
+          <pose>0 0 0.055 0 0 0</pose>
+          <geometry>
+            <sphere>
+              <radius>0.028</radius>
+            </sphere>
+          </geometry>
+          <material>
+            <ambient>0.75 0.65 0.15 0.55</ambient>
+            <diffuse>0.75 0.65 0.15 0.55</diffuse>
+            <emissive>0.08 0.06 0.00 1</emissive>
+          </material>
+          <transparency>0.10</transparency>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+
+        <!-- X axis: soft red, 2.0 m -->
+        <visual name="x_axis_red_line">
+          <pose>1.00 0 0.055 0 1.5708 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.006</radius>
+              <length>2.00</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.75 0.10 0.10 0.45</ambient>
+            <diffuse>0.75 0.10 0.10 0.45</diffuse>
+            <emissive>0.04 0.00 0.00 1</emissive>
+          </material>
+          <transparency>0.10</transparency>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+
+        <!-- X positive tip -->
+        <visual name="x_axis_tip">
+          <pose>2.04 0 0.055 0 1.5708 0</pose>
+          <geometry>
+            <cone>
+              <radius>0.026</radius>
+              <length>0.08</length>
+            </cone>
+          </geometry>
+          <material>
+            <ambient>0.75 0.10 0.10 0.45</ambient>
+            <diffuse>0.75 0.10 0.10 0.45</diffuse>
+            <emissive>0.04 0.00 0.00 1</emissive>
+          </material>
+          <transparency>0.10</transparency>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+
+        <!-- Y axis: soft green, 2.0 m -->
+        <visual name="y_axis_green_line">
+          <pose>0 1.00 0.065 -1.5708 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.006</radius>
+              <length>2.00</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.10 0.65 0.10 0.45</ambient>
+            <diffuse>0.10 0.65 0.10 0.45</diffuse>
+            <emissive>0.00 0.04 0.00 1</emissive>
+          </material>
+          <transparency>0.10</transparency>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+
+        <!-- Y positive tip -->
+        <visual name="y_axis_tip">
+          <pose>0 2.04 0.065 -1.5708 0 0</pose>
+          <geometry>
+            <cone>
+              <radius>0.026</radius>
+              <length>0.08</length>
+            </cone>
+          </geometry>
+          <material>
+            <ambient>0.10 0.65 0.10 0.45</ambient>
+            <diffuse>0.10 0.65 0.10 0.45</diffuse>
+            <emissive>0.00 0.04 0.00 1</emissive>
+          </material>
+          <transparency>0.10</transparency>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+
+        <!-- Z axis: soft blue vertical line -->
+        <visual name="z_axis_blue_line">
+          <pose>0 0 0.60 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.006</radius>
+              <length>1.20</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.10 0.20 0.80 0.45</ambient>
+            <diffuse>0.10 0.20 0.80 0.45</diffuse>
+            <emissive>0.00 0.00 0.05 1</emissive>
+          </material>
+          <transparency>0.10</transparency>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+
+        <!-- Z positive tip -->
+        <visual name="z_axis_tip">
+          <pose>0 0 1.24 0 0 0</pose>
+          <geometry>
+            <cone>
+              <radius>0.026</radius>
+              <length>0.08</length>
+            </cone>
+          </geometry>
+          <material>
+            <ambient>0.10 0.20 0.80 0.45</ambient>
+            <diffuse>0.10 0.20 0.80 0.45</diffuse>
+            <emissive>0.00 0.00 0.05 1</emissive>
+          </material>
+          <transparency>0.10</transparency>
+          <cast_shadows>false</cast_shadows>
+        </visual>
+
+      </link>
+    </model>
+
     <model name="ground_plane">
       <static>true</static>
       <link name="link">
