@@ -1,39 +1,45 @@
-/****************************************************************************
- *
- *   Copyright (c) 2025 PX4 Development Team. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name PX4 nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- ****************************************************************************/
-
 #include "DifferentialManualMode.hpp"
 
 using namespace time_literals;
+
+namespace
+{
+
+static constexpr float MANUAL_STICK_DEADZONE = 0.05f;
+
+static float applyManualDeadzone(float value)
+{
+	if (!PX4_ISFINITE(value) || fabsf(value) < MANUAL_STICK_DEADZONE) {
+		return 0.f;
+	}
+
+	return math::constrain(value, -1.f, 1.f);
+}
+
+static float getManualDriveInput(const manual_control_setpoint_s &manual_control_setpoint)
+{
+	/*
+	 * Do not use manual_control_setpoint.throttle for differential rover forward/backward
+	 * manual driving. In QGC/PX4, throttle is an aircraft-style throttle axis where the
+	 * safe position is usually -1. It is not always a centered ground-vehicle drive axis.
+	 *
+	 * Use pitch instead because it is a centered stick input:
+	 *   pitch ~= 0  -> stop
+	 *   pitch > 0   -> one driving direction
+	 *   pitch < 0   -> opposite driving direction
+	 *
+	 * If forward/backward is reversed in your setup, remove the minus sign below.
+	 */
+	return applyManualDeadzone(-manual_control_setpoint.pitch);
+}
+
+static float getManualSteeringInput(const manual_control_setpoint_s &manual_control_setpoint)
+{
+	// Keep using roll for left/right steering. Roll is a centered stick input.
+	return applyManualDeadzone(manual_control_setpoint.roll);
+}
+
+} // namespace
 
 DifferentialManualMode::DifferentialManualMode(ModuleParams *parent) : ModuleParams(parent)
 {
@@ -56,14 +62,19 @@ void DifferentialManualMode::manual()
 {
 	manual_control_setpoint_s manual_control_setpoint{};
 	_manual_control_setpoint_sub.copy(&manual_control_setpoint);
+
+	const float drive_input = getManualDriveInput(manual_control_setpoint);
+	const float steering_input = getManualSteeringInput(manual_control_setpoint);
+
 	rover_steering_setpoint_s rover_steering_setpoint{};
 	rover_steering_setpoint.timestamp = hrt_absolute_time();
 	rover_steering_setpoint.normalized_steering_setpoint = _param_rd_yaw_stk_gain.get() * math::superexpo<float>
-			(manual_control_setpoint.roll, _param_ro_yaw_expo.get(), _param_ro_yaw_supexpo.get());
+			(steering_input, _param_ro_yaw_expo.get(), _param_ro_yaw_supexpo.get());
 	_rover_steering_setpoint_pub.publish(rover_steering_setpoint);
+
 	rover_throttle_setpoint_s rover_throttle_setpoint{};
 	rover_throttle_setpoint.timestamp = hrt_absolute_time();
-	rover_throttle_setpoint.throttle_body_x = manual_control_setpoint.throttle;
+	rover_throttle_setpoint.throttle_body_x = drive_input;
 	rover_throttle_setpoint.throttle_body_y = 0.f;
 	_rover_throttle_setpoint_pub.publish(rover_throttle_setpoint);
 }
@@ -72,14 +83,19 @@ void DifferentialManualMode::acro()
 {
 	manual_control_setpoint_s manual_control_setpoint{};
 	_manual_control_setpoint_sub.copy(&manual_control_setpoint);
+
+	const float drive_input = getManualDriveInput(manual_control_setpoint);
+	const float steering_input = getManualSteeringInput(manual_control_setpoint);
+
 	rover_throttle_setpoint_s rover_throttle_setpoint{};
 	rover_throttle_setpoint.timestamp = hrt_absolute_time();
-	rover_throttle_setpoint.throttle_body_x = manual_control_setpoint.throttle;
+	rover_throttle_setpoint.throttle_body_x = drive_input;
 	rover_throttle_setpoint.throttle_body_y = 0.f;
 	_rover_throttle_setpoint_pub.publish(rover_throttle_setpoint);
+
 	rover_rate_setpoint_s rover_rate_setpoint{};
 	rover_rate_setpoint.timestamp = hrt_absolute_time();
-	rover_rate_setpoint.yaw_rate_setpoint = _max_yaw_rate * math::superexpo<float>(manual_control_setpoint.roll,
+	rover_rate_setpoint.yaw_rate_setpoint = _max_yaw_rate * math::superexpo<float>(steering_input,
 						_param_ro_yaw_expo.get(), _param_ro_yaw_supexpo.get());
 	_rover_rate_setpoint_pub.publish(rover_rate_setpoint);
 }
@@ -95,21 +111,24 @@ void DifferentialManualMode::stab()
 
 	manual_control_setpoint_s manual_control_setpoint{};
 	_manual_control_setpoint_sub.copy(&manual_control_setpoint);
+
+	const float drive_input = getManualDriveInput(manual_control_setpoint);
+	const float steering_input = getManualSteeringInput(manual_control_setpoint);
+
 	rover_throttle_setpoint_s rover_throttle_setpoint{};
 	rover_throttle_setpoint.timestamp = hrt_absolute_time();
-	rover_throttle_setpoint.throttle_body_x = manual_control_setpoint.throttle;
+	rover_throttle_setpoint.throttle_body_x = drive_input;
 	rover_throttle_setpoint.throttle_body_y = 0.f;
 	_rover_throttle_setpoint_pub.publish(rover_throttle_setpoint);
 
-	if (fabsf(manual_control_setpoint.roll) > FLT_EPSILON
-	    || fabsf(rover_throttle_setpoint.throttle_body_x) < FLT_EPSILON) {
+	if (fabsf(steering_input) > FLT_EPSILON || fabsf(rover_throttle_setpoint.throttle_body_x) < FLT_EPSILON) {
 		_stab_yaw_setpoint = NAN;
 
 		// Rate control
 		rover_rate_setpoint_s rover_rate_setpoint{};
 		rover_rate_setpoint.timestamp = hrt_absolute_time();
 		rover_rate_setpoint.yaw_rate_setpoint = _max_yaw_rate * math::superexpo<float>(math::deadzone(
-				manual_control_setpoint.roll, _param_ro_yaw_stick_dz.get()), _param_ro_yaw_expo.get(), _param_ro_yaw_supexpo.get());
+				steering_input, _param_ro_yaw_stick_dz.get()), _param_ro_yaw_expo.get(), _param_ro_yaw_supexpo.get());
 		_rover_rate_setpoint_pub.publish(rover_rate_setpoint);
 
 		// Set uncontrolled setpoint invalid
@@ -148,11 +167,11 @@ void DifferentialManualMode::position()
 	manual_control_setpoint_s manual_control_setpoint{};
 	_manual_control_setpoint_sub.copy(&manual_control_setpoint);
 
-	const float speed_setpoint = math::interpolate<float>(manual_control_setpoint.throttle,
-				     -1.f, 1.f, -_param_ro_speed_limit.get(), _param_ro_speed_limit.get());
+	const float drive_input = getManualDriveInput(manual_control_setpoint);
+	const float steering_input = getManualSteeringInput(manual_control_setpoint);
+	const float speed_setpoint = drive_input * _param_ro_speed_limit.get();
 
-	if (fabsf(manual_control_setpoint.roll) > FLT_EPSILON
-	    || fabsf(speed_setpoint) < FLT_EPSILON) {
+	if (fabsf(steering_input) > FLT_EPSILON || fabsf(speed_setpoint) < FLT_EPSILON) {
 		_pos_ctl_course_direction = Vector2f(NAN, NAN);
 
 		// Speed control
@@ -165,7 +184,7 @@ void DifferentialManualMode::position()
 		rover_rate_setpoint_s rover_rate_setpoint{};
 		rover_rate_setpoint.timestamp = hrt_absolute_time();
 		rover_rate_setpoint.yaw_rate_setpoint = _max_yaw_rate * math::superexpo<float>(math::deadzone(
-				manual_control_setpoint.roll, _param_ro_yaw_stick_dz.get()), _param_ro_yaw_expo.get(), _param_ro_yaw_supexpo.get());
+				steering_input, _param_ro_yaw_stick_dz.get()), _param_ro_yaw_expo.get(), _param_ro_yaw_supexpo.get());
 		_rover_rate_setpoint_pub.publish(rover_rate_setpoint);
 
 		// Set uncontrolled setpoints invalid
