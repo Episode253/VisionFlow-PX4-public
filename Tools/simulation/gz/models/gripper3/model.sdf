@@ -42,6 +42,7 @@
     </link>
 
     <link name="Empty_Link1">
+      <!-- High-symmetry reference side. Empty_Link2 is mirrored from this link. -->
       <pose>0.04 0 0.02 1.5708 0.90665 0</pose>
       <inertial>
         <pose>-0.021122 0.028354 -0.005583 0 0 0</pose>
@@ -98,8 +99,10 @@
           <velocity>1.0</velocity>
         </limit>
         <dynamics>
-          <damping>0.01</damping>
-          <friction>0</friction>
+          <!-- <damping>0.01</damping>
+          <friction>0</friction> -->
+          <damping>0.05</damping>
+          <friction>0.02</friction>
           <spring_reference>0</spring_reference>
           <spring_stiffness>0</spring_stiffness>
         </dynamics>
@@ -107,17 +110,18 @@
     </joint>
 
     <link name="Empty_Link2">
-      <pose>0.012 0 0.0195 -1.5708 0.96069 3.14159</pose>
+      <!-- High-symmetry version: mirrored from Empty_Link1 around x = 0.026, with matching z and pitch. -->
+      <pose>0.012 0 0.02 -1.5708 0.90665 3.14159</pose>
       <inertial>
-        <pose>-0.019265 -0.025888 -0.004777 0 0 0</pose>
+        <pose>-0.021122 -0.028354 -0.005583 0 0 0</pose>
         <mass>0.1</mass>
         <inertia>
-          <ixx>1.6519e-06</ixx>
-          <ixy>-1.216e-06</ixy>
-          <ixz>-7.2546e-17</ixz>
-          <iyy>1.5595e-06</iyy>
-          <iyz>-3.2073e-16</iyz>
-          <izz>2.886e-06</izz>
+          <ixx>1.1931e-05</ixx>
+          <ixy>-8.7376e-06</ixy>
+          <ixz>-1.3248e-16</ixz>
+          <iyy>8.789e-06</iyy>
+          <iyz>2.1751e-17</iyz>
+          <izz>2.0324e-05</izz>
         </inertia>
       </inertial>
 
@@ -163,8 +167,10 @@
           <velocity>1.0</velocity>
         </limit>
         <dynamics>
-          <damping>0.01</damping>
-          <friction>0</friction>
+          <!-- <damping>0.01</damping>
+          <friction>0</friction> -->
+          <damping>0.05</damping>
+          <friction>0.02</friction>
           <spring_reference>0</spring_reference>
           <spring_stiffness>0</spring_stiffness>
         </dynamics>
@@ -189,7 +195,8 @@
     </plugin>
 
     <!-- Gazebo Sim / ROS 2 Humble: joint position control for finger 2.
-         joint2 axis is 0 0 -1, so using the same target angle as joint1 produces symmetric motion. -->
+         joint2 axis is 0 0 -1, so using the same target angle as joint1 produces symmetric motion.
+         Important: keep PID and command limits identical to joint1, otherwise the two fingers will not track symmetrically. -->
     <plugin
       filename="gz-sim-joint-position-controller-system"
       name="gz::sim::systems::JointPositionController">
@@ -213,6 +220,19 @@
       <topic>/gripper3/joint_state</topic>
       <joint_name>joint1</joint_name>
       <joint_name>joint2</joint_name>
+    </plugin>
+
+    <!-- Ground-truth odometry publisher for gripper3 base link -->
+    <plugin
+      filename="gz-sim-odometry-publisher-system"
+      name="gz::sim::systems::OdometryPublisher">
+      <dimensions>3</dimensions>
+      <odom_frame>world</odom_frame>
+      <robot_base_frame>gripper3_base_link</robot_base_frame>
+      <odom_publish_frequency>200</odom_publish_frequency>
+      <odom_topic>/model/q940_ti_0/model/gripper3/odometry</odom_topic>
+      <odom_covariance_topic>/model/q940_ti_0/model/gripper3/odometry_with_covariance</odom_covariance_topic>
+      <tf_topic>/model/q940_ti_0/model/gripper3/pose_gt</tf_topic>
     </plugin>
 
   </model>
