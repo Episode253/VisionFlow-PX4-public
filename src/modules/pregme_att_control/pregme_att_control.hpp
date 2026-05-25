@@ -120,6 +120,9 @@ private:
 	bool _maybe_landed{true};
 	bool _reset_yaw_sp{true};
 	bool _vehicle_type_rotary_wing{true};
+	bool _vtol_in_transition_mode{false};
+	bool _vtol_tailsitter{false};
+	bool _spooled_up{false};
 
 	uint8_t _quat_reset_counter{0};
 
@@ -177,6 +180,7 @@ private:
 		(ParamInt<px4::params::USR_THR_CURVE>) _param_usr_thr_curve,
 		(ParamBool<px4::params::USR_BAT_SCALE_EN>) _param_usr_bat_scale_en,
 
+		(ParamFloat<px4::params::COM_SPOOLUP_TIME>) _param_com_spoolup_time,
 		(ParamInt<px4::params::CBRK_RATE_CTRL>) _param_cbrk_rate_ctrl
 	)
 };

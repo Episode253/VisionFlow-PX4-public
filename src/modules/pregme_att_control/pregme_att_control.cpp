@@ -20,6 +20,11 @@ UserAttitudeControl::UserAttitudeControl() :
 {
 	_vehicle_status.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
 	_vehicle_status.is_vtol = false;
+	_vehicle_status.in_transition_mode = false;
+	_vehicle_type_rotary_wing = true;
+	_vtol_in_transition_mode = false;
+	_vtol_tailsitter = false;
+	_spooled_up = false;
 
 	parameters_updated();
 }
@@ -78,8 +83,7 @@ void UserAttitudeControl::parameters_updated()
 
 	_man_tilt_max = math::radians(_param_usr_man_tilt_max.get());
 
-	_actuators_0_circuit_breaker_enabled =
-		(_param_cbrk_rate_ctrl.get() == 121212);
+	_actuators_0_circuit_breaker_enabled = (_param_cbrk_rate_ctrl.get() == 121212);
 }
 
 float UserAttitudeControl::throttle_curve(float throttle_stick_input)
@@ -116,7 +120,7 @@ void UserAttitudeControl::generate_attitude_setpoint(const Quatf &q, float dt, b
 	if (reset_yaw_sp || !PX4_ISFINITE(_man_yaw_sp)) {
 		_man_yaw_sp = yaw;
 
-	} else if (math::constrain(_manual_control_setpoint.throttle, 0.f, 1.f) > 0.05f
+	} else if (_manual_control_setpoint.throttle > -0.9f
 		   || _param_usr_airmode.get() == 2) {
 
 		const float yaw_rate = math::radians(_param_usr_man_y_max.get());
@@ -172,6 +176,13 @@ void UserAttitudeControl::update_vehicle_status()
 			_vehicle_status = vehicle_status;
 			_vehicle_type_rotary_wing =
 				(vehicle_status.vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROTARY_WING);
+
+			_vtol_in_transition_mode = vehicle_status.in_transition_mode;
+			_vtol_tailsitter = vehicle_status.is_vtol_tailsitter;
+
+			const bool armed = (vehicle_status.arming_state == vehicle_status_s::ARMING_STATE_ARMED);
+			_spooled_up = armed && hrt_elapsed_time(&vehicle_status.armed_time) >
+				_param_com_spoolup_time.get() * 1_s;
 		}
 	}
 }
@@ -221,9 +232,19 @@ void UserAttitudeControl::publish_torque_thrust_setpoint(const vehicle_attitude_
 	_thrust_sp = -_thrust_setpoint_body(2);
 	_thrust_sp = PX4_ISFINITE(_thrust_sp) ? math::constrain(_thrust_sp, 0.f, 1.f) : 0.f;
 
-	if (!_vehicle_control_mode.flag_armed || _landed) {
+	if (!_vehicle_control_mode.flag_armed) {
+		// Disarmed: do not publish any effective torque or thrust.
 		torque_normalized.zero();
 		_thrust_sp = 0.f;
+
+	} else if (!_spooled_up) {
+		// Match PX4 spoolup behavior: after arming, keep the controller output at zero
+		// until the configured motor spoolup time has elapsed.
+		torque_normalized.zero();
+		_thrust_sp = 0.f;
+
+	} else if (_landed) {
+		torque_normalized.zero();
 	}
 
 	if (_param_usr_bat_scale_en.get()) {
@@ -318,14 +339,18 @@ void UserAttitudeControl::Run()
 	update_landed_state();
 	update_landing_gear();
 
+	const bool is_hovering = _vehicle_type_rotary_wing && !_vtol_in_transition_mode;
+
 	const bool run_att_ctrl =
 		_vehicle_control_mode.flag_control_attitude_enabled
-		&& _vehicle_type_rotary_wing;
+		&& is_hovering;
 
 	if (!run_att_ctrl) {
 		_man_x_input_filter.reset(0.f);
 		_man_y_input_filter.reset(0.f);
 		_reset_yaw_sp = true;
+		_thrust_setpoint_body.zero();
+		_torque.zero();
 
 		_attitude_control.resetESO();
 		_attitude_control.resetPresetTraj();
@@ -389,11 +414,16 @@ void UserAttitudeControl::Run()
 		const Quatf delta_q_reset(v_att.delta_q_reset);
 		const float delta_psi = Eulerf(delta_q_reset).psi();
 
-		_man_yaw_sp = wrap_pi(_man_yaw_sp + delta_psi);
-		_attitude_control.adaptAttitudeSetpoint(delta_q_reset);
+		if (PX4_ISFINITE(_man_yaw_sp)) {
+			_man_yaw_sp = wrap_pi(_man_yaw_sp + delta_psi);
+		}
+
+		if (v_att.timestamp > _last_attitude_setpoint) {
+			_attitude_control.adaptAttitudeSetpoint(delta_q_reset);
+		}
+
 		_quat_reset_counter = v_att.quat_reset_counter;
 	}
-
 
 	const Vector3f rates{angular_velocity.xyz};
 	Vector3f rates_sp{0.f, 0.f, 0.f};
@@ -467,6 +497,9 @@ This module runs on vehicle_angular_velocity updates, generates manual stabilize
 uses the custom Att_Control backend, and publishes vehicle_torque_setpoint and vehicle_thrust_setpoint.
 
 This version is only for multicopter platforms. VTOL and legacy actuator_controls output logic have been removed.
+
+Important: this module publishes vehicle_torque_setpoint and vehicle_thrust_setpoint directly.
+Do not run it together with the stock mc_rate_control module.
 )DESCR_STR");
 
 	PRINT_MODULE_USAGE_NAME("usr_att_control", "controller");

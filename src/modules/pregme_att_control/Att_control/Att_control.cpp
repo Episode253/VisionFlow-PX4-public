@@ -284,11 +284,8 @@ void Att_Control::update(const Quatf &q,
 				 float pos_z)
 {
 	if (landed) {
-		zeroVector3(torque);
-		zeroVector3(rates_sp);
 		resetESO();
 		resetPresetTraj();
-		return;
 	}
 
 	runAttitudeControl(q, rate, dt, torque, rates_sp, pos_z);
