@@ -1,12 +1,16 @@
 # VisionFlow-PX4
 
-## 检查可构建目标
+## 检查可构建目标并启动仿真环境
 
 ninja -C build/px4_sitl_default -t targets | grep gz_q940_ti
 
-### 启动串联机械臂（季梦玉师姐）模型
+### 启动串联机械臂（季梦玉师姐）模型（基础环境）
 
 PX4_GZ_WORLD=laboratory_landingbox make px4_sitl gz_q940_ti_laboratory_landingbox  EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"
+
+### 启动串联机械臂模型（vla_task0）
+
+PX4_GZ_WORLD=laboratory_landingbox_vla_task0 make px4_sitl gz_q940_ti_laboratory_landingbox_vla_task0  EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"
 
 ### 启动云台版基础模型
 
