@@ -1,8 +1,36 @@
 /****************************************************************************
- *@UserPositionControl.hpp
- *Author: Huazi Cao
- *Derived from module mc_att_control
+ *
+ *   Copyright (c) 2025 PX4 Development Team. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ * 3. Neither the name PX4 nor the names of its contributors may be
+ *    used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
  ****************************************************************************/
+
 #pragma once
 
 #include <matrix/matrix/math.hpp>
@@ -39,15 +67,11 @@
 // usr
 #include <uORB/topics/mavros_gs.h>
 
-
-
 #include <usr_att_control/Att_control/Att_control.hpp>
 
 #include <drivers/drv_hrt.h>                                          //时钟库
 
 #include <uORB/topics/vehicle_local_position.h>
-
-
 
 using namespace time_literals;
 
@@ -180,14 +204,12 @@ private:
             (ParamFloat<px4::params::USR_A_PRESET_EP>)     _param_PresetTraj_epsilon,
             (ParamFloat<px4::params::USR_A_PRESET_K>)     _param_PresetTraj_k,
 
-
             (ParamFloat<px4::params::USR_ESO_L_X>) _param_usr_eso_l_x,
             (ParamFloat<px4::params::USR_ESO_L_Y>) _param_usr_eso_l_y,
             (ParamFloat<px4::params::USR_ESO_L_Z>) _param_usr_eso_l_z,
             (ParamFloat<px4::params::USR_ESO_EPSI>) _param_usr_eso_epsi,
             (ParamFloat<px4::params::USR_ESO_C1>) _param_usr_eso_c1,
             (ParamFloat<px4::params::USR_ESO_C2>) _param_usr_eso_c2,
-
 
             (ParamFloat<px4::params::USR_ROLLRATE_MAX>) _param_usr_rollrate_max,
             (ParamFloat<px4::params::USR_PITRATE_MAX>) _param_usr_pitchrate_max,
@@ -206,6 +228,5 @@ private:
             (ParamInt<px4::params::USR_THR_CURVE>)  _param_usr_thr_curve,				/**< throttle curve behavior */
             (ParamBool<px4::params::USR_BAT_SCALE_EN>) _param_usr_bat_scale_en,
             (ParamInt<px4::params::CBRK_RATE_CTRL>) _param_cbrk_rate_ctrl
-
             )
 };

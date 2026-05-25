@@ -1,4 +1,3 @@
-
 /**
  * I_xx of quadcopter gazebo 0.03f feihu 0.2198f
  *
@@ -284,8 +283,6 @@ PARAM_DEFINE_FLOAT(USR_PITRATE_MAX, 220.0f);
 // */
 
 PARAM_DEFINE_FLOAT(USR_YAWRATE_MAX, 200.0f);
-
-
 
 // /**
 // * Manual tilt input filter time constant

@@ -109,14 +109,11 @@ void Att_Control::setPresetTraj(const matrix::Vector3f qv_error, const matrix::V
 
 }
 
-
-
 void Att_Control:: update(const matrix::Quatf &q, const matrix::Vector3f &rate,
                           const float &dt, const bool &landed, Vector3f& torque,matrix::Vector3f &rates_sp,const float &pos_z)
 {
     runAttitudeControl(q,rate,dt,torque,rates_sp,pos_z);
 }
-
 
 void  Att_Control::runAttitudeControl(const matrix::Quatf &q, const matrix::Vector3f &rate,
                                       const float &dt, Vector3f& torque,matrix::Vector3f &rates_sp, const float &pos_z)
@@ -149,7 +146,6 @@ void  Att_Control::runAttitudeControl(const matrix::Quatf &q, const matrix::Vect
             omega_r += q.inversed().dcm_z() * _yawspeed_setpoint;
     }
 
-
     Vector3f omega_error = rate - omega_r;
     float q0_error_dot = -0.5f*(qv_error*omega_error);
 
@@ -164,7 +160,6 @@ void  Att_Control::runAttitudeControl(const matrix::Quatf &q, const matrix::Vect
     float qv_error_dot_for_skew_symm[9]={0,-qv_error_dot(2),qv_error_dot(1),qv_error_dot(2),0,-qv_error_dot(0),-qv_error_dot(1),qv_error_dot(0),0};
     Matrix<float,3, 3> qv_error_dot_skew_symm(qv_error_dot_for_skew_symm);
     Q_dot = eye_3*q0_error_dot+qv_error_dot_skew_symm;
-
 
     setPresetTraj(qv_error, qv_error_dot);
 
@@ -182,11 +177,8 @@ void  Att_Control::runAttitudeControl(const matrix::Quatf &q, const matrix::Vect
 
     // setZeroIfNanVector3f(_usr_eso.delta_esti);
 
-
-
     torque = 2.0f*_I_b*Q_inv*(-_controller_param.K_q*slide_mode_q- 0.5f*Q_dot*omega_error-_controller_param.lambda_q*zq_dot + _preset_traj.k *_preset_traj.ed_ddot)+
     rate%(_I_b*rate) - _I_b *_usr_eso.delta_esti;
-
 
     _tau(0) = torque(0);
     _tau(1) = torque(1);
@@ -264,4 +256,3 @@ void Att_Control::getRateControlStatus(rate_ctrl_status_s &rate_ctrl_status)
     rate_ctrl_status.pitchspeed_integ = _usr_eso.delta_esti(1);
     rate_ctrl_status.yawspeed_integ = _usr_eso.delta_esti(2);
 }
-

@@ -1,0 +1,316 @@
+module_name: usr_att_control
+parameters:
+- group: User Attitude Control
+  definitions:
+    USR_I_XX:
+      description:
+        short: I_xx of quadcopter
+        long: Inertia matrix element I_xx for the quadcopter
+      type: float
+      default: 0.21
+      min: 0.0
+      max: 20.0
+      decimal: 2
+    USR_I_YY:
+      description:
+        short: I_yy of quadcopter
+      type: float
+      default: 0.21
+      min: 0.0
+      max: 20.0
+      decimal: 2
+    USR_I_ZZ:
+      description:
+        short: I_zz of quadcopter
+      type: float
+      default: 0.40
+      min: 0.0
+      max: 20.0
+      decimal: 2
+    USR_I_XY:
+      description:
+        short: I_xy of quadcopter
+      type: float
+      default: 0.0
+      min: 0.0
+      max: 20.0
+      decimal: 2
+    USR_I_XZ:
+      description:
+        short: I_xz of quadcopter
+      type: float
+      default: 0.0
+      min: 0.0
+      max: 20.0
+      decimal: 2
+    USR_I_YZ:
+      description:
+        short: I_yz of quadcopter
+      type: float
+      default: 0.0
+      min: 0.0
+      max: 20.0
+      decimal: 2
+    USR_MASS_UAV:
+      description:
+        short: Mass of UAV
+      type: float
+      default: 1.0
+      min: 0.1
+      max: 100.0
+      decimal: 2
+    USR_MASS_MANIP:
+      description:
+        short: Mass of manipulator
+      type: float
+      default: 0.0
+      min: 0.0
+      max: 100.0
+      decimal: 2
+    USR_LAMBDA_Q_X:
+      description:
+        short: Lambda_q_x gain
+      type: float
+      default: 20.0
+      min: 0.0
+      max: 100.0
+      decimal: 2
+    USR_LAMBDA_Q_Y:
+      description:
+        short: Lambda_q_y gain
+      type: float
+      default: 20.0
+      min: 0.0
+      max: 40.0
+      decimal: 2
+    USR_LAMBDA_Q_Z:
+      description:
+        short: Lambda_q_z gain
+      type: float
+      default: 20.0
+      min: 0.0
+      max: 40.0
+      decimal: 2
+    USR_K_Q_X:
+      description:
+        short: K_q_x gain
+      type: float
+      default: 14.0
+      min: 0.0
+      max: 40.0
+      decimal: 2
+    USR_K_Q_Y:
+      description:
+        short: K_q_y gain
+      type: float
+      default: 14.0
+      min: 0.0
+      max: 40.0
+      decimal: 2
+    USR_K_Q_Z:
+      description:
+        short: K_q_z gain
+      type: float
+      default: 14.0
+      min: 0.0
+      max: 40.0
+      decimal: 2
+    USR_ESO_L_X:
+      description:
+        short: ESO_l_x gain
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 50.0
+      decimal: 2
+    USR_ESO_L_Y:
+      description:
+        short: ESO_l_y gain
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 50.0
+      decimal: 2
+    USR_ESO_L_Z:
+      description:
+        short: ESO_l_z gain
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 50.0
+      decimal: 2
+    USR_ESO_EPSI:
+      description:
+        short: ESO epsilon
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 20.0
+      decimal: 2
+    USR_ESO_C1:
+      description:
+        short: ESO c1
+      type: float
+      default: 0.3
+      min: 0.0
+      max: 50.0
+      decimal: 2
+    USR_ESO_C2:
+      description:
+        short: ESO c2
+      type: float
+      default: 0.5
+      min: 0.0
+      max: 50.0
+      decimal: 2
+    USR_A_PRESET_L:
+      description:
+        short: Preset trajectory l parameter
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 20.0
+      decimal: 2
+    USR_A_PRESET_W:
+      description:
+        short: Preset trajectory w parameter
+      type: float
+      default: 0.1
+      min: 0.0
+      max: 1.0
+      decimal: 2
+    USR_A_PRESET_EP:
+      description:
+        short: Preset trajectory epsilon
+      type: float
+      default: 0.05
+      min: 0.0
+      max: 0.5
+      decimal: 2
+    USR_A_PRESET_K:
+      description:
+        short: Preset trajectory k parameter
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 1.0
+      decimal: 2
+    USR_TAU_COE:
+      description:
+        short: Scale factor for torque
+      type: float
+      default: 38.0
+      min: 0.0
+      max: 50.0
+      decimal: 2
+    USR_ROLLRATE_MAX:
+      description:
+        short: Max roll rate
+        long: Limit for roll rate in manual and auto modes
+      type: float
+      default: 220.0
+      unit: deg/s
+      min: 0.0
+      max: 1800.0
+      decimal: 1
+      increment: 5
+    USR_PITRATE_MAX:
+      description:
+        short: Max pitch rate
+      type: float
+      default: 220.0
+      unit: deg/s
+      min: 0.0
+      max: 1800.0
+      decimal: 1
+      increment: 5
+    USR_YAWRATE_MAX:
+      description:
+        short: Max yaw rate
+      type: float
+      default: 200.0
+      unit: deg/s
+      min: 0.0
+      max: 1800.0
+      decimal: 1
+      increment: 5
+    USR_MAN_Y_MAX:
+      description:
+        short: Manual yaw max rate
+      type: float
+      default: 90.0
+      unit: deg/s
+      min: 0.0
+      max: 360.0
+      decimal: 1
+    USR_MAN_TILT_TAU:
+      description:
+        short: Manual tilt input filter time constant
+        long: Setting this parameter to 0 disables the filter
+      type: float
+      default: 0.0
+      unit: s
+      min: 0.0
+      max: 2.0
+      decimal: 2
+    USR_MAN_TILT_MAX:
+      description:
+        short: Max manual tilt angle
+      type: float
+      default: 35.0
+      unit: deg
+      min: 0.0
+      max: 90.0
+      decimal: 1
+    USR_MANTHR_MIN:
+      description:
+        short: Minimum throttle for stabilized mode
+      type: float
+      default: 0.0
+      min: 0.0
+      max: 1.0
+      decimal: 2
+    USR_THR_MAX:
+      description:
+        short: Maximum throttle for stabilized mode
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 1.0
+      decimal: 2
+    USR_THR_HOVER:
+      description:
+        short: Throttle at which vehicle is at hover equilibrium
+      type: float
+      default: 0.5
+      min: 0.0
+      max: 1.0
+      decimal: 2
+    USR_THR_CURVE:
+      description:
+        short: Throttle curve behavior
+        long: Sets the throttle curve type (0=default, 1=no rescaling)
+      type: int32
+      default: 0
+      min: 0
+      max: 2
+    USR_BAT_SCALE_EN:
+      description:
+        short: Battery power level scaler
+        long: Compensates for voltage drop of the battery over time
+      type: boolean
+      default: false
+    USR_AIRMODE:
+      description:
+        short: Airmode
+        long: Airmode to use (0=default, 2=roll_pitch_yaw)
+      type: int32
+      default: 0
+      min: 0
+      max: 2
+    CBRK_RATE_CTRL:
+      description:
+        short: Circuit breaker for rate control
+        long: Disables rate controller output
+      type: int32
+      default: 0

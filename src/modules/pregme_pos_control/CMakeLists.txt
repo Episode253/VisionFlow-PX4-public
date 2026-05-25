@@ -28,21 +28,27 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#${MAX_CUSTOM_OPT_LEVEL}
+#
 ############################################################################
-add_subdirectory(Att_control)
 
 px4_add_module(
-        MODULE modules__usr_att_control
-        MAIN   usr_att_control
-        COMPILE_FLAGS
-            ${MAX_CUSTOM_OPT_LEVEL}
+	MODULE  modules__usr_pos_control
+	MAIN    usr_pos_control
+	COMPILE_FLAGS
 	SRCS
-                usr_att_control.cpp
-                usr_att_control.hpp
+		ControlMath.cpp
+		ControlMath.hpp
+		PosControl.cpp
+		PosControl.hpp
+		Takeoff.cpp
+		Takeoff.hpp
+		UserPositionControl.cpp
+		UserPositionControl.hpp
+	MODULE_CONFIG
+		usr_pos_control_params.yaml
 	DEPENDS
-                Att_control
-                mathlib
-                px4_work_queue
-
-	)
+		px4_work_queue
+		controllib
+		geo
+		SlewRate
+)

@@ -6,7 +6,6 @@
 #include <mathlib/math/Limits.hpp>
 #include <uORB/topics/rate_ctrl_status.h>
 
-
 //log
 #include <uORB/uORB.h>
 #include <uORB/Publication.hpp>
@@ -24,7 +23,6 @@ public:
          * Set attitude controller and attitude ESO gains
          */
         // void setControllerGain(const matrix::Vector3f &lambda_omega,const matrix::Vector3f &usr_k_omega,const matrix::Vector3f &usr_eso_gain,const float &usr_Kq);
-
 
         void setControllerGain(const matrix::Vector3f &lambda_omega,const matrix::Vector3f &usr_k_q);
 
@@ -44,7 +42,6 @@ public:
         void resetESO();
         void resetPresetTraj();
 
-
         void setCESOParas(const matrix::Vector3f &CESO_l,const float &CESO_EPSI,const float &CESO_c1,const float &CESO_c2);
 
         float CESO_function_g(float error,float l);
@@ -52,8 +49,6 @@ public:
         void setPresetTraj(const matrix::Vector3f e0, const matrix::Vector3f ev0);
 
         void setPresetTrajParas(const float &PresetTraj_l, const float &PresetTraj_w,const float &PresetTraj_epsilon,const float &PresetTraj_k);
-
-
 
         /**
          * Set a new attitude setpoint replacing the one tracked before
@@ -104,12 +99,10 @@ private:
 
         typedef matrix::Vector<float, 4> Vector4f;
 
-
         //set preset trajectory
         Vector4f _attitude_setpoint_q_last;
 
         matrix::Matrix<float,3, 3> eye_3;
-
 
         struct usr_ESO
         {
@@ -124,7 +117,6 @@ private:
         float c1;
         float c2;
         } _usr_eso;
-
 
         struct usr_att_controller                        //controller
         {
@@ -158,8 +150,6 @@ private:
         matrix::Vector3f e0_last;
         matrix::Vector3f ev0_last;
         } _preset_traj;
-
-
 
         // User defined log
         // att_helper_s _att_helper {};
