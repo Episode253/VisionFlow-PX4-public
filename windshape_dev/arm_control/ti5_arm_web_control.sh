@@ -3,7 +3,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-WEB_PORT="${WEB_PORT:-8000}"
+WEB_PORT="${WEB_PORT:-9000}"
 ROSBRIDGE_PORT="${ROSBRIDGE_PORT:-9090}"
 WEB_HOST="127.0.0.1"
 
