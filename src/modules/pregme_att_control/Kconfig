@@ -1,12 +1,12 @@
-menuconfig MODULES_USR_ATT_CONTROL
-	bool "usr_att_control"
+menuconfig MODULES_PREGME_ATT_CONTROL
+	bool "pregme_att_control"
 	default n
 	---help---
-		Enable support for usr_att_control
+		Enable the custom multicopter attitude/direct actuator control module.
 
-menuconfig USER_USR_ATT_CONTROL
-	bool "usr_att_control running as userspace module"
+menuconfig USER_PREGME_ATT_CONTROL
+	bool "pregme_att_control running as userspace module"
 	default n
-	depends on BOARD_PROTECTED && MODULES_USR_ATT_CONTROL
+	depends on BOARD_PROTECTED && MODULES_PREGME_ATT_CONTROL
 	---help---
-		Put usr_att_control in userspace memory
+		Run pregme_att_control in userspace memory on protected builds.
