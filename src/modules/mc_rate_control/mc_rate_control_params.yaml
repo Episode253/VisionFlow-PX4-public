@@ -8,7 +8,7 @@ parameters:
         long: Roll rate proportional gain, i.e. control output for angular speed error
           1 rad/s.
       type: float
-      default: 0.15
+      default: 0.40
       min: 0.01
       max: 0.5
       decimal: 3
@@ -19,7 +19,7 @@ parameters:
         long: Roll rate integral gain. Can be set to compensate static thrust difference
           or gravity center offset.
       type: float
-      default: 0.2
+      default: 0.42
       min: 0.0
       decimal: 3
       increment: 0.01
@@ -79,7 +79,7 @@ parameters:
         long: Pitch rate proportional gain, i.e. control output for angular speed
           error 1 rad/s.
       type: float
-      default: 0.15
+      default: 0.44
       min: 0.01
       max: 0.6
       decimal: 3
@@ -90,7 +90,7 @@ parameters:
         long: Pitch rate integral gain. Can be set to compensate static thrust difference
           or gravity center offset.
       type: float
-      default: 0.2
+      default: 0.42
       min: 0.0
       decimal: 3
       increment: 0.01

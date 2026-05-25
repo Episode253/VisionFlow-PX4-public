@@ -23,7 +23,7 @@ parameters:
       description:
         short: I_zz of quadcopter
       type: float
-      default: 0.40
+      default: 0.4
       min: 0.0
       max: 20.0
       decimal: 2
@@ -55,7 +55,7 @@ parameters:
       description:
         short: Mass of UAV
       type: float
-      default: 1.0
+      default: 5.0
       min: 0.1
       max: 100.0
       decimal: 2
@@ -63,7 +63,7 @@ parameters:
       description:
         short: Mass of manipulator
       type: float
-      default: 0.0
+      default: 2.3
       min: 0.0
       max: 100.0
       decimal: 2
@@ -71,7 +71,7 @@ parameters:
       description:
         short: Lambda_q_x gain
       type: float
-      default: 20.0
+      default: 23.0
       min: 0.0
       max: 100.0
       decimal: 2
@@ -79,7 +79,7 @@ parameters:
       description:
         short: Lambda_q_y gain
       type: float
-      default: 20.0
+      default: 23.0
       min: 0.0
       max: 40.0
       decimal: 2
@@ -95,7 +95,7 @@ parameters:
       description:
         short: K_q_x gain
       type: float
-      default: 14.0
+      default: 18.0
       min: 0.0
       max: 40.0
       decimal: 2
@@ -103,7 +103,7 @@ parameters:
       description:
         short: K_q_y gain
       type: float
-      default: 14.0
+      default: 18.0
       min: 0.0
       max: 40.0
       decimal: 2
@@ -119,7 +119,7 @@ parameters:
       description:
         short: ESO_l_x gain
       type: float
-      default: 1.0
+      default: 0.2
       min: 0.0
       max: 50.0
       decimal: 2
@@ -127,7 +127,7 @@ parameters:
       description:
         short: ESO_l_y gain
       type: float
-      default: 1.0
+      default: 0.2
       min: 0.0
       max: 50.0
       decimal: 2
@@ -135,7 +135,7 @@ parameters:
       description:
         short: ESO_l_z gain
       type: float
-      default: 1.0
+      default: 0.5
       min: 0.0
       max: 50.0
       decimal: 2
@@ -238,7 +238,7 @@ parameters:
       description:
         short: Manual yaw max rate
       type: float
-      default: 90.0
+      default: 150.0
       unit: deg/s
       min: 0.0
       max: 360.0
@@ -266,7 +266,7 @@ parameters:
       description:
         short: Minimum throttle for stabilized mode
       type: float
-      default: 0.0
+      default: 0.08
       min: 0.0
       max: 1.0
       decimal: 2
@@ -282,7 +282,7 @@ parameters:
       description:
         short: Throttle at which vehicle is at hover equilibrium
       type: float
-      default: 0.5
+      default: 0.65
       min: 0.0
       max: 1.0
       decimal: 2
