@@ -12,7 +12,7 @@
 
 #include <cstdlib>
 
-#define MODULE_NAME "px4"
+#define MODULE_NAME "visionflow_px4"
 
 extern "C" {
 
@@ -43,7 +43,7 @@ void list_builtins(apps_map_type &apps)
 
 int shutdown_main(int argc, char *argv[])
 {
-	printf("Exiting NOW.\n");
+	printf("Vision Flow PX4 Exiting NOW.\n");
 	uorb_shutdown();
 	system_exit(0);
 }
