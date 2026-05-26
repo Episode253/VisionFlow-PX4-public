@@ -71,7 +71,7 @@ parameters:
       description:
         short: Lambda_q_x gain
       type: float
-      default: 23.0
+      default: 20.0
       min: 0.0
       max: 100.0
       decimal: 2
@@ -79,7 +79,7 @@ parameters:
       description:
         short: Lambda_q_y gain
       type: float
-      default: 23.0
+      default: 18.0
       min: 0.0
       max: 40.0
       decimal: 2
@@ -95,7 +95,7 @@ parameters:
       description:
         short: K_q_x gain
       type: float
-      default: 18.0
+      default: 7.8
       min: 0.0
       max: 40.0
       decimal: 2
@@ -103,7 +103,7 @@ parameters:
       description:
         short: K_q_y gain
       type: float
-      default: 18.0
+      default: 8.6
       min: 0.0
       max: 40.0
       decimal: 2
@@ -199,7 +199,7 @@ parameters:
       description:
         short: Scale factor for torque
       type: float
-      default: 38.0
+      default: 28.0
       min: 0.0
       max: 50.0
       decimal: 2
@@ -274,7 +274,7 @@ parameters:
       description:
         short: Maximum throttle for stabilized mode
       type: float
-      default: 1.0
+      default: 0.95
       min: 0.0
       max: 1.0
       decimal: 2
