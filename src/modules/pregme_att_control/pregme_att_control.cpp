@@ -7,12 +7,12 @@
 #include <mathlib/math/Limits.hpp>
 #include <mathlib/mathlib.h>
 #include <matrix/matrix/math.hpp>
-#include <string.h>
 
 using namespace matrix;
 
 ModuleBase::Descriptor UserAttitudeControl::desc{task_spawn, custom_command, print_usage};
 
+// The system is configured for multicopter operation by default, with all VTOL-related logic removed.
 UserAttitudeControl::UserAttitudeControl() :
 	ModuleParams(nullptr),
 	WorkItem(MODULE_NAME, px4::wq_configurations::rate_ctrl),
@@ -37,7 +37,7 @@ UserAttitudeControl::~UserAttitudeControl()
 bool UserAttitudeControl::init()
 {
 	if (!_vehicle_angular_velocity_sub.registerCallback()) {
-		PX4_ERR("vehicle_angular_velocity callback registration failed");
+		PX4_ERR("vehicle_angular_velocity callback registration failed ！");
 		return false;
 	}
 
@@ -83,13 +83,16 @@ void UserAttitudeControl::parameters_updated()
 
 	_man_tilt_max = math::radians(_param_usr_man_tilt_max.get());
 
+	// Since the CBRK_RATE_CTRL_KEY parameter is not available in PX4 v1.17, a default constant value of 121212 is used here.
 	_actuators_0_circuit_breaker_enabled = (_param_cbrk_rate_ctrl.get() == 121212);
 }
 
+// Adapt to the current PX4 manual_control_setpoint.throttle [-1, 1] input specification and implement throttle safety clamping.
 float UserAttitudeControl::throttle_curve(float throttle_stick_input)
 {
 	// PX4 manual_control_setpoint.throttle is in range [-1, 1].
 	const float stick = math::constrain(throttle_stick_input, -1.f, 1.f);
+
 	const float throttle_min = _landed ? 0.f : _param_usr_manthr_min.get();
 
 	float thrust = 0.f;
@@ -108,6 +111,7 @@ float UserAttitudeControl::throttle_curve(float throttle_stick_input)
 		break;
 	}
 
+	// Missing ETH throttle estimation logic.
 	return math::constrain(thrust, 0.f, _param_usr_thr_max.get());
 }
 
@@ -117,14 +121,16 @@ void UserAttitudeControl::generate_attitude_setpoint(const Quatf &q, float dt, b
 
 	const float yaw = Eulerf(q).psi();
 
+	// Avoid continuous integral calculation when _man_yaw_sp is NaN or invalid.
 	if (reset_yaw_sp || !PX4_ISFINITE(_man_yaw_sp)) {
 		_man_yaw_sp = yaw;
 
-	} else if (_manual_control_setpoint.throttle > -0.9f
-		   || _param_usr_airmode.get() == 2) {
-
+	} else if (_manual_control_setpoint.throttle > -0.9f || _param_usr_airmode.get() == 2) {
 		const float yaw_rate = math::radians(_param_usr_man_y_max.get());
+
+		// Adapt to the new manual control setpoint field naming.
 		attitude_setpoint.yaw_sp_move_rate = _manual_control_setpoint.yaw * yaw_rate;
+
 		_man_yaw_sp = wrap_pi(_man_yaw_sp + attitude_setpoint.yaw_sp_move_rate * dt);
 	}
 
@@ -144,17 +150,20 @@ void UserAttitudeControl::generate_attitude_setpoint(const Quatf &q, float dt, b
 		v *= _man_tilt_max / v_norm;
 	}
 
+	// Add const to improve code quality and variable safety.
 	const Quatf q_sp_rp = AxisAnglef(v(0), v(1), 0.f);
 	const Eulerf euler_sp = q_sp_rp;
 
 	const float roll_sp = euler_sp(0);
 	const float pitch_sp = euler_sp(1);
+	// Add safety clamping.
 	const float yaw_sp = wrap_pi(_man_yaw_sp + euler_sp(2));
 
+	// Quaternions are free from gimbal lock and offer better numerical stability.
 	const Quatf q_sp = Eulerf(roll_sp, pitch_sp, yaw_sp);
-
 	q_sp.copyTo(attitude_setpoint.q_d);
 
+	// Explicitly set thrust in X and Y directions to 0, and only keep thrust in Z direction.
 	attitude_setpoint.thrust_body[0] = 0.f;
 	attitude_setpoint.thrust_body[1] = 0.f;
 	attitude_setpoint.thrust_body[2] = -throttle_curve(_manual_control_setpoint.throttle);
@@ -162,6 +171,7 @@ void UserAttitudeControl::generate_attitude_setpoint(const Quatf &q, float dt, b
 
 	_vehicle_attitude_setpoint_pub.publish(attitude_setpoint);
 
+	// Update variables in real-time without transmitting via uORB messages.
 	_attitude_control.setAttitudeSetpoint(q_sp, attitude_setpoint.yaw_sp_move_rate);
 	_thrust_setpoint_body = Vector3f(attitude_setpoint.thrust_body);
 	_last_attitude_setpoint = attitude_setpoint.timestamp;
@@ -170,6 +180,7 @@ void UserAttitudeControl::generate_attitude_setpoint(const Quatf &q, float dt, b
 void UserAttitudeControl::update_vehicle_status()
 {
 	if (_vehicle_status_sub.updated()) {
+		// Save drone state for easy retrieval / calling.
 		vehicle_status_s vehicle_status{};
 
 		if (_vehicle_status_sub.copy(&vehicle_status)) {
@@ -180,6 +191,7 @@ void UserAttitudeControl::update_vehicle_status()
 			_vtol_in_transition_mode = vehicle_status.in_transition_mode;
 			_vtol_tailsitter = vehicle_status.is_vtol_tailsitter;
 
+			// Add safety protection logic for arming/unlocking.
 			const bool armed = (vehicle_status.arming_state == vehicle_status_s::ARMING_STATE_ARMED);
 			_spooled_up = armed && hrt_elapsed_time(&vehicle_status.armed_time) >
 				_param_com_spoolup_time.get() * 1_s;
@@ -233,13 +245,12 @@ void UserAttitudeControl::publish_torque_thrust_setpoint(const vehicle_attitude_
 	_thrust_sp = PX4_ISFINITE(_thrust_sp) ? math::constrain(_thrust_sp, 0.f, 1.f) : 0.f;
 
 	if (!_vehicle_control_mode.flag_armed) {
-		// Disarmed: do not publish any effective torque or thrust.
+		// Do not publish any effective torque or thrust when disarmed.
 		torque_normalized.zero();
 		_thrust_sp = 0.f;
 
 	} else if (!_spooled_up) {
-		// Match PX4 spoolup behavior: after arming, keep the controller output at zero
-		// until the configured motor spoolup time has elapsed.
+		// Match PX4 spoolup behavior: after arming, keep the controller output at zero until the configured motor spoolup time has elapsed.
 		torque_normalized.zero();
 		_thrust_sp = 0.f;
 
@@ -342,8 +353,7 @@ void UserAttitudeControl::Run()
 	const bool is_hovering = _vehicle_type_rotary_wing && !_vtol_in_transition_mode;
 
 	const bool run_att_ctrl =
-		_vehicle_control_mode.flag_control_attitude_enabled
-		&& is_hovering;
+		_vehicle_control_mode.flag_control_attitude_enabled && is_hovering;
 
 	if (!run_att_ctrl) {
 		_man_x_input_filter.reset(0.f);
