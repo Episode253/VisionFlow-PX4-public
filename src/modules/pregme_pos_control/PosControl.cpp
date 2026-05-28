@@ -8,6 +8,51 @@
 using namespace matrix;
 using namespace time_literals;
 
+namespace
+{
+
+// Vertical CESO injection protection for OFFBOARD altitude hold.
+// The ESO still estimates Z disturbance, but the value injected into the
+// thrust channel is bounded and low-pass filtered to avoid thrust pumping.
+static constexpr float CESO_Z_DISTURBANCE_LIMIT = 2.0f;      // m/s^2 equivalent, about 0.2 g
+static constexpr float CESO_Z_LPF_CUTOFF_HZ = 1.5f;          // conservative vertical disturbance bandwidth
+static constexpr float CESO_Z_DEADZONE = 0.03f;              // suppress tiny estimator noise around hover
+
+float g_delta_v_z_filtered = 0.f;
+bool g_delta_v_z_filter_initialized = false;
+
+float updateVerticalCESOInjection(float delta_v_z_raw, bool vertical_control_enabled, float dt)
+{
+	if (!vertical_control_enabled || !PX4_ISFINITE(delta_v_z_raw)) {
+		g_delta_v_z_filtered = 0.f;
+		g_delta_v_z_filter_initialized = false;
+		return 0.f;
+	}
+
+	dt = (PX4_ISFINITE(dt) && dt > 0.f) ? math::constrain(dt, 0.001f, 0.04f) : 0.01f;
+
+	const float delta_v_z_limited = math::constrain(delta_v_z_raw,
+		-CESO_Z_DISTURBANCE_LIMIT, CESO_Z_DISTURBANCE_LIMIT);
+
+	if (!g_delta_v_z_filter_initialized) {
+		// Start from zero after reset/takeoff transition and let the estimate fade in.
+		g_delta_v_z_filtered = 0.f;
+		g_delta_v_z_filter_initialized = true;
+	}
+
+	const float alpha = expf(-6.28318530718f * CESO_Z_LPF_CUTOFF_HZ * dt);
+	g_delta_v_z_filtered = alpha * g_delta_v_z_filtered + (1.f - alpha) * delta_v_z_limited;
+
+	if (fabsf(g_delta_v_z_filtered) < CESO_Z_DEADZONE) {
+		return 0.f;
+	}
+
+	return g_delta_v_z_filtered;
+}
+
+} // namespace
+
+
 void PosControl::setControlParas(const Vector3f &bm_lambda_p, const Vector3f &bm_K_p)
 {
 	_contolParas.bm_lambda_p(0, 0) = bm_lambda_p(0);
@@ -106,7 +151,12 @@ void PosControl::setThrustLimits(const float min, const float max)
 
 void PosControl::updateHoverThrust(const float hover_thrust_new)
 {
-	setHoverThrust(hover_thrust_new);
+	if (!PX4_ISFINITE(hover_thrust_new)) {
+		return;
+	}
+
+	const float hover_thrust_limited = math::constrain(hover_thrust_new, _lim_thr_min, _lim_thr_max);
+	setHoverThrust(hover_thrust_limited);
 }
 
 void PosControl::setState(const PositionControlStates &states)
@@ -177,8 +227,15 @@ void PosControl::_positionControl(const float dt)
 	_autopilot.vel_err = _vel - _vel_sp;
 	ControlMath::setZeroIfNanVector3f(_autopilot.vel_err);
 
+	const bool vertical_control_enabled = PX4_ISFINITE(_pos_sp(2)) || PX4_ISFINITE(_vel_sp(2));
+
 	delta_v = _pregme_eso.delta_est;
 	ControlMath::setZeroIfNanVector3f(delta_v);
+
+	// Keep Z-axis CESO disturbance rejection, but do not inject the raw observer
+	// output directly into thrust. The protected injection preserves the anti-
+	// disturbance path while avoiding vertical thrust pumping in OFFBOARD hover.
+	delta_v(2) = updateVerticalCESOInjection(delta_v(2), vertical_control_enabled, dt);
 
 	setPresetTraj(_autopilot.pos_err, _autopilot.vel_err);
 
@@ -268,35 +325,57 @@ void PosControl::PositionCESO(matrix::Vector3f pos_in, matrix::Vector3f u, float
 	ControlMath::setZeroIfNanVector3f(_pregme_eso.delta_est);
 	ControlMath::setZeroIfNanVector3f(pos_in);
 	ControlMath::setZeroIfNanVector3f(u);
-	dt = PX4_ISFINITE(dt) ? dt : 0.0f;
+	dt = (PX4_ISFINITE(dt) && dt > 0.f) ? math::constrain(dt, 0.001f, 0.04f) : 0.0f;
+
+	const float eso_epsi = (PX4_ISFINITE(_pregme_eso.EPSI) && fabsf(_pregme_eso.EPSI) > 1e-4f)
+			       ? _pregme_eso.EPSI : 1e-4f;
 
 	for (int i = 0; i < 3; i++) {
 		const float error1 = pos_in(i) - _pregme_eso.xi1(i);
 		const float function_g1 = PositionCESO_function_g(error1, _pregme_eso.L1(i));
 
-		const float xi1_dot = function_g1 / _pregme_eso.EPSI;
+		const float xi1_dot = function_g1 / eso_epsi;
 		_pregme_eso.vel_est(i) = xi1_dot;
 		_pregme_eso.xi1(i) = _pregme_eso.xi1(i) + xi1_dot * dt;
 
 		const float error2 = _pregme_eso.vel_est(i) - _pregme_eso.xi2(i);
 		const float function_g2 = PositionCESO_function_g(error2, _pregme_eso.L2(i));
 
-		const float xi2_dot = function_g2 / _pregme_eso.EPSI + u(i);
+		const float xi2_dot = function_g2 / eso_epsi + u(i);
 
-		_pregme_eso.delta_est(i) = function_g2 / _pregme_eso.EPSI;
+		_pregme_eso.delta_est(i) = function_g2 / eso_epsi;
 		_pregme_eso.xi2(i) = _pregme_eso.xi2(i) + xi2_dot * dt;
 	}
 }
 
 float PosControl::PositionCESO_function_g(float error, float l)
 {
-	return l * error * (expf(error) + expf(-error)) / (_pregme_eso.c1 * (expf(error) + expf(-error)) + _pregme_eso.c2);
+	if (!PX4_ISFINITE(error) || !PX4_ISFINITE(l)) {
+		return 0.f;
+	}
+
+	const float error_limited = math::constrain(error, -20.f, 20.f);
+	const float exp_sum = expf(error_limited) + expf(-error_limited);
+	const float denominator = _pregme_eso.c1 * exp_sum + _pregme_eso.c2;
+
+	if (!PX4_ISFINITE(denominator) || fabsf(denominator) < 1e-6f) {
+		return 0.f;
+	}
+
+	return l * error_limited * exp_sum / denominator;
 }
 
 void PosControl::resetESO()
 {
+	_is_initialized = false;
 	_pregme_eso.delta_est = {0.0f, 0.0f, 0.0f};
+	_pregme_eso.vel_est = {0.0f, 0.0f, 0.0f};
+	_pregme_eso.xi1 = {NAN, NAN, NAN};
 	_pregme_eso.xi2 = {0.0f, 0.0f, 0.0f};
+
+	// Reset the protected Z-CESO injection path together with the observer.
+	g_delta_v_z_filtered = 0.f;
+	g_delta_v_z_filter_initialized = false;
 }
 
 void PosControl::resetPresetTraj()

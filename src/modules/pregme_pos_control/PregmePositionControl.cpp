@@ -272,13 +272,6 @@ void PregmePositionControl::Run()
 		_vehicle_control_mode_sub.update(&_vehicle_control_mode);
 		_vehicle_land_detected_sub.update(&_vehicle_land_detected);
 
-		if (_param_pregme_use_hte.get()) {
-			hover_thrust_estimate_s hte{};
-			if (_hover_thrust_estimate_sub.update(&hte) && hte.valid) {
-				_control.updateHoverThrust(hte.hover_thrust);
-			}
-		}
-
 		PositionControlStates states{set_vehicle_states(local_pos, dt)};
 
 		if (_vehicle_control_mode.flag_multicopter_position_control_enabled) {
@@ -350,17 +343,26 @@ void PregmePositionControl::Run()
 
 			const bool not_taken_off = (_takeoff.getTakeoffState() < TakeoffState::rampup);
 			const bool flying = (_takeoff.getTakeoffState() >= TakeoffState::flight);
-			const bool flying_but_ground_contact = (flying && _vehicle_land_detected.ground_contact);
 
 			if (!flying) {
+				// Keep takeoff deterministic: do not let hover-thrust estimator alter the thrust scale before flight.
 				_control.setHoverThrust(_param_pregme_thr_hover.get());
+
+			} else if (_param_pregme_use_hte.get()
+				   && !_vehicle_land_detected.landed
+				   && !_vehicle_land_detected.ground_contact) {
+				hover_thrust_estimate_s hte{};
+
+				if (_hover_thrust_estimate_sub.update(&hte) && hte.valid) {
+					_control.updateHoverThrust(hte.hover_thrust);
+				}
 			}
 
 			if ((_takeoff.getTakeoffState() == TakeoffState::rampup) && PX4_ISFINITE(_setpoint.velocity[2])) {
 				_setpoint.acceleration[2] = NAN;
 			}
 
-			if (not_taken_off || flying_but_ground_contact) {
+			if (not_taken_off) {
 				reset_setpoint_to_nan(_setpoint);
 				_setpoint.timestamp = local_pos.timestamp;
 				_setpoint.acceleration[2] = 100.f;
@@ -572,9 +574,13 @@ void PregmePositionControl::limit_thrust_during_landing(vehicle_attitude_setpoin
 	const bool armed = _vehicle_control_mode.flag_armed;
 	const bool active_takeoff = _vehicle_constraints.want_takeoff && (takeoff_state >= TakeoffState::rampup);
 
+	// Only force thrust to zero before the takeoff ramp starts.
+	// In OFFBOARD altitude hold the land detector can briefly report ground_contact
+	// during the first moments of lift-off or low hover. Forcing zero thrust in
+	// flight causes a vertical thrust drop and then a recovery overshoot.
 	const bool ground_without_takeoff_request = !_vehicle_constraints.want_takeoff
-		&& (_vehicle_land_detected.landed || _vehicle_land_detected.ground_contact
-		    || (takeoff_state < TakeoffState::rampup));
+		&& (takeoff_state < TakeoffState::rampup)
+		&& (_vehicle_land_detected.landed || _vehicle_land_detected.ground_contact);
 
 	if (!armed) {
 		setpoint.thrust_body[0] = 0.f;

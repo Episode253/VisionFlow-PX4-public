@@ -203,9 +203,9 @@ private:
 	static constexpr float ALTITUDE_THRESHOLD = 0.3f;
 	static constexpr float MAX_SAFE_TILT_DEG = 89.f;
 
-	static constexpr float THRUST_SLEW_TAKEOFF = 0.25f;	// 0 -> hover in about 1.0~1.5 s for typical hover thrust
-	static constexpr float THRUST_SLEW_LANDING = 0.65f;	// smooth but not too slow after ground contact
-	static constexpr float THRUST_SLEW_FLIGHT = 8.0f;	// almost transparent during normal flight
+	static constexpr float THRUST_SLEW_TAKEOFF = 0.60f;	// faster but still smooth takeoff thrust ramp for OFFBOARD altitude hold
+	static constexpr float THRUST_SLEW_LANDING = 0.80f;	// smooth but not too slow after real landing
+	static constexpr float THRUST_SLEW_FLIGHT = 10.0f;	// transparent during normal flight
 	static constexpr float TAKEOFF_SPEED_SP_MIN = 0.01f;	// avoid the previous 0.15 m/s step at ramp start
 	static constexpr float TAKEOFF_ALTITUDE_STEP_MIN = 0.05f;	// avoid an abrupt 0.3 m position step at ramp start
 	static constexpr float THRUST_ZERO_EPS = 0.002f;
