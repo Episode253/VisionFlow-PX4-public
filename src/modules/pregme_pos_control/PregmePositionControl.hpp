@@ -54,7 +54,8 @@ private:
 	void reset_setpoint_to_nan(vehicle_local_position_setpoint_s &setpoint);
 	void reset_setpoint_to_nan(trajectory_setpoint_s &setpoint);
 
-	void limit_thrust_during_landing(vehicle_attitude_setpoint_s &setpoint, const TakeoffState takeoff_state);
+	void limit_thrust_during_landing(vehicle_attitude_setpoint_s &setpoint, const TakeoffState takeoff_state, float dt);
+	float slew_thrust_z(float target_thrust_z, float dt, float slew_rate);
 
 	Takeoff _takeoff;
 
@@ -194,10 +195,20 @@ private:
 	bool _in_failsafe{false};
 	bool _hover_thrust_initialized{false};
 
+	float _last_thrust_body_z{0.f};
+	bool _last_thrust_body_z_valid{false};
+
 	static constexpr uint64_t TRAJECTORY_STREAM_TIMEOUT_US = 500_ms;
 	static constexpr uint64_t LOITER_TIME_BEFORE_DESCEND = 200_ms;
 	static constexpr float ALTITUDE_THRESHOLD = 0.3f;
 	static constexpr float MAX_SAFE_TILT_DEG = 89.f;
+
+	static constexpr float THRUST_SLEW_TAKEOFF = 0.25f;	// 0 -> hover in about 1.0~1.5 s for typical hover thrust
+	static constexpr float THRUST_SLEW_LANDING = 0.65f;	// smooth but not too slow after ground contact
+	static constexpr float THRUST_SLEW_FLIGHT = 8.0f;	// almost transparent during normal flight
+	static constexpr float TAKEOFF_SPEED_SP_MIN = 0.01f;	// avoid the previous 0.15 m/s step at ramp start
+	static constexpr float TAKEOFF_ALTITUDE_STEP_MIN = 0.05f;	// avoid an abrupt 0.3 m position step at ramp start
+	static constexpr float THRUST_ZERO_EPS = 0.002f;
 
 	systemlib::Hysteresis _failsafe_land_hysteresis{false};
 	SlewRate<float> _tilt_limit_slew_rate;
