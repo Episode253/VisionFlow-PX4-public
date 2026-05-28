@@ -31,3 +31,7 @@ bash windshape_dev/data_stream/image_stream/camera_stream.sh
 ## 启动机械臂控制节点
 
 bash windshape_dev/arm_control/ti5_arm_web_control.sh
+
+## 启动 mavros 节点
+
+source thirdparty/install/setup.bash && ros2 launch mavros px4.launch fcu_url:=udp://:14540@localhost:14557

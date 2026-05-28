@@ -1619,6 +1619,7 @@ Commander::handle_command(const vehicle_command_s &cmd)
 	case vehicle_command_s::VEHICLE_CMD_EXTERNAL_ATTITUDE_ESTIMATE:
 	case vehicle_command_s::VEHICLE_CMD_DO_AUTOTUNE_ENABLE:
 	case vehicle_command_s::VEHICLE_CMD_ESTIMATOR_SENSOR_ENABLE:
+	case 520: // MAV_CMD_USER_1 - ignore custom command
 		/* ignore commands that are handled by other parts of the system */
 		break;
 
