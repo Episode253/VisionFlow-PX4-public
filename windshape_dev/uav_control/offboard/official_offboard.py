@@ -29,21 +29,12 @@ class OffboardNode(Node):
     def __init__(self):
         super().__init__('official_offboard')
 
-        # ------------------------------------
-        # Parameters
-        # ------------------------------------
         self.takeoff_height = 1.5  # meters (relative takeoff)
 
-        # ------------------------------------
-        # Internal states
-        # ------------------------------------
         self.current_state = State()
         self.odom_received = False
         self.initial_pose = None
 
-        # ------------------------------------
-        # MAVROS QoS profiles
-        # ------------------------------------
         mavros_qos = QoSProfile(
             reliability=QoSReliabilityPolicy.BEST_EFFORT,
             durability=QoSDurabilityPolicy.VOLATILE,
@@ -51,9 +42,6 @@ class OffboardNode(Node):
             depth=10
         )
 
-        # ------------------------------------
-        # Subscribers
-        # ------------------------------------
         self.state_sub = self.create_subscription(
             State,
             '/mavros/state',
@@ -68,18 +56,12 @@ class OffboardNode(Node):
             mavros_qos
         )
 
-        # ------------------------------------
-        # Publisher
-        # ------------------------------------
         self.local_pos_pub = self.create_publisher(
             PoseStamped,
             '/mavros/setpoint_position/local',
             mavros_qos
         )
 
-        # ------------------------------------
-        # Service clients
-        # ------------------------------------
         self.arming_client = self.create_client(
             CommandBool,
             '/mavros/cmd/arming'
@@ -94,15 +76,9 @@ class OffboardNode(Node):
         while not self.set_mode_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Waiting for set_mode service...')
 
-        # ------------------------------------
-        # Target pose (setpoint)
-        # ------------------------------------
         self.pose = PoseStamped()
         self.pose.header.frame_id = 'map'
 
-        # ------------------------------------
-        # Timers
-        # ------------------------------------
         # 20 Hz setpoint publishing
         self.setpoint_timer = self.create_timer(
             0.05,
@@ -117,9 +93,6 @@ class OffboardNode(Node):
 
         self.get_logger().info('OFFBOARD node initialized')
 
-    # ------------------------------------
-    # Callbacks
-    # ------------------------------------
     def state_cb(self, msg: State):
         self.current_state = msg
 
@@ -151,9 +124,6 @@ class OffboardNode(Node):
             f'Takeoff target Z: {self.pose.pose.position.z:.2f} m'
         )
 
-    # ------------------------------------
-    # Timer: publish position setpoints
-    # ------------------------------------
     def publish_setpoint(self):
         if not self.current_state.connected:
             return
@@ -164,9 +134,6 @@ class OffboardNode(Node):
         self.pose.header.stamp = self.get_clock().now().to_msg()
         self.local_pos_pub.publish(self.pose)
 
-    # ------------------------------------
-    # Timer: OFFBOARD & ARM logic
-    # ------------------------------------
     def offboard_arm_check(self):
         if not self.odom_received:
             return
@@ -183,9 +150,6 @@ class OffboardNode(Node):
             future = self.arming_client.call_async(req)
             future.add_done_callback(self.arm_done_cb)
 
-    # ------------------------------------
-    # Service callbacks
-    # ------------------------------------
     def offboard_done_cb(self, future):
         try:
             result = future.result()
