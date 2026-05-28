@@ -122,3 +122,7 @@ _emscripten_sdk/
 windshape_dev/arm_control/log/
 
 windshape_dev/data_stream/image_stream/log/
+
+thirdparty/build/*
+thirdparty/install/*
+thirdparty/log/*
