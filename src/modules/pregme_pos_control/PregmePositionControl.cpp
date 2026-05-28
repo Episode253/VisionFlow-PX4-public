@@ -19,8 +19,6 @@ trajectory_setpoint_s generate_hold_setpoint(const PositionControlStates &states
 	trajectory_setpoint_s setpoint{};
 	setpoint.timestamp = hrt_absolute_time();
 
-	// Match the official empty setpoint semantics without depending on the
-	// PositionControl class symbol, which is not available in this module.
 	setpoint.position[0] = NAN;
 	setpoint.position[1] = NAN;
 	setpoint.position[2] = NAN;
@@ -286,11 +284,6 @@ void PregmePositionControl::Run()
 		if (_vehicle_control_mode.flag_multicopter_position_control_enabled) {
 			const bool is_trajectory_setpoint_updated = _trajectory_setpoint_sub.update(&_setpoint);
 
-			// V1.13-compatible migration test: do not overwrite an armed vehicle's
-			// last valid takeoff/position setpoint with a generated hold setpoint
-			// just because trajectory_setpoint is older than 1 s. During Position
-			// takeoff, replacing an upward velocity setpoint by a current-position
-			// hold can make the vehicle lift briefly and then settle back to ground.
 			if (_setpoint.timestamp == 0) {
 				_setpoint = generate_hold_setpoint(states);
 
@@ -337,11 +330,14 @@ void PregmePositionControl::Run()
 				    || (PX4_ISFINITE(_setpoint.acceleration[2]) && (_setpoint.acceleration[2] < -0.1f)));
 
 			if (_vehicle_control_mode.flag_armed && _vehicle_land_detected.landed) {
-				// Position mode takeoff can arrive either through vehicle_constraints
-				// or through an upward trajectory setpoint. Do not limit this inference
-				// to Offboard only; otherwise the takeoff state machine can remain in
-				// ready_for_takeoff while the motors only spin near idle/hover.
-				_vehicle_constraints.want_takeoff = _vehicle_constraints.want_takeoff || setpoint_requests_takeoff;
+				const bool was_flying = (_takeoff.getTakeoffState() >= TakeoffState::flight);
+
+				if (was_flying && !setpoint_requests_takeoff) {
+					_vehicle_constraints.want_takeoff = false;
+
+				} else {
+					_vehicle_constraints.want_takeoff = _vehicle_constraints.want_takeoff || setpoint_requests_takeoff;
+				}
 
 				const float takeoff_speed = math::min(_param_pregme_tko_speed.get(), _param_pregme_z_vel_max_up.get());
 				_vehicle_constraints.speed_up = PX4_ISFINITE(takeoff_speed) ? takeoff_speed : _param_pregme_z_vel_max_up.get();
@@ -357,11 +353,6 @@ void PregmePositionControl::Run()
 			const bool active_takeoff = _vehicle_constraints.want_takeoff
 							    && (_takeoff.getTakeoffState() >= TakeoffState::rampup);
 
-			// V1.13-compatible migration fix: reset the observer and preset trajectory
-			// before rampup, but do not keep resetting them throughout rampup. In the
-			// migrated architecture, rampup is not yet "flight", so using !flying here
-			// continuously reinitializes the custom controller during the exact phase
-			// where its transient states must build up.
 			const bool before_rampup = (_takeoff.getTakeoffState() < TakeoffState::rampup);
 
 			if (before_rampup || (_vehicle_land_detected.ground_contact && !active_takeoff)) {
@@ -372,17 +363,11 @@ void PregmePositionControl::Run()
 			const bool not_taken_off = (_takeoff.getTakeoffState() < TakeoffState::rampup);
 			const bool flying_but_ground_contact = (flying && _vehicle_land_detected.ground_contact);
 
-			// Keep this closer to the V1.13 outer-loop behavior: only amend a newly
-			// received trajectory setpoint. Do not repeatedly rewrite the setpoint every
-			// control cycle during takeoff.
 			if (is_trajectory_setpoint_updated) {
 				if (!flying) {
 					_setpoint.acceleration[2] = NAN;
 				}
 
-				// Suppress thrust only when there is no active takeoff request. In Position
-				// mode, want_takeoff comes from vehicle_constraints; applying the [0,0,100]
-				// sentinel while want_takeoff is true can break the transition out of ground.
 				if ((not_taken_off || flying_but_ground_contact)
 				    && !_vehicle_constraints.want_takeoff) {
 					reset_setpoint_to_nan(_setpoint);
@@ -465,10 +450,9 @@ void PregmePositionControl::Run()
 
 			vehicle_attitude_setpoint_s attitude_setpoint{};
 			_control.getAttitudeSetpoint(attitude_setpoint);
-			// V1.13-compatible migration test: publish the attitude setpoint directly.
-			// The extra migrated ground-thrust limiter changed the original V1.13
-			// publication path and should be excluded while validating behavioral
-			// equivalence.
+
+			limit_thrust_during_landing(attitude_setpoint, _takeoff.getTakeoffState());
+
 			attitude_setpoint.timestamp = hrt_absolute_time();
 			_vehicle_attitude_setpoint_pub.publish(attitude_setpoint);
 
@@ -560,19 +544,20 @@ void PregmePositionControl::reset_setpoint_to_nan(trajectory_setpoint_s &setpoin
 }
 void PregmePositionControl::limit_thrust_during_landing(vehicle_attitude_setpoint_s &setpoint, const TakeoffState takeoff_state)
 {
-	// The land detector normally still reports landed/ground_contact during the
-	// beginning of rampup. If thrust is cleared based on those flags, the vehicle
-	// cannot build lift and will stay at idle until COM_DISARM_PRFLT disarms it.
-	if (!_vehicle_control_mode.flag_armed
-	    || (takeoff_state < TakeoffState::rampup && !_vehicle_constraints.want_takeoff)) {
+	// Never publish thrust while disarmed.
+	const bool disarmed = !_vehicle_control_mode.flag_armed;
+
+	const bool ground_without_takeoff_request = !_vehicle_constraints.want_takeoff
+		&& (_vehicle_land_detected.landed || _vehicle_land_detected.ground_contact
+		    || (takeoff_state < TakeoffState::rampup));
+
+	if (disarmed || ground_without_takeoff_request) {
 		setpoint.thrust_body[0] = 0.f;
 		setpoint.thrust_body[1] = 0.f;
 		setpoint.thrust_body[2] = 0.f;
 		return;
 	}
 
-	// During rampup/flight, allow vertical thrust even if landed/ground_contact
-	// is still true. PX4 multicopter lift is represented by negative body-Z thrust.
 	if (PX4_ISFINITE(setpoint.thrust_body[2])) {
 		setpoint.thrust_body[2] = math::max(setpoint.thrust_body[2], -_param_pregme_thr_max.get());
 	}
