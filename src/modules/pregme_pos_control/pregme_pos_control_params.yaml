@@ -1,8 +1,8 @@
-module_name: usr_pos_control
+module_name: pregme_pos_control
 parameters:
-- group: User Position Control
+- group: Pregme Position Control
   definitions:
-    USR_MASS_UAV:
+    PREGME_MUAV:
       description:
         short: Mass of UAV
       type: float
@@ -10,7 +10,7 @@ parameters:
       min: 0.0
       max: 40.0
       decimal: 2
-    USR_MASS_MANIP:
+    PREGME_MMANIP:
       description:
         short: Mass of manipulator
       type: float
@@ -18,7 +18,7 @@ parameters:
       min: 0.0
       max: 40.0
       decimal: 2
-    USR_LAMBDA_P_X:
+    PREGME_LPX:
       description:
         short: Position control lambda_x
       type: float
@@ -26,7 +26,7 @@ parameters:
       min: 0.0
       max: 20.0
       decimal: 2
-    USR_LAMBDA_P_Y:
+    PREGME_LPY:
       description:
         short: Position control lambda_y
       type: float
@@ -34,7 +34,7 @@ parameters:
       min: 0.0
       max: 20.0
       decimal: 2
-    USR_LAMBDA_P_Z:
+    PREGME_LPZ:
       description:
         short: Position control lambda_z
       type: float
@@ -42,7 +42,7 @@ parameters:
       min: 0.0
       max: 20.0
       decimal: 2
-    USR_K_P_X:
+    PREGME_KPX:
       description:
         short: Position control K_x
       type: float
@@ -50,7 +50,7 @@ parameters:
       min: 0.0
       max: 20.0
       decimal: 2
-    USR_K_P_Y:
+    PREGME_KPY:
       description:
         short: Position control K_y
       type: float
@@ -58,7 +58,7 @@ parameters:
       min: 0.0
       max: 20.0
       decimal: 2
-    USR_K_P_Z:
+    PREGME_KPZ:
       description:
         short: Position control K_z
       type: float
@@ -66,7 +66,7 @@ parameters:
       min: 0.0
       max: 20.0
       decimal: 2
-    USR_ESO_V_L1_X:
+    PREGME_EV1X:
       description:
         short: ESO velocity L1_x
       type: float
@@ -74,7 +74,7 @@ parameters:
       min: 0.0
       max: 10.0
       decimal: 2
-    USR_ESO_V_L1_Y:
+    PREGME_EV1Y:
       description:
         short: ESO velocity L1_y
       type: float
@@ -82,7 +82,7 @@ parameters:
       min: 0.0
       max: 10.0
       decimal: 2
-    USR_ESO_V_L1_Z:
+    PREGME_EV1Z:
       description:
         short: ESO velocity L1_z
       type: float
@@ -90,7 +90,7 @@ parameters:
       min: 0.0
       max: 10.0
       decimal: 2
-    USR_ESO_V_L2_X:
+    PREGME_EV2X:
       description:
         short: ESO velocity L2_x
       type: float
@@ -98,7 +98,7 @@ parameters:
       min: 0.0
       max: 40.0
       decimal: 2
-    USR_ESO_V_L2_Y:
+    PREGME_EV2Y:
       description:
         short: ESO velocity L2_y
       type: float
@@ -106,7 +106,7 @@ parameters:
       min: 0.0
       max: 40.0
       decimal: 2
-    USR_ESO_V_L2_Z:
+    PREGME_EV2Z:
       description:
         short: ESO velocity L2_z
       type: float
@@ -114,7 +114,7 @@ parameters:
       min: 0.0
       max: 40.0
       decimal: 2
-    USR_ESO_V_EPSI:
+    PREGME_EVEPS:
       description:
         short: ESO velocity epsilon
       type: float
@@ -122,7 +122,7 @@ parameters:
       min: 0.0
       max: 40.0
       decimal: 2
-    USR_ESO_V_C1:
+    PREGME_EVC1:
       description:
         short: ESO velocity c1
       type: float
@@ -130,7 +130,7 @@ parameters:
       min: 0.0
       max: 40.0
       decimal: 2
-    USR_ESO_V_C2:
+    PREGME_EVC2:
       description:
         short: ESO velocity c2
       type: float
@@ -138,7 +138,7 @@ parameters:
       min: 0.0
       max: 40.0
       decimal: 2
-    USR_PRESET_L:
+    PREGME_PSL:
       description:
         short: Preset trajectory l parameter
       type: float
@@ -146,7 +146,7 @@ parameters:
       min: 0.0
       max: 20.0
       decimal: 2
-    USR_PRESET_W:
+    PREGME_PSW:
       description:
         short: Preset trajectory w parameter
       type: float
@@ -154,7 +154,7 @@ parameters:
       min: 0.0
       max: 1.0
       decimal: 2
-    USR_PRESET_EPSI:
+    PREGME_PSEPS:
       description:
         short: Preset trajectory epsilon
       type: float
@@ -162,7 +162,7 @@ parameters:
       min: 0.0
       max: 0.5
       decimal: 2
-    USR_PRESET_K:
+    PREGME_PSK:
       description:
         short: Preset trajectory k parameter
       type: float
@@ -170,7 +170,7 @@ parameters:
       min: 0.0
       max: 1.0
       decimal: 2
-    USR_THR_MIN:
+    PREGME_THRMIN:
       description:
         short: Minimum thrust in auto thrust control
         long: It's recommended to set it > 0 to avoid free fall with zero thrust.
@@ -180,7 +180,7 @@ parameters:
       max: 1.0
       decimal: 2
       increment: 0.01
-    USR_THR_HOVER:
+    PREGME_THRHOV:
       description:
         short: Hover thrust
         long: Vertical thrust required to hover. Mapped to center stick for manual throttle control.
@@ -190,13 +190,13 @@ parameters:
       max: 0.8
       decimal: 2
       increment: 0.01
-    USR_USE_HTE:
+    PREGME_UHTE:
       description:
         short: Use hover thrust estimator
-        long: Set false to use fixed parameter USR_THR_HOVER, true to use computed value
+        long: Set false to use fixed parameter PREGME_THRHOV, true to use computed value
       type: boolean
       default: true
-    USR_THR_CURVE:
+    PREGME_THRCURV:
       description:
         short: Thrust curve in Manual Mode
         long: Defines how throttle stick input is mapped to commanded thrust
@@ -204,7 +204,7 @@ parameters:
       default: 0
       min: 0
       max: 1
-    USR_THR_MAX:
+    PREGME_THRMAX:
       description:
         short: Maximum thrust in auto thrust control
       type: float
@@ -213,7 +213,7 @@ parameters:
       max: 2.0
       decimal: 2
       increment: 0.01
-    USR_MANTHR_MIN:
+    PREGME_MTHRMIN:
       description:
         short: Minimum manual thrust
         long: Minimum vertical thrust. Recommended to set > 0 to avoid free fall.
@@ -223,7 +223,7 @@ parameters:
       max: 1.0
       decimal: 2
       increment: 0.01
-    USR_Z_VEL_MAX_UP:
+    PREGME_ZVUP:
       description:
         short: Maximum vertical ascent velocity
         long: Maximum vertical velocity in AUTO mode and endpoint for stabilized modes
@@ -233,7 +233,7 @@ parameters:
       min: 0.5
       max: 8.0
       decimal: 1
-    USR_Z_VEL_MAX_DN:
+    PREGME_ZVDN:
       description:
         short: Maximum vertical descent velocity
       type: float
@@ -242,7 +242,7 @@ parameters:
       min: 0.5
       max: 4.0
       decimal: 1
-    USR_XY_CRUISE:
+    PREGME_XYCRS:
       description:
         short: Maximum horizontal velocity in mission
         long: Horizontal velocity used when flying autonomously in missions, RTL, Goto
@@ -253,7 +253,7 @@ parameters:
       max: 20.0
       increment: 1
       decimal: 2
-    USR_XY_ERR_MAX:
+    PREGME_XYERR:
       description:
         short: Maximum horizontal error allowed by trajectory generator
       type: float
@@ -261,7 +261,7 @@ parameters:
       min: 0.1
       max: 10.0
       decimal: 1
-    USR_VEL_MANUAL:
+    PREGME_VMAN:
       description:
         short: Maximum horizontal velocity for manual controlled mode
       type: float
@@ -271,7 +271,7 @@ parameters:
       max: 20.0
       increment: 1
       decimal: 2
-    USR_XY_VEL_MAX:
+    PREGME_XYVMAX:
       description:
         short: Maximum horizontal velocity
         long: Maximum horizontal velocity in AUTO mode
@@ -282,7 +282,7 @@ parameters:
       max: 20.0
       increment: 1
       decimal: 2
-    USR_TILTMAX_AIR:
+    PREGME_TILTAIR:
       description:
         short: Maximum tilt angle in air
         long: Limits maximum tilt in AUTO and POSCTRL modes during flight
@@ -292,7 +292,7 @@ parameters:
       min: 20.0
       max: 89.0
       decimal: 1
-    USR_TILTMAX_LND:
+    PREGME_TILTLND:
       description:
         short: Maximum tilt during landing
       type: float
@@ -301,7 +301,7 @@ parameters:
       min: 10.0
       max: 89.0
       decimal: 1
-    USR_LAND_SPEED:
+    PREGME_LANDSPD:
       description:
         short: Landing descend rate
       type: float
@@ -309,14 +309,14 @@ parameters:
       unit: m/s
       min: 0.6
       decimal: 1
-    USR_LAND_RC_HELP:
+    PREGME_LRCHLP:
       description:
         short: Enable user assisted descent speed for autonomous land routine
       type: int32
       default: 0
       min: 0
       max: 1
-    USR_TKO_SPEED:
+    PREGME_TKOSPD:
       description:
         short: Takeoff climb rate
       type: float
@@ -325,7 +325,7 @@ parameters:
       min: 1.0
       max: 5.0
       decimal: 2
-    USR_MAN_TILT_MAX:
+    PREGME_MTILTMX:
       description:
         short: Maximal tilt angle in manual or altitude mode
       type: float
@@ -334,7 +334,7 @@ parameters:
       min: 0.0
       max: 90.0
       decimal: 1
-    USR_MAN_Y_MAX:
+    PREGME_MYMAX:
       description:
         short: Max manual yaw rate
       type: float
@@ -343,7 +343,7 @@ parameters:
       min: 0.0
       max: 400
       decimal: 1
-    USR_MAN_Y_TAU:
+    PREGME_MYTAU:
       description:
         short: Manual yaw rate input filter time constant
         long: Setting this parameter to 0 disables the filter
@@ -353,7 +353,7 @@ parameters:
       min: 0.0
       max: 5.0
       decimal: 2
-    USR_HOLD_DZ:
+    PREGME_HDZ:
       description:
         short: Deadzone of sticks where position hold is enabled
       type: float
@@ -361,7 +361,7 @@ parameters:
       min: 0.0
       max: 1.0
       decimal: 2
-    USR_HOLD_MAX_XY:
+    PREGME_HMXY:
       description:
         short: Maximum horizontal velocity for position hold
       type: float
@@ -370,7 +370,7 @@ parameters:
       min: 0.0
       max: 3.0
       decimal: 2
-    USR_HOLD_MAX_Z:
+    PREGME_HMZ:
       description:
         short: Maximum vertical velocity for position hold
       type: float
@@ -379,7 +379,7 @@ parameters:
       min: 0.0
       max: 3.0
       decimal: 2
-    USR_VELD_LP:
+    PREGME_VELD_LP:
       description:
         short: Low pass filter cut freq for numerical velocity derivative
       type: float
@@ -388,7 +388,7 @@ parameters:
       min: 0.0
       max: 10
       decimal: 2
-    USR_ACC_HOR_MAX:
+    PREGME_AHMAX:
       description:
         short: Maximum horizontal acceleration
       type: float
@@ -398,7 +398,7 @@ parameters:
       max: 15.0
       increment: 1
       decimal: 2
-    USR_ACC_HOR:
+    PREGME_AHOR:
       description:
         short: Acceleration for auto and for manual
       type: float
@@ -408,7 +408,7 @@ parameters:
       max: 15.0
       increment: 1
       decimal: 2
-    USR_ACC_UP_MAX:
+    PREGME_AUPMAX:
       description:
         short: Maximum vertical acceleration upward
       type: float
@@ -418,7 +418,7 @@ parameters:
       max: 15.0
       increment: 1
       decimal: 2
-    USR_ACC_DOWN_MAX:
+    PREGME_ADNMAX:
       description:
         short: Maximum vertical acceleration downward
       type: float
@@ -428,7 +428,7 @@ parameters:
       max: 15.0
       increment: 1
       decimal: 2
-    USR_JERK_MAX:
+    PREGME_JMAX:
       description:
         short: Maximum jerk limit
         long: Limit the maximum jerk of the vehicle. Lower value leads to smoother motion.
@@ -439,7 +439,7 @@ parameters:
       max: 500.0
       increment: 1
       decimal: 2
-    USR_JERK_AUTO:
+    PREGME_JAUTO:
       description:
         short: Jerk limit in auto mode
       type: float
@@ -449,7 +449,7 @@ parameters:
       max: 80.0
       increment: 1
       decimal: 1
-    USR_ALT_MODE:
+    PREGME_ALTMOD:
       description:
         short: Altitude control mode
         long: |
@@ -460,7 +460,7 @@ parameters:
       default: 0
       min: 0
       max: 2
-    USR_XY_MAN_EXPO:
+    PREGME_XYEXP:
       description:
         short: Manual position control stick exponential curve sensitivity
       type: float
@@ -468,7 +468,7 @@ parameters:
       min: 0
       max: 1
       decimal: 2
-    USR_Z_MAN_EXPO:
+    PREGME_ZEXP:
       description:
         short: Manual control stick vertical exponential curve
       type: float
@@ -476,7 +476,7 @@ parameters:
       min: 0
       max: 1
       decimal: 2
-    USR_YAW_EXPO:
+    PREGME_YEXP:
       description:
         short: Manual control stick yaw rotation exponential curve
       type: float
@@ -484,7 +484,7 @@ parameters:
       min: 0
       max: 1
       decimal: 2
-    USR_YAWRAUTO_MAX:
+    PREGME_YRAUMX:
       description:
         short: Max yaw rate in auto mode
       type: float
@@ -494,7 +494,7 @@ parameters:
       max: 360.0
       decimal: 1
       increment: 5
-    USR_LAND_ALT1:
+    PREGME_LALT1:
       description:
         short: Altitude for 1st step of slow landing (descend)
       type: float
@@ -503,7 +503,7 @@ parameters:
       min: 0
       max: 122
       decimal: 1
-    USR_LAND_ALT2:
+    PREGME_LALT2:
       description:
         short: Altitude for 2nd step of slow landing (landing)
       type: float
@@ -512,7 +512,7 @@ parameters:
       min: 0
       max: 122
       decimal: 1
-    USR_TKO_RAMP_T:
+    PREGME_TKORAMP:
       description:
         short: Position control smooth takeoff ramp time constant
         long: Increasing makes takeoff slower. A time constant of 0 disables the ramp.
@@ -520,7 +520,7 @@ parameters:
       default: 3.0
       min: 0
       max: 5
-    USR_POS_MODE:
+    PREGME_POSMOD:
       description:
         short: Manual-Position control sub-mode
         long: |
@@ -531,7 +531,7 @@ parameters:
       default: 4
       min: 0
       max: 4
-    USR_SPOOLUP_TIME:
+    PREGME_SPUPTIME:
       description:
         short: Enforced delay between arming and takeoff
       type: float
@@ -539,7 +539,7 @@ parameters:
       unit: s
       min: 0
       max: 10
-    USR_YAW_MODE:
+    PREGME_YAWMOD:
       description:
         short: Yaw mode in Auto
         long: |
@@ -552,7 +552,7 @@ parameters:
       default: 0
       min: 0
       max: 4
-    USR_VEHICLE_RESP:
+    PREGME_VRESP:
       description:
         short: Responsiveness
         long: Changes overall responsiveness. Higher = faster reaction.
@@ -562,7 +562,7 @@ parameters:
       max: 1.0
       decimal: 2
       increment: 0.05
-    USR_XY_VEL_ALL:
+    PREGME_XYVALL:
       description:
         short: Overall Horizontal Velocity Limit
       type: float
@@ -572,7 +572,7 @@ parameters:
       max: 20
       decimal: 1
       increment: 1
-    USR_Z_VEL_ALL:
+    PREGME_ZVALL:
       description:
         short: Overall Vertical Velocity Limit
       type: float

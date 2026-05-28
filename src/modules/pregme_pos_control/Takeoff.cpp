@@ -1,48 +1,14 @@
-/****************************************************************************
- *
- *   Copyright (c) 2019 PX4 Development Team. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name PX4 nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- ****************************************************************************/
-
-/**
- * @file Takeoff.cpp
- */
-
 #include "Takeoff.hpp"
-#include <mathlib/mathlib.h>
+
 #include <lib/geo/geo.h>
+#include <mathlib/mathlib.h>
 
 void Takeoff::generateInitialRampValue(float velocity_p_gain)
 {
-	velocity_p_gain = math::max(velocity_p_gain, 0.01f);
-	_takeoff_ramp_vz_init = -CONSTANTS_ONE_G / velocity_p_gain;
+	// Keep the parameter path intact, but make the ramp start from a conservative
+	// zero upward-speed limit and grow toward the requested takeoff speed.
+	velocity_p_gain = math::max(fabsf(velocity_p_gain), 0.01f);
+	_takeoff_ramp_vz_init = CONSTANTS_ONE_G / velocity_p_gain;
 }
 
 void Takeoff::updateTakeoffState(const bool armed, const bool landed, const bool want_takeoff,
@@ -54,47 +20,42 @@ void Takeoff::updateTakeoffState(const bool armed, const bool landed, const bool
 	case TakeoffState::disarmed:
 		if (armed) {
 			_takeoff_state = TakeoffState::spoolup;
-
 		} else {
 			break;
 		}
-
-	// FALLTHROUGH
+		// FALLTHROUGH
 	case TakeoffState::spoolup:
 		if (_spoolup_time_hysteresis.get_state()) {
 			_takeoff_state = TakeoffState::ready_for_takeoff;
-
 		} else {
 			break;
 		}
-
-	// FALLTHROUGH
+		// FALLTHROUGH
 	case TakeoffState::ready_for_takeoff:
 		if (want_takeoff) {
 			_takeoff_state = TakeoffState::rampup;
 			_takeoff_ramp_progress = 0.f;
-
 		} else {
 			break;
 		}
-
-	// FALLTHROUGH
+		// FALLTHROUGH
 	case TakeoffState::rampup:
 		if (_takeoff_ramp_progress >= 1.f) {
 			_takeoff_state = TakeoffState::flight;
-
 		} else {
 			break;
 		}
-
-	// FALLTHROUGH
+		// FALLTHROUGH
 	case TakeoffState::flight:
-		if (landed) {
+		// During the first part of takeoff the land detector can still report
+		// landed/ground_contact. Do not drop back to ready_for_takeoff while
+		// a takeoff request is still active, otherwise the ramp is repeatedly
+		// restarted and the aircraft may stay on fast idle without leaving ground.
+		if (landed && !want_takeoff) {
 			_takeoff_state = TakeoffState::ready_for_takeoff;
+			_takeoff_ramp_progress = 0.f;
 		}
-
 		break;
-
 	default:
 		break;
 	}
@@ -103,18 +64,19 @@ void Takeoff::updateTakeoffState(const bool armed, const bool landed, const bool
 		_takeoff_state = TakeoffState::flight;
 	}
 
-	// TODO: need to consider free fall here
 	if (!armed) {
 		_takeoff_state = TakeoffState::disarmed;
+		_takeoff_ramp_progress = 0.f;
 	}
 }
 
 float Takeoff::updateRamp(const float dt, const float takeoff_desired_vz)
 {
-	float upwards_velocity_limit = takeoff_desired_vz;
+	float upwards_velocity_limit = 0.f;
 
-	if (_takeoff_state < TakeoffState::rampup) {
-		upwards_velocity_limit = _takeoff_ramp_vz_init;
+	if (_takeoff_state >= TakeoffState::flight) {
+		upwards_velocity_limit = takeoff_desired_vz;
+		return math::max(upwards_velocity_limit, 0.f);
 	}
 
 	if (_takeoff_state == TakeoffState::rampup) {
@@ -125,10 +87,9 @@ float Takeoff::updateRamp(const float dt, const float takeoff_desired_vz)
 			_takeoff_ramp_progress = 1.f;
 		}
 
-		if (_takeoff_ramp_progress < 1.f) {
-			upwards_velocity_limit = _takeoff_ramp_vz_init + _takeoff_ramp_progress * (takeoff_desired_vz - _takeoff_ramp_vz_init);
-		}
+		_takeoff_ramp_progress = math::constrain(_takeoff_ramp_progress, 0.f, 1.f);
+		upwards_velocity_limit = _takeoff_ramp_progress * takeoff_desired_vz;
 	}
 
-	return upwards_velocity_limit;
+	return math::max(upwards_velocity_limit, 0.f);
 }
