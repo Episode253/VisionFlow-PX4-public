@@ -129,8 +129,6 @@ private:
 	matrix::Vector3f _torque{0.f, 0.f, 0.f};
 	float pos_z{0.f};
 
-	float _mass_uav{0.f};
-	float _mass_manip{0.f};
 
 	DEFINE_PARAMETERS(
 		(ParamFloat<px4::params::USR_TAU_COE>) _param_usr_tau_coe,
@@ -142,8 +140,6 @@ private:
 		(ParamFloat<px4::params::USR_I_XZ>) _param_usr_i_xz,
 		(ParamFloat<px4::params::USR_I_YZ>) _param_usr_i_yz,
 
-		(ParamFloat<px4::params::USR_MASS_UAV>) _param_usr_mass_uav,
-		(ParamFloat<px4::params::USR_MASS_MANIP>) _param_usr_mass_manip,
 
 		(ParamFloat<px4::params::USR_LAMBDA_Q_X>) _param_usr_lambda_q_x,
 		(ParamFloat<px4::params::USR_LAMBDA_Q_Y>) _param_usr_lambda_q_y,

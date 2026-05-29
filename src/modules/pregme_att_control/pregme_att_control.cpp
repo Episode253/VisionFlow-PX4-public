@@ -62,8 +62,6 @@ void UserAttitudeControl::parameters_updated()
 		_param_PresetTraj_epsilon.get(),
 		_param_PresetTraj_k.get());
 
-	_mass_uav = _param_usr_mass_uav.get();
-	_mass_manip = _param_usr_mass_manip.get();
 
 	float inertia_b[9] = {
 		_param_usr_i_xx.get(), -_param_usr_i_xy.get(), -_param_usr_i_xz.get(),
