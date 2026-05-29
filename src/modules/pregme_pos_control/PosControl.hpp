@@ -47,7 +47,6 @@ public:
 	PosControl() = default;
 	~PosControl() = default;
 
-	void setMasses(const float m_multirotor, const float m_manipulator) { _Mb = m_multirotor; _SUM_mi = m_manipulator; }
 
 	void setControlParas(const matrix::Vector3f &bm_lambda_p, const matrix::Vector3f &bm_K_p);
 	void setCESOParas(const matrix::Vector3f &CESO_l1, const matrix::Vector3f &CESO_l2,
@@ -89,8 +88,6 @@ private:
 
 	matrix::Vector3f g = matrix::Vector3f(0.f, 0.f, G);
 
-	float _Mb{0.f};
-	float _SUM_mi{0.f};
 
 	PositionControlStates _states{};
 

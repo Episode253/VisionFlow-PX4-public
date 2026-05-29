@@ -2,22 +2,6 @@ module_name: pregme_pos_control
 parameters:
 - group: Pregme Position Control
   definitions:
-    PREGME_MUAV:
-      description:
-        short: Mass of UAV
-      type: float
-      default: 5.0
-      min: 0.0
-      max: 40.0
-      decimal: 2
-    PREGME_MMANIP:
-      description:
-        short: Mass of manipulator
-      type: float
-      default: 2.3
-      min: 0.0
-      max: 40.0
-      decimal: 2
     PREGME_LPX:
       description:
         short: Position control lambda_x
@@ -198,14 +182,6 @@ parameters:
           value
       type: boolean
       default: true
-    PREGME_THRCURV:
-      description:
-        short: Thrust curve in Manual Mode
-        long: Defines how throttle stick input is mapped to commanded thrust
-      type: int32
-      default: 0
-      min: 0
-      max: 1
     PREGME_THRMAX:
       description:
         short: Maximum thrust in auto thrust control
@@ -213,16 +189,6 @@ parameters:
       default: 1.0
       min: 0.0
       max: 2.0
-      decimal: 2
-      increment: 0.01
-    PREGME_MTHRMIN:
-      description:
-        short: Minimum manual thrust
-        long: Minimum vertical thrust. Recommended to set > 0 to avoid free fall.
-      type: float
-      default: 0.07999999821186066
-      min: 0.0
-      max: 1.0
       decimal: 2
       increment: 0.01
     PREGME_ZVUP:
@@ -256,14 +222,6 @@ parameters:
       max: 20.0
       increment: 0.1
       decimal: 2
-    PREGME_XYERR:
-      description:
-        short: Maximum horizontal error allowed by trajectory generator
-      type: float
-      default: 2.0
-      min: 0.1
-      max: 10.0
-      decimal: 1
     PREGME_VMAN:
       description:
         short: Maximum horizontal velocity for manual controlled mode
@@ -314,13 +272,6 @@ parameters:
       # min: 0.6
       min: 0.4
       decimal: 1
-    PREGME_LRCHLP:
-      description:
-        short: Enable user assisted descent speed for autonomous land routine
-      type: int32
-      default: 0
-      min: 0
-      max: 1
     PREGME_TKOSPD:
       description:
         short: Takeoff climb rate
@@ -331,15 +282,6 @@ parameters:
       min: 0.6
       max: 5.0
       decimal: 2
-    PREGME_MTILTMX:
-      description:
-        short: Maximal tilt angle in manual or altitude mode
-      type: float
-      default: 35.0
-      unit: deg
-      min: 0.0
-      max: 90.0
-      decimal: 1
     PREGME_MYMAX:
       description:
         short: Max manual yaw rate
@@ -358,32 +300,6 @@ parameters:
       unit: s
       min: 0.0
       max: 5.0
-      decimal: 2
-    PREGME_HDZ:
-      description:
-        short: Deadzone of sticks where position hold is enabled
-      type: float
-      default: 0.1
-      min: 0.0
-      max: 1.0
-      decimal: 2
-    PREGME_HMXY:
-      description:
-        short: Maximum horizontal velocity for position hold
-      type: float
-      default: 0.8
-      unit: m/s
-      min: 0.0
-      max: 3.0
-      decimal: 2
-    PREGME_HMZ:
-      description:
-        short: Maximum vertical velocity for position hold
-      type: float
-      default: 0.6
-      unit: m/s
-      min: 0.0
-      max: 3.0
       decimal: 2
     PREGME_VELD_LP:
       description:
@@ -456,72 +372,6 @@ parameters:
       max: 80.0
       increment: 1
       decimal: 1
-    PREGME_ALTMOD:
-      description:
-        short: Altitude control mode
-        long: '0: Altitude following
-
-          1: Terrain following
-
-          2: Terrain hold when stationary, altitude when moving
-
-          '
-      type: int32
-      default: 0
-      min: 0
-      max: 2
-    PREGME_XYEXP:
-      description:
-        short: Manual position control stick exponential curve sensitivity
-      type: float
-      default: 0.6
-      min: 0
-      max: 1
-      decimal: 2
-    PREGME_ZEXP:
-      description:
-        short: Manual control stick vertical exponential curve
-      type: float
-      default: 0.6
-      min: 0
-      max: 1
-      decimal: 2
-    PREGME_YEXP:
-      description:
-        short: Manual control stick yaw rotation exponential curve
-      type: float
-      default: 0.6
-      min: 0
-      max: 1
-      decimal: 2
-    PREGME_YRAUMX:
-      description:
-        short: Max yaw rate in auto mode
-      type: float
-      default: 45.0
-      unit: deg/s
-      min: 0.0
-      max: 360.0
-      decimal: 1
-      increment: 5
-    PREGME_LALT1:
-      description:
-        short: Altitude for 1st step of slow landing (descend)
-      type: float
-      default: 10.0
-      unit: m
-      min: 0
-      max: 122
-      decimal: 1
-    PREGME_LALT2:
-      description:
-        short: Altitude for 2nd step of slow landing (landing)
-      type: float
-      default: 5.0
-      unit: m
-      min: 0
-      max: 122
-      decimal: 1
     PREGME_TKORAMP:
       description:
         short: Position control smooth takeoff ramp time constant
@@ -530,20 +380,6 @@ parameters:
       default: 3.0
       min: 0
       max: 5
-    PREGME_POSMOD:
-      description:
-        short: Manual-Position control sub-mode
-        long: '0: Simple position control
-
-          3: Smooth position control (Jerk optimized)
-
-          4: Acceleration based input
-
-          '
-      type: int32
-      default: 4
-      min: 0
-      max: 4
     PREGME_SPUPTIME:
       description:
         short: Enforced delay between arming and takeoff
@@ -552,24 +388,6 @@ parameters:
       unit: s
       min: 0
       max: 10
-    PREGME_YAWMOD:
-      description:
-        short: Yaw mode in Auto
-        long: '0: towards waypoint
-
-          1: towards home
-
-          2: away from home
-
-          3: along trajectory
-
-          4: towards waypoint (yaw first)
-
-          '
-      type: int32
-      default: 0
-      min: 0
-      max: 4
     PREGME_VRESP:
       description:
         short: Responsiveness

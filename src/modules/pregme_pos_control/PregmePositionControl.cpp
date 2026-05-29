@@ -163,7 +163,6 @@ int PregmePositionControl::parameters_update(bool force)
 			mavlink_log_critical(nullptr, "Land tilt has been constrained by max tilt");
 		}
 
-		_control.setMasses(_param_pregme_mass_uav.get(), _param_pregme_mass_manipulator.get());
 		_control.setControlParas(Vector3f(_param_pregme_lambda_p_x.get(), _param_pregme_lambda_p_y.get(), _param_pregme_lambda_p_z.get()),
 					 Vector3f(_param_pregme_k_p_x.get(), _param_pregme_k_p_y.get(), _param_pregme_k_p_z.get()));
 		_control.setCESOParas(Vector3f(_param_eso_v_l1_x.get(), _param_eso_v_l1_y.get(), _param_eso_v_l1_z.get()),

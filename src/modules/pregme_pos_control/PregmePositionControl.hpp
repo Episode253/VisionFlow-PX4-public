@@ -91,8 +91,6 @@ private:
 	};
 
 	DEFINE_PARAMETERS(
-		(ParamFloat<px4::params::PREGME_MUAV>) _param_pregme_mass_uav,
-		(ParamFloat<px4::params::PREGME_MMANIP>) _param_pregme_mass_manipulator,
 		(ParamFloat<px4::params::PREGME_LPX>) _param_pregme_lambda_p_x,
 		(ParamFloat<px4::params::PREGME_LPY>) _param_pregme_lambda_p_y,
 		(ParamFloat<px4::params::PREGME_LPZ>) _param_pregme_lambda_p_z,
@@ -124,9 +122,6 @@ private:
 		(ParamFloat<px4::params::PREGME_LANDSPD>) _param_pregme_land_speed,
 		(ParamFloat<px4::params::PREGME_VMAN>) _param_pregme_vel_manual,
 		(ParamFloat<px4::params::PREGME_XYCRS>) _param_pregme_xy_cruise,
-		(ParamFloat<px4::params::PREGME_LALT2>) _param_pregme_land_alt2,
-		(ParamInt<px4::params::PREGME_POSMOD>) _param_pregme_pos_mode,
-		(ParamInt<px4::params::PREGME_ALTMOD>) _param_pregme_alt_mode,
 		(ParamFloat<px4::params::PREGME_TILTLND>) _param_pregme_tiltmax_lnd,
 		(ParamFloat<px4::params::PREGME_THRMIN>) _param_pregme_thr_min,
 		(ParamFloat<px4::params::PREGME_THRMAX>) _param_pregme_thr_max,

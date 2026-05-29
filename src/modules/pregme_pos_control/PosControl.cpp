@@ -243,22 +243,13 @@ void PosControl::_positionControl(const float dt)
 	_autopilot.zp_dot = _autopilot.vel_err - _preset_traj.k * _preset_traj.ed_dot;
 	_autopilot.slide_mode = _autopilot.zp_dot + _contolParas.bm_lambda_p * _autopilot.zp;
 
-	// Protect against invalid or zero mass parameters. A zero total mass makes the
-	// controller generate NaN/zero thrust, which appears in QGC as idle-only output.
-	const float total_mass = math::max(_Mb + _SUM_mi, 0.1f);
+	_autopilot.f_iusl = _contolParas.bm_Kp * _autopilot.slide_mode + g + delta_v
+		+ _contolParas.bm_lambda_p * _autopilot.zp_dot - _preset_traj.k * _preset_traj.ed_ddot;
 
-	// Keep the V1.13 controller behavior: trajectory acceleration is not used
-	// as a direct feed-forward term in this custom control law. In PX4,
-	// acceleration[2] = 100 can also be used as a no-thrust sentinel before
-	// takeoff; feeding it directly into _acc_cal changes the original V1.13
-	// dynamics and can break takeoff transients.
-	_autopilot.f_iusl = total_mass * (_contolParas.bm_Kp * _autopilot.slide_mode + g + delta_v
-		+ _contolParas.bm_lambda_p * _autopilot.zp_dot - _preset_traj.k * _preset_traj.ed_ddot);
-
-	const Vector3f u_v = - (1.0f / total_mass) * _autopilot.f_iusl + g;
+	const Vector3f u_v = -_autopilot.f_iusl + g;
 	PositionCESO(_pos, u_v, dt);
 
-	_acc_cal = - _autopilot.f_iusl / total_mass + g;
+	_acc_cal = -_autopilot.f_iusl + g;
 
 	Vector3f body_z = Vector3f(-_acc_cal(0), -_acc_cal(1), G).normalized();
 	ControlMath::limitTilt(body_z, Vector3f(0, 0, 1), _lim_tilt);
