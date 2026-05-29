@@ -126,17 +126,25 @@ int PregmePositionControl::parameters_update(bool force)
 
 		if (_param_pregme_xy_vel_all.get() >= 0.f) {
 			const float xy_vel = _param_pregme_xy_vel_all.get();
+
 			num_changed += _param_pregme_vel_manual.commit_no_notification(xy_vel);
 			num_changed += _param_pregme_xy_cruise.commit_no_notification(xy_vel);
 			num_changed += _param_pregme_xy_vel_max.commit_no_notification(xy_vel);
+
+			_param_pregme_xy_vel_all.set(-1.f);
+			num_changed += _param_pregme_xy_vel_all.commit_no_notification();
 		}
 
 		if (_param_pregme_z_vel_all.get() >= 0.f) {
 			const float z_vel = _param_pregme_z_vel_all.get();
+
 			num_changed += _param_pregme_z_vel_max_up.commit_no_notification(z_vel);
 			num_changed += _param_pregme_z_vel_max_dn.commit_no_notification(z_vel * 0.75f);
 			num_changed += _param_pregme_tko_speed.commit_no_notification(z_vel * 0.6f);
 			num_changed += _param_pregme_land_speed.commit_no_notification(z_vel * 0.5f);
+
+			_param_pregme_z_vel_all.set(-1.f);
+			num_changed += _param_pregme_z_vel_all.commit_no_notification();
 		}
 
 		if (num_changed > 0) {

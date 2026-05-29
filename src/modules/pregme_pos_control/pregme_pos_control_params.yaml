@@ -248,13 +248,13 @@ parameters:
       description:
         short: Maximum horizontal velocity in mission
         long: Horizontal velocity used when flying autonomously in missions, RTL,
-          Goto
+          Goto. Must not exceed PREGME_XYVMAX.
       type: float
-      default: 3.0
+      default: 10.0
       unit: m/s
-      min: 3.0
+      min: 2.0
       max: 20.0
-      increment: 1
+      increment: 0.1
       decimal: 2
     PREGME_XYERR:
       description:
@@ -267,23 +267,24 @@ parameters:
     PREGME_VMAN:
       description:
         short: Maximum horizontal velocity for manual controlled mode
+        long: Manual horizontal velocity limit. Must not exceed PREGME_XYVMAX.
       type: float
-      default: 3.0
+      default: 10.0
       unit: m/s
-      min: 3.0
+      min: 2.0
       max: 20.0
-      increment: 1
+      increment: 0.1
       decimal: 2
     PREGME_XYVMAX:
       description:
         short: Maximum horizontal velocity
-        long: Maximum horizontal velocity in AUTO mode
+        long: Overall safety upper bound for horizontal velocity setpoints.
       type: float
-      default: 3.0
+      default: 20.0
       unit: m/s
-      min: 0.0
+      min: 2.0
       max: 20.0
-      increment: 1
+      increment: 0.1
       decimal: 2
     PREGME_TILTAIR:
       description:
@@ -574,28 +575,30 @@ parameters:
         short: Responsiveness
         long: Changes overall responsiveness. Higher = faster reaction.
       type: float
-      default: -0.4000000059604645
+      default: -1.0
       min: -1.0
       max: 1.0
       decimal: 2
       increment: 0.05
     PREGME_XYVALL:
       description:
-        short: Overall Horizontal Velocity Limit
+        short: One-shot overall horizontal velocity setter
+        long: Set to a non-negative value to copy it once into PREGME_VMAN, PREGME_XYCRS and PREGME_XYVMAX. The controller resets this parameter to -1 after applying it. Leave at -1 to tune those parameters independently.
       type: float
-      default: 3.0
+      default: -1.0
       unit: m/s
-      min: -20
-      max: 20
+      min: -1.0
+      max: 20.0
       decimal: 1
-      increment: 1
+      increment: 0.1
     PREGME_ZVALL:
       description:
-        short: Overall Vertical Velocity Limit
+        short: One-shot overall vertical velocity setter
+        long: Set to a non-negative value to derive PREGME_ZVUP, PREGME_ZVDN, PREGME_TKOSPD and PREGME_LANDSPD once. The controller resets this parameter to -1 after applying it. Leave at -1 to tune those parameters independently.
       type: float
-      default: 1.0
+      default: -1.0
       unit: m/s
-      min: -3
-      max: 8
+      min: -1.0
+      max: 10.0
       decimal: 1
-      increment: 0.5
+      increment: 0.1
