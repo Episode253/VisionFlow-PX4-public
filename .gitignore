@@ -126,3 +126,8 @@ windshape_dev/data_stream/image_stream/log/
 thirdparty/build/*
 thirdparty/install/*
 thirdparty/log/*
+
+windshape_dev/tools/px4_log_eval_system/output/*
+
+install/*
+log/*
