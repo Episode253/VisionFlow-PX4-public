@@ -7,26 +7,29 @@ parameters:
         short: I_xx of quadcopter
         long: Inertia matrix element I_xx for the quadcopter
       type: float
-      default: 0.21
+      default: 0.20
       min: 0.0
       max: 20.0
       decimal: 2
+      increment: 0.01
     USR_I_YY:
       description:
         short: I_yy of quadcopter
       type: float
-      default: 0.21
+      default: 0.19
       min: 0.0
       max: 20.0
       decimal: 2
+      increment: 0.01
     USR_I_ZZ:
       description:
         short: I_zz of quadcopter
       type: float
-      default: 0.4
+      default: 0.33
       min: 0.0
       max: 20.0
       decimal: 2
+      increment: 0.01
     USR_I_XY:
       description:
         short: I_xy of quadcopter
@@ -35,6 +38,7 @@ parameters:
       min: 0.0
       max: 20.0
       decimal: 2
+      increment: 0.01
     USR_I_XZ:
       description:
         short: I_xz of quadcopter
@@ -43,6 +47,7 @@ parameters:
       min: 0.0
       max: 20.0
       decimal: 2
+      increment: 0.01
     USR_I_YZ:
       description:
         short: I_yz of quadcopter
@@ -51,14 +56,16 @@ parameters:
       min: 0.0
       max: 20.0
       decimal: 2
+      increment: 0.01
     USR_LAMBDA_Q_X:
       description:
         short: Lambda_q_x gain
       type: float
       default: 20.0
       min: 0.0
-      max: 100.0
+      max: 60.0
       decimal: 2
+      increment: 0.1
     USR_LAMBDA_Q_Y:
       description:
         short: Lambda_q_y gain
@@ -67,6 +74,7 @@ parameters:
       min: 0.0
       max: 40.0
       decimal: 2
+      increment: 0.1
     USR_LAMBDA_Q_Z:
       description:
         short: Lambda_q_z gain
@@ -75,30 +83,34 @@ parameters:
       min: 0.0
       max: 40.0
       decimal: 2
+      increment: 0.1
     USR_K_Q_X:
       description:
         short: K_q_x gain
       type: float
       default: 7.8
       min: 0.0
-      max: 40.0
+      max: 30.0
       decimal: 2
+      increment: 0.1
     USR_K_Q_Y:
       description:
         short: K_q_y gain
       type: float
       default: 8.6
       min: 0.0
-      max: 40.0
+      max: 30.0
       decimal: 2
+      increment: 0.1
     USR_K_Q_Z:
       description:
         short: K_q_z gain
       type: float
-      default: 14.0
+      default: 12.0
       min: 0.0
-      max: 40.0
+      max: 30.0
       decimal: 2
+      increment: 0.1
     USR_ESO_L_X:
       description:
         short: ESO_l_x gain
@@ -183,10 +195,11 @@ parameters:
       description:
         short: Scale factor for torque
       type: float
-      default: 28.0
-      min: 0.0
-      max: 50.0
+      default: 8.0
+      min: 6.0
+      max: 40.0
       decimal: 2
+      increment: 0.1
     USR_ROLLRATE_MAX:
       description:
         short: Max roll rate
@@ -252,24 +265,27 @@ parameters:
       type: float
       default: 0.08
       min: 0.0
-      max: 1.0
+      max: 0.95
       decimal: 2
+      increment: 0.01
     USR_THR_MAX:
       description:
         short: Maximum throttle for stabilized mode
       type: float
       default: 0.95
       min: 0.0
-      max: 1.0
+      max: 0.95
       decimal: 2
+      increment: 0.01
     USR_THR_HOVER:
       description:
         short: Throttle at which vehicle is at hover equilibrium
       type: float
-      default: 0.65
+      default: 0.68
       min: 0.0
-      max: 1.0
+      max: 0.95
       decimal: 2
+      increment: 0.01
     USR_THR_CURVE:
       description:
         short: Throttle curve behavior
@@ -277,13 +293,13 @@ parameters:
       type: int32
       default: 0
       min: 0
-      max: 2
+      max: 1
     USR_BAT_SCALE_EN:
       description:
         short: Battery power level scaler
         long: Compensates for voltage drop of the battery over time
       type: boolean
-      default: false
+      default: true
     USR_AIRMODE:
       description:
         short: Airmode
