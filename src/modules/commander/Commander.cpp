@@ -2207,7 +2207,8 @@ void Commander::landDetectorUpdate()
 				events::send(events::ID("commander_landing_detected"), events::Log::Info, "Landing detected");
 
 			} else if (was_landed && !_vehicle_land_detected.landed) {
-				mavlink_log_info(&_mavlink_log_pub, "Takeoff detected\t");
+				// mavlink_log_info(&_mavlink_log_pub, "Takeoff detected\t");
+				PX4_INFO("%sVision Flow PX4-Autopilot: Takeoff detected%s", PX4_ANSI_COLOR_GREEN, PX4_ANSI_COLOR_RESET);
 				events::send(events::ID("commander_takeoff_detected"), events::Log::Info, "Takeoff detected");
 				_vehicle_status.takeoff_time = hrt_absolute_time();
 				_have_taken_off_since_arming = true;
@@ -2479,7 +2480,7 @@ void Commander::checkAndInformReadyForTakeoff()
 	    _vehicle_status.vehicle_type == vehicle_status_s::VEHICLE_TYPE_FIXED_WING) {
 		if (!ready_for_takeoff_printed &&
 		    _health_and_arming_checks.canArm(vehicle_status_s::NAVIGATION_STATE_AUTO_TAKEOFF)) {
-			PX4_INFO("%sReady for takeoff!%s", PX4_ANSI_COLOR_GREEN, PX4_ANSI_COLOR_RESET);
+			PX4_INFO("%sVision Flow PX4-Autopilot: Ready for takeoff%s", PX4_ANSI_COLOR_GREEN, PX4_ANSI_COLOR_RESET);
 			ready_for_takeoff_printed = true;
 		}
 	}
