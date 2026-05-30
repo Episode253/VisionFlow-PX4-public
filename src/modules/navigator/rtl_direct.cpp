@@ -83,8 +83,10 @@ void RtlDirect::on_activation()
 
 	set_rtl_item();
 
-	mavlink_log_info(_navigator->get_mavlink_log_pub(), "RTL: start return at %d m (%d m above destination)\t",
-			 (int)ceilf(_rtl_alt), (int)ceilf(_rtl_alt - _destination.alt));
+	// mavlink_log_info(_navigator->get_mavlink_log_pub(), "RTL: start return at %d m (%d m above destination)\t",
+	// 		 (int)ceilf(_rtl_alt), (int)ceilf(_rtl_alt - _destination.alt));
+	PX4_INFO("%sRTL: start return at %d m (%d m above destination)\t%s", PX4_ANSI_COLOR_GREEN, (int)ceilf(_rtl_alt), (int)ceilf(_rtl_alt - _destination.alt), PX4_ANSI_COLOR_RESET);
+
 	events::send<int32_t, int32_t>(events::ID("vrtl_return_at"), events::Log::Info,
 				       "RTL: start return at {1m_v} ({2m_v} above destination)",
 				       (int32_t)ceilf(_rtl_alt), (int32_t)ceilf(_rtl_alt - _destination.alt));
