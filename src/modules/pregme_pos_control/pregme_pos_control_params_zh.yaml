@@ -1,0 +1,457 @@
+module_name: pregme_pos_control
+parameters:
+- group: Pregme Position Control
+  definitions:
+    PREGME_LPX:
+      description:
+        short: X 轴位置 lambda 增益
+        long: X 轴位置外环滑模面中的 lambda_p 对角增益。代码中用于 slide_mode = zp_dot + lambda_p * zp；数值越大，X 方向位置误差收敛越快，但会带来更大的加速度和推力需求。
+      type: float
+      default: 1.6
+      min: 0.0
+      max: 5.0
+      decimal: 2
+    PREGME_LPY:
+      description:
+        short: Y 轴位置 lambda 增益
+        long: Y 轴位置外环滑模面中的 lambda_p 对角增益。数值越大，横向误差修正越积极，但过大可能导致横向振荡或姿态响应变急。
+      type: float
+      default: 1.6
+      min: 0.0
+      max: 5.0
+      decimal: 2
+    PREGME_LPZ:
+      description:
+        short: Z 轴位置 lambda 增益
+        long: Z 轴高度通道的 lambda_p 对角增益，用于塑造高度误差收敛速度。数值越大，高度修正更强，但垂向推力变化也会更敏感。
+      type: float
+      default: 2.4
+      min: 0.0
+      max: 5.0
+      decimal: 2
+    PREGME_KPX:
+      description:
+        short: X 轴位置反馈增益
+        long: 作用在 X 轴滑模变量上的 Kp 增益，参与 f_iusl 计算。数值越大，水平纠偏加速度越强；过大可能触发姿态和推力饱和，飞控又要开始表演杂技。
+      type: float
+      default: 1.8
+      min: 0.0
+      max: 5.0
+      decimal: 2
+    PREGME_KPY:
+      description:
+        short: Y 轴位置反馈增益
+        long: 作用在 Y 轴滑模变量上的 Kp 增益，增强横向位置纠偏能力。应结合 PREGME_LPY、水平速度限制和推力限制一起调。
+      type: float
+      default: 1.8
+      min: 0.0
+      max: 5.0
+      decimal: 2
+    PREGME_KPZ:
+      description:
+        short: Z 轴位置反馈增益
+        long: 作用在垂向滑模变量上的 Kp 增益，直接影响高度通道推力需求；代码中还会用它生成起飞斜坡的初始相关量。
+      type: float
+      default: 1.6
+      min: 0.0
+      max: 5.0
+      decimal: 2
+    PREGME_EV1X:
+      description:
+        short: X 轴位置 CESO 一阶增益
+        long: X 轴位置 CESO 的第一层观测增益，作用于位置估计误差，影响速度估计。数值越大，跟踪越快，但对位置噪声也更敏感。
+      type: float
+      default: 0.01
+      min: 0.0
+      max: 5.0
+      decimal: 2
+      increment: 0.001
+    PREGME_EV1Y:
+      description:
+        short: Y 轴位置 CESO 一阶增益
+        long: Y 轴位置 CESO 的第一层观测增益，影响横向速度估计。定位数据噪声较大时不要盲目加大，飞控不是滤波器许愿机。
+      type: float
+      default: 0.01
+      min: 0.0
+      max: 5.0
+      decimal: 2
+      increment: 0.001
+    PREGME_EV1Z:
+      description:
+        short: Z 轴位置 CESO 一阶增益
+        long: Z 轴位置 CESO 的第一层观测增益，影响高度相关速度估计。过大可能让垂向扰动估计变噪，表现为高度/油门更躁动。
+      type: float
+      default: 0.01
+      min: 0.0
+      max: 5.0
+      decimal: 2
+      increment: 0.001
+    PREGME_EV2X:
+      description:
+        short: X 轴位置 CESO 二阶增益
+        long: X 轴 CESO 第二层观测增益，作用于速度估计误差，并生成扰动估计 delta_est。数值越大，抗扰更强，但也可能注入噪声。
+      type: float
+      default: 0.008
+      min: 0.0
+      max: 5.0
+      decimal: 2
+      increment: 0.001
+    PREGME_EV2Y:
+      description:
+        short: Y 轴位置 CESO 二阶增益
+        long: Y 轴 CESO 第二层观测增益，用于形成横向扰动估计。应和 EV1Y 配合调节，避免横向加速度抖动。
+      type: float
+      default: 0.01
+      min: 0.0
+      max: 5.0
+      decimal: 2
+      increment: 0.001
+    PREGME_EV2Z:
+      description:
+        short: Z 轴位置 CESO 二阶增益
+        long: Z 轴 CESO 第二层观测增益。代码中 Z 向原始扰动估计不会直接进推力，而是先限幅、低通和死区处理，以避免 OFFBOARD 悬停时油门抽动。
+      type: float
+      default: 0.01
+      min: 0.0
+      max: 5.0
+      decimal: 2
+      increment: 0.001
+    PREGME_EVEPS:
+      description:
+        short: 位置 CESO epsilon
+        long: CESO 缩放参数。观测器修正项会除以 epsilon，所以越小代表观测器越快、越强。代码对接近 0 的值做了保护，但过小仍可能放大噪声。
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 40.0
+      decimal: 2
+    PREGME_EVC1:
+      description:
+        short: 位置 CESO 非线性系数 c1
+        long: 非线性 CESO 函数分母中的形状系数。c1 越大，大误差下的等效观测增益越低，修正更柔和。
+      type: float
+      default: 0.3
+      min: 0.0
+      max: 5.0
+      decimal: 2
+      increment: 0.01
+    PREGME_EVC2:
+      description:
+        short: 位置 CESO 非线性系数 c2
+        long: 非线性 CESO 函数分母中的偏置系数。c2 越大，小信号观测增益越低，扰动估计更平滑但响应更慢。
+      type: float
+      default: 0.5
+      min: 0.0
+      max: 5.0
+      decimal: 2
+      increment: 0.01
+    PREGME_PSL:
+      description:
+        short: 预设性能轨迹衰减率
+        long: 预设性能轨迹参数 l，控制位置设定值变化后误差包络的衰减速度。数值越大，瞬态目标衰减越快，控制更积极。
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 20.0
+      decimal: 2
+    PREGME_PSW:
+      description:
+        short: 预设性能轨迹误差权重
+        long: 预设性能轨迹参数 w，用于缩放初始位置误差和速度误差，进而生成 ed、ed_dot、ed_ddot。
+      type: float
+      default: 0.10000000149011612
+      min: 0.0
+      max: 1.0
+      decimal: 2
+    PREGME_PSEPS:
+      description:
+        short: 预设轨迹刷新阈值
+        long: 用于判断位置设定值是否发生明显变化并刷新预设轨迹，同时也加入内部 c 系数，避免奇异问题。
+      type: float
+      default: 0.05
+      min: 0.0
+      max: 1.0
+      decimal: 2
+    PREGME_PSK:
+      description:
+        short: 预设轨迹补偿增益
+        long: 预设轨迹补偿耦合系数。代码中使用 zp = pos_err - k * ed、zp_dot = vel_err - k * ed_dot；k=0 基本相当于关闭大部分预设瞬态补偿。
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 1.0
+      decimal: 2
+    PREGME_THRMIN:
+      description:
+        short: 位置控制最小推力
+        long: 飞行状态下使用的归一化最小推力限制。未起飞或无起飞请求的地面接触状态下，控制器允许推力降为 0，避免落地后还硬顶油门。
+      type: float
+      default: 0.4
+      min: 0.0
+      max: 0.95
+      decimal: 2
+      increment: 0.01
+    PREGME_THRHOV:
+      description:
+        short: 固定悬停推力
+        long: 悬停所需的名义归一化推力。起飞前一定使用该固定值；关闭悬停推力估计或估计尚未初始化时，也使用该值。
+      type: float
+      default: 0.68
+      min: 0.1
+      max: 0.8
+      decimal: 2
+      increment: 0.01
+    PREGME_UHTE:
+      description:
+        short: 启用悬停推力估计
+        long: 是否使用 hover_thrust_estimate。注意：只有已经进入飞行状态且未 landed/ground_contact 时才会使用；起飞前仍强制使用 PREGME_THRHOV，保证起飞过程确定。
+      type: boolean
+      default: true
+    PREGME_THRMAX:
+      description:
+        short: 位置控制最大推力
+        long: 位置控制器的归一化最大推力上限。它限制垂向推力，也会决定还能分配给水平推力向量的余量。
+      type: float
+      default: 0.95
+      min: 0.0
+      max: 0.95
+      decimal: 2
+      increment: 0.01
+    PREGME_ZVUP:
+      description:
+        short: 最大上升速度
+        long: 垂向向上速度限制，也用于起飞斜坡输出的速度上限。起飞速度 PREGME_TKOSPD 不会超过该值。
+      type: float
+      default: 1.0
+      unit: m/s
+      min: 0.5
+      max: 8.0
+      decimal: 1
+    PREGME_ZVDN:
+      description:
+        short: 最大下降速度
+        long: 垂向下降速度限制，用于下降、着陆和 failsafe 降落逻辑。
+      type: float
+      default: 0.75
+      unit: m/s
+      min: 0.5
+      max: 4.0
+      decimal: 1
+    PREGME_XYCRS:
+      description:
+        short: 自主水平巡航速度
+        long: 自主/任务类水平巡航速度参数，会被限制不超过 PREGME_XYVMAX。当前模块中主要作为 PX4 风格参数兼容项保留。
+      type: float
+      default: 10.0
+      unit: m/s
+      min: 2.0
+      max: 20.0
+      increment: 0.1
+      decimal: 2
+    PREGME_VMAN:
+      description:
+        short: 手动水平速度限制
+        long: 手动模式水平速度限制参数，会被限制不超过 PREGME_XYVMAX。当前模块中主要受 XY 一键速度设置和响应性参数影响。
+      type: float
+      default: 10.0
+      unit: m/s
+      min: 2.0
+      max: 20.0
+      increment: 0.1
+      decimal: 2
+    PREGME_XYVMAX:
+      description:
+        short: 最大水平速度
+        long: 位置内环真正使用的总体水平速度上限。X/Y 速度设定值会被限制在 +/- 该数值范围内。
+      type: float
+      default: 20.0
+      unit: m/s
+      min: 2.0
+      max: 20.0
+      increment: 0.1
+      decimal: 2
+    PREGME_TILTAIR:
+      description:
+        short: 飞行中最大倾角
+        long: 飞行状态下的最大倾角限制，单位为度。代码中经过斜率限制后设置给控制器，并受内部 MAX_SAFE_TILT_DEG 安全上限约束。
+      type: float
+      default: 45.0
+      unit: deg
+      min: 20.0
+      max: 89.0
+      decimal: 1
+    PREGME_TILTLND:
+      description:
+        short: 起降阶段最大倾角
+        long: 起飞状态进入 flight 前以及着陆相关状态使用的倾角限制。该值不能大于 PREGME_TILTAIR。
+      type: float
+      default: 12.0
+      unit: deg
+      min: 10.0
+      max: 89.0
+      decimal: 1
+    PREGME_LANDSPD:
+      description:
+        short: 着陆下降速度
+        long: 着陆和 failsafe 下降时的名义下降速度。参数更新时会被限制不超过 PREGME_ZVDN，也可由 PREGME_ZVALL 自动设置。
+      type: float
+      default: 0.5
+      unit: m/s
+      min: 0.4
+      decimal: 1
+    PREGME_TKOSPD:
+      description:
+        short: 起飞爬升速度
+        long: 起飞过程请求的名义爬升速度。它会被 PREGME_ZVUP 限制，并进入起飞斜坡，使上升速度限制平滑增大。
+      type: float
+      default: 0.6000000238418579
+      unit: m/s
+      min: 0.6
+      max: 5.0
+      decimal: 2
+    PREGME_MYMAX:
+      description:
+        short: 手动最大偏航角速度
+        long: 保留给 PX4 风格响应性调节的手动偏航角速度参数。当前位置控制内环不直接使用它，但 PREGME_VRESP 会自动改写它。
+      type: float
+      default: 150.0
+      unit: deg/s
+      min: 0.0
+      max: 400
+      decimal: 1
+    PREGME_MYTAU:
+      description:
+        short: 手动偏航输入滤波时间常数
+        long: 手动偏航角速度输入滤波时间常数，主要作为 PX4 风格调参兼容项。PREGME_VRESP 增大时会把它逐渐推向 0，让响应更直接。
+      type: float
+      default: 0.07999999821186066
+      unit: s
+      min: 0.0
+      max: 5.0
+      decimal: 2
+    PREGME_VELD_LP:
+      description:
+        short: 速度数值微分低通截止频率
+        long: 由局部速度数值微分估计加速度时使用的低通截止频率。0 或负值表示不过滤，直接使用原始微分；数值越高延迟越小但加速度更吵。
+      type: float
+      default: 5.0
+      unit: Hz
+      min: 0.0
+      max: 15.0
+      decimal: 2
+    PREGME_AHMAX:
+      description:
+        short: 最大水平加速度
+        long: 水平运动加速度兼容参数，会被 PREGME_VRESP 自动更新。当前 PosControl 内部并没有把它作为硬加速度限幅直接使用。
+      type: float
+      default: 5.0
+      unit: m/s^2
+      min: 2.0
+      max: 15.0
+      increment: 1
+      decimal: 2
+    PREGME_AHOR:
+      description:
+        short: 名义水平加速度
+        long: 自动/手动运动整形用的兼容加速度参数，会被 PREGME_VRESP 自动更新。若要确认其是否影响轨迹生成，需要检查上游 trajectory generator。
+      type: float
+      default: 3.0
+      unit: m/s^2
+      min: 2.0
+      max: 15.0
+      increment: 1
+      decimal: 2
+    PREGME_AUPMAX:
+      description:
+        short: 最大上升加速度
+        long: 垂向上升加速度兼容参数，会被 PREGME_VRESP 自动更新。当前模块主要通过速度、推力和起飞斜坡限制垂向运动。
+      type: float
+      default: 4.0
+      unit: m/s^2
+      min: 2.0
+      max: 15.0
+      increment: 1
+      decimal: 2
+    PREGME_ADNMAX:
+      description:
+        short: 最大下降加速度
+        long: 垂向下降加速度兼容参数，会被 PREGME_VRESP 自动更新。当前控制器更主要依赖下降速度和推力限制保证垂向安全。
+      type: float
+      default: 3.0
+      unit: m/s^2
+      min: 2.0
+      max: 15.0
+      increment: 1
+      decimal: 2
+    PREGME_JMAX:
+      description:
+        short: 最大 jerk 限制
+        long: 运动平滑用 jerk 兼容参数。一般来说数值越小轨迹越平滑；当前模块主要通过 PREGME_VRESP 对它进行联动改写。
+      type: float
+      default: 8.0
+      unit: m/s^3
+      min: 0.5
+      max: 500.0
+      increment: 1
+      decimal: 2
+    PREGME_JAUTO:
+      description:
+        short: 自动模式 jerk 限制
+        long: 自主运动 jerk 兼容参数，会被 PREGME_VRESP 自动更新，主要用于 PX4 风格轨迹调参，而不是 PosControl 反馈律里的直接项。
+      type: float
+      default: 4.0
+      unit: m/s^3
+      min: 1.0
+      max: 80.0
+      increment: 1
+      decimal: 1
+    PREGME_TKORAMP:
+      description:
+        short: 起飞斜坡时间
+        long: 起飞状态机将向上速度限制从 0 平滑增加到目标起飞速度所用的时间。数值越大起飞越柔；为 0 时基本取消斜坡。
+      type: float
+      default: 3.0
+      min: 0
+      max: 5
+    PREGME_SPUPTIME:
+      description:
+        short: 电机解锁后预旋等待时间
+        long: 解锁后从 spoolup 进入 ready_for_takeoff 前的强制等待时间，防止电机尚未预旋完成就立即执行起飞。
+      type: float
+      default: 1.0
+      unit: s
+      min: 0
+      max: 10
+    PREGME_VRESP:
+      description:
+        short: 全局响应性预设
+        long: 全局调参快捷入口。设置为非负值时，代码会用它的平方自动改写多项加速度、jerk、偏航和倾角参数。想单独调这些参数，就把它设回 -1。
+      type: float
+      default: -1.0
+      min: -1.0
+      max: 1.0
+      decimal: 2
+      increment: 0.05
+    PREGME_XYVALL:
+      description:
+        short: 水平速度一键设置
+        long: 一次性辅助参数。设为非负值后，会把该值一次性复制到 PREGME_VMAN、PREGME_XYCRS 和 PREGME_XYVMAX，然后控制器自动把本参数重置为 -1。
+      type: float
+      default: -1.0
+      unit: m/s
+      min: -1.0
+      max: 20.0
+      decimal: 1
+      increment: 0.1
+    PREGME_ZVALL:
+      description:
+        short: 垂向速度一键设置
+        long: 一次性辅助参数。设为非负值后，会派生设置 PREGME_ZVUP、PREGME_ZVDN、PREGME_TKOSPD 和 PREGME_LANDSPD，然后控制器自动把本参数重置为
+          -1。
+      type: float
+      default: -1.0
+      unit: m/s
+      min: -1.0
+      max: 10.0
+      decimal: 1
+      increment: 0.1

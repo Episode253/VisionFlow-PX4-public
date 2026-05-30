@@ -1,0 +1,523 @@
+module_name: pregme_pos_control
+parameters:
+- group: Pregme Position Control
+  definitions:
+    PREGME_LPX:
+      description:
+        short: Position lambda gain, X axis
+        long: Diagonal lambda_p gain for the X position channel. It is used in slide_mode = zp_dot
+          + lambda_p * zp; higher values make X-position error decay faster, but can demand more acceleration
+          and thrust.
+      type: float
+      default: 1.6
+      min: 0.0
+      max: 5.0
+      decimal: 2
+    PREGME_LPY:
+      description:
+        short: Position lambda gain, Y axis
+        long: Diagonal lambda_p gain for the Y position channel. It is used in slide_mode = zp_dot
+          + lambda_p * zp; higher values improve lateral error convergence but can increase oscillation
+          if too aggressive.
+      type: float
+      default: 1.6
+      min: 0.0
+      max: 5.0
+      decimal: 2
+    PREGME_LPZ:
+      description:
+        short: Position lambda gain, Z axis
+        long: Diagonal lambda_p gain for the vertical position channel. It shapes altitude error convergence
+          in the outer-loop sliding surface; larger values give stronger altitude correction and can
+          make vertical motion more sensitive.
+      type: float
+      default: 2.4
+      min: 0.0
+      max: 5.0
+      decimal: 2
+    PREGME_KPX:
+      description:
+        short: Position feedback gain, X axis
+        long: Diagonal Kp gain applied to the X-axis sliding variable in f_iusl. Higher values increase
+          horizontal corrective acceleration; excessive values can excite attitude and thrust saturation.
+      type: float
+      default: 1.8
+      min: 0.0
+      max: 5.0
+      decimal: 2
+    PREGME_KPY:
+      description:
+        short: Position feedback gain, Y axis
+        long: Diagonal Kp gain applied to the Y-axis sliding variable in f_iusl. Higher values increase
+          lateral correction strength; tune with PREGME_LPY and the horizontal velocity/thrust limits.
+      type: float
+      default: 1.8
+      min: 0.0
+      max: 5.0
+      decimal: 2
+    PREGME_KPZ:
+      description:
+        short: Position feedback gain, Z axis
+        long: Diagonal Kp gain applied to the vertical sliding variable. It directly affects altitude
+          thrust demand and is also used to generate the initial takeoff ramp value.
+      type: float
+      default: 1.6
+      min: 0.0
+      max: 5.0
+      decimal: 2
+    PREGME_EV1X:
+      description:
+        short: Position CESO L1 gain, X axis
+        long: First-stage CESO gain for the X position observer. It acts on position estimation error
+          and contributes to velocity estimation; higher values track faster but amplify position
+          noise.
+      type: float
+      default: 0.01
+      min: 0.0
+      max: 5.0
+      decimal: 2
+      increment: 0.001
+    PREGME_EV1Y:
+      description:
+        short: Position CESO L1 gain, Y axis
+        long: First-stage CESO gain for the Y position observer. It acts on position estimation error
+          and contributes to velocity estimation; increase carefully when position measurements are
+          noisy.
+      type: float
+      default: 0.01
+      min: 0.0
+      max: 5.0
+      decimal: 2
+      increment: 0.001
+    PREGME_EV1Z:
+      description:
+        short: Position CESO L1 gain, Z axis
+        long: First-stage CESO gain for the Z position observer. It affects altitude-related velocity
+          estimation; too high a value can make the vertical disturbance path noisy.
+      type: float
+      default: 0.01
+      min: 0.0
+      max: 5.0
+      decimal: 2
+      increment: 0.001
+    PREGME_EV2X:
+      description:
+        short: Position CESO L2 gain, X axis
+        long: Second-stage CESO gain for the X channel. It acts on velocity-estimation error and produces
+          the disturbance estimate delta_est; higher values strengthen disturbance rejection but can
+          inject noise.
+      type: float
+      default: 0.008
+      min: 0.0
+      max: 5.0
+      decimal: 2
+      increment: 0.001
+    PREGME_EV2Y:
+      description:
+        short: Position CESO L2 gain, Y axis
+        long: Second-stage CESO gain for the Y channel. It shapes the lateral disturbance estimate;
+          tune with EV1Y and avoid values that cause lateral acceleration chatter.
+      type: float
+      default: 0.01
+      min: 0.0
+      max: 5.0
+      decimal: 2
+      increment: 0.001
+    PREGME_EV2Z:
+      description:
+        short: Position CESO L2 gain, Z axis
+        long: Second-stage CESO gain for the vertical channel. The raw Z disturbance estimate is additionally
+          bounded, low-pass filtered and dead-zoned before entering thrust compensation to avoid thrust
+          pumping.
+      type: float
+      default: 0.01
+      min: 0.0
+      max: 5.0
+      decimal: 2
+      increment: 0.001
+    PREGME_EVEPS:
+      description:
+        short: Position CESO epsilon
+        long: CESO scaling parameter. Observer correction terms are divided by epsilon, so smaller
+          values make the observer faster and stronger. The implementation protects against near-zero
+          values, but overly small settings can still amplify noise.
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 40.0
+      decimal: 2
+    PREGME_EVC1:
+      description:
+        short: Position CESO nonlinear c1
+        long: Shape coefficient in the nonlinear CESO function denominator. Larger c1 reduces effective
+          observer gain for larger errors and softens the correction response.
+      type: float
+      default: 0.3
+      min: 0.0
+      max: 5.0
+      decimal: 2
+      increment: 0.01
+    PREGME_EVC2:
+      description:
+        short: Position CESO nonlinear c2
+        long: Offset coefficient in the nonlinear CESO function denominator. Larger c2 reduces small-signal
+          observer gain and can make the disturbance estimate smoother but slower.
+      type: float
+      default: 0.5
+      min: 0.0
+      max: 5.0
+      decimal: 2
+      increment: 0.01
+    PREGME_PSL:
+      description:
+        short: Preset trajectory decay rate
+        long: Preset-performance trajectory l parameter. It controls how fast the generated error
+          envelope decays after a position setpoint change; larger values create a faster transient
+          target.
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 20.0
+      decimal: 2
+    PREGME_PSW:
+      description:
+        short: Preset trajectory error weight
+        long: Preset-performance trajectory w parameter. It scales the initial position and velocity
+          error used to build the transient error trajectory ed, ed_dot and ed_ddot.
+      type: float
+      default: 0.10000000149011612
+      min: 0.0
+      max: 1.0
+      decimal: 2
+    PREGME_PSEPS:
+      description:
+        short: Preset trajectory reset threshold
+        long: Threshold for detecting a meaningful position setpoint change and refreshing the preset
+          trajectory. It is also added to the internal c coefficient to avoid singular behavior.
+      type: float
+      default: 0.05
+      min: 0.0
+      max: 1.0
+      decimal: 2
+    PREGME_PSK:
+      description:
+        short: Preset trajectory compensation gain
+        long: Coupling gain for preset trajectory compensation. The controller uses zp = pos_err -
+          k * ed and zp_dot = vel_err - k * ed_dot; k = 0 disables most of the preset transient compensation.
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 1.0
+      decimal: 2
+    PREGME_THRMIN:
+      description:
+        short: Minimum thrust in position control
+        long: Lower thrust limit used once the vehicle is considered flying. Before takeoff or during
+          ground contact without takeoff request, the controller allows zero thrust for safety.
+      type: float
+      default: 0.4
+      min: 0.0
+      max: 0.95
+      decimal: 2
+      increment: 0.01
+    PREGME_THRHOV:
+      description:
+        short: Fixed hover thrust
+        long: Nominal normalized thrust required to hover. It is used as the fixed hover-thrust scale
+          before flight and whenever hover-thrust estimation is disabled or not yet initialized.
+      type: float
+      default: 0.68
+      min: 0.1
+      max: 0.8
+      decimal: 2
+      increment: 0.01
+    PREGME_UHTE:
+      description:
+        short: Use hover-thrust estimator
+        long: Enables hover_thrust_estimate usage only after the vehicle is flying and not landed
+          or in ground contact. Before takeoff the controller intentionally uses fixed PREGME_THRHOV
+          for deterministic takeoff.
+      type: boolean
+      default: true
+    PREGME_THRMAX:
+      description:
+        short: Maximum thrust in position control
+        long: Upper normalized thrust limit for the position controller. It constrains vertical thrust
+          and also limits the remaining available horizontal thrust vector.
+      type: float
+      default: 0.95
+      min: 0.0
+      max: 0.95
+      decimal: 2
+      increment: 0.01
+    PREGME_ZVUP:
+      description:
+        short: Maximum upward velocity
+        long: Maximum upward speed limit used for vertical setpoints and takeoff ramp output. The
+          takeoff climb speed is constrained not to exceed this value.
+      type: float
+      default: 1.0
+      unit: m/s
+      min: 0.5
+      max: 8.0
+      decimal: 1
+    PREGME_ZVDN:
+      description:
+        short: Maximum downward velocity
+        long: Maximum descent speed limit used for vertical setpoints, landing and failsafe descent
+          logic.
+      type: float
+      default: 0.75
+      unit: m/s
+      min: 0.5
+      max: 4.0
+      decimal: 1
+    PREGME_XYCRS:
+      description:
+        short: Autonomous horizontal cruise speed
+        long: Horizontal cruise speed parameter for autonomous-style tuning. It is constrained not
+          to exceed PREGME_XYVMAX; in this module it is mainly maintained for PX4-style parameter
+          compatibility.
+      type: float
+      default: 10.0
+      unit: m/s
+      min: 2.0
+      max: 20.0
+      increment: 0.1
+      decimal: 2
+    PREGME_VMAN:
+      description:
+        short: Manual horizontal speed limit
+        long: Manual horizontal velocity limit parameter. It is constrained not to exceed PREGME_XYVMAX;
+          in the current module it is mainly affected by the one-shot XY speed setter and responsiveness
+          logic.
+      type: float
+      default: 10.0
+      unit: m/s
+      min: 2.0
+      max: 20.0
+      increment: 0.1
+      decimal: 2
+    PREGME_XYVMAX:
+      description:
+        short: Maximum horizontal velocity
+        long: Overall horizontal velocity limit used by the inner position controller. X and Y velocity
+          setpoints are constrained to +/- this value.
+      type: float
+      default: 20.0
+      unit: m/s
+      min: 2.0
+      max: 20.0
+      increment: 0.1
+      decimal: 2
+    PREGME_TILTAIR:
+      description:
+        short: Maximum tilt angle in flight
+        long: Flight tilt limit in degrees. It is applied through a slew-rate limited tilt constraint
+          and is capped by the internal MAX_SAFE_TILT_DEG safety limit.
+      type: float
+      default: 45.0
+      unit: deg
+      min: 20.0
+      max: 89.0
+      decimal: 1
+    PREGME_TILTLND:
+      description:
+        short: Maximum tilt before landing/takeoff
+        long: Tilt limit used before the takeoff state reaches flight and during landing-related states.
+          It is constrained not to exceed PREGME_TILTAIR.
+      type: float
+      default: 12.0
+      unit: deg
+      min: 10.0
+      max: 89.0
+      decimal: 1
+    PREGME_LANDSPD:
+      description:
+        short: Landing descent speed
+        long: Nominal descent speed for landing and failsafe descent. It is constrained by PREGME_ZVDN
+          during parameter update and can be set automatically by PREGME_ZVALL.
+      type: float
+      default: 0.5
+      unit: m/s
+      min: 0.4
+      decimal: 1
+    PREGME_TKOSPD:
+      description:
+        short: Takeoff climb speed
+        long: Nominal climb speed requested during takeoff. It is limited by PREGME_ZVUP and passed
+          into the takeoff ramp so that the upward speed limit grows smoothly.
+      type: float
+      default: 0.6000000238418579
+      unit: m/s
+      min: 0.6
+      max: 5.0
+      decimal: 2
+    PREGME_MYMAX:
+      description:
+        short: Manual yaw rate limit
+        long: Maximum manual yaw-rate parameter kept for PX4-style responsiveness tuning. In this
+          position-control module it is not directly consumed by the inner PosControl calculation,
+          but PREGME_VRESP can update it.
+      type: float
+      default: 150.0
+      unit: deg/s
+      min: 0.0
+      max: 400
+      decimal: 1
+    PREGME_MYTAU:
+      description:
+        short: Manual yaw input filter time constant
+        long: Manual yaw-rate input filter time constant kept for PX4-style tuning compatibility.
+          PREGME_VRESP can set it toward zero as responsiveness increases.
+      type: float
+      default: 0.07999999821186066
+      unit: s
+      min: 0.0
+      max: 5.0
+      decimal: 2
+    PREGME_VELD_LP:
+      description:
+        short: Velocity derivative LPF cutoff
+        long: Cutoff frequency for the numerical derivative of local velocity used to estimate acceleration.
+          Zero or negative values disable filtering; higher values reduce lag but make acceleration
+          noisier.
+      type: float
+      default: 5.0
+      unit: Hz
+      min: 0.0
+      max: 15.0
+      decimal: 2
+    PREGME_AHMAX:
+      description:
+        short: Maximum horizontal acceleration
+        long: Compatibility acceleration limit for horizontal motion. It is auto-updated by PREGME_VRESP,
+          but the current inner PosControl implementation does not directly use this parameter as
+          a hard acceleration clamp.
+      type: float
+      default: 5.0
+      unit: m/s^2
+      min: 2.0
+      max: 15.0
+      increment: 1
+      decimal: 2
+    PREGME_AHOR:
+      description:
+        short: Nominal horizontal acceleration
+        long: Compatibility acceleration parameter for auto/manual motion shaping. It is auto-updated
+          by PREGME_VRESP; check the trajectory generator path before relying on it as a direct inner-loop
+          limit.
+      type: float
+      default: 3.0
+      unit: m/s^2
+      min: 2.0
+      max: 15.0
+      increment: 1
+      decimal: 2
+    PREGME_AUPMAX:
+      description:
+        short: Maximum upward acceleration
+        long: Compatibility vertical upward acceleration limit. It is auto-updated by PREGME_VRESP,
+          but this module primarily limits vertical motion through velocity, thrust and takeoff-ramp
+          constraints.
+      type: float
+      default: 4.0
+      unit: m/s^2
+      min: 2.0
+      max: 15.0
+      increment: 1
+      decimal: 2
+    PREGME_ADNMAX:
+      description:
+        short: Maximum downward acceleration
+        long: Compatibility vertical downward acceleration limit. It is auto-updated by PREGME_VRESP;
+          the current controller mainly uses descent velocity and thrust constraints for vertical
+          safety.
+      type: float
+      default: 3.0
+      unit: m/s^2
+      min: 2.0
+      max: 15.0
+      increment: 1
+      decimal: 2
+    PREGME_JMAX:
+      description:
+        short: Maximum jerk limit
+        long: Compatibility jerk limit for motion smoothing. Lower values generally imply smoother
+          commanded motion in PX4-style trajectory generation; this module mainly updates it through
+          PREGME_VRESP.
+      type: float
+      default: 8.0
+      unit: m/s^3
+      min: 0.5
+      max: 500.0
+      increment: 1
+      decimal: 2
+    PREGME_JAUTO:
+      description:
+        short: Auto-mode jerk limit
+        long: Compatibility jerk limit for autonomous motion. It is auto-updated by PREGME_VRESP and
+          is retained for PX4-style trajectory tuning rather than direct PosControl feedback computation.
+      type: float
+      default: 4.0
+      unit: m/s^3
+      min: 1.0
+      max: 80.0
+      increment: 1
+      decimal: 1
+    PREGME_TKORAMP:
+      description:
+        short: Takeoff ramp time
+        long: Time used by the takeoff state machine to ramp the upward velocity limit from zero to
+          the requested takeoff speed. Larger values make takeoff softer; zero effectively removes
+          the ramp.
+      type: float
+      default: 3.0
+      min: 0
+      max: 5
+    PREGME_SPUPTIME:
+      description:
+        short: Motor spool-up delay
+        long: Delay after arming before the takeoff state can move from spoolup to ready_for_takeoff.
+          This prevents immediate takeoff commands before motors have spooled up.
+      type: float
+      default: 1.0
+      unit: s
+      min: 0
+      max: 10
+    PREGME_VRESP:
+      description:
+        short: Global responsiveness preset
+        long: Global tuning shortcut. When set to a non-negative value, its square is used to rewrite
+          several acceleration, jerk, yaw and tilt parameters. Set it to -1 to tune those parameters
+          independently.
+      type: float
+      default: -1.0
+      min: -1.0
+      max: 1.0
+      decimal: 2
+      increment: 0.05
+    PREGME_XYVALL:
+      description:
+        short: One-shot XY velocity setter
+        long: One-shot helper. Set a non-negative value to copy it into PREGME_VMAN, PREGME_XYCRS
+          and PREGME_XYVMAX once; the controller then resets this parameter to -1.
+      type: float
+      default: -1.0
+      unit: m/s
+      min: -1.0
+      max: 20.0
+      decimal: 1
+      increment: 0.1
+    PREGME_ZVALL:
+      description:
+        short: One-shot Z velocity setter
+        long: One-shot helper. Set a non-negative value to derive PREGME_ZVUP, PREGME_ZVDN, PREGME_TKOSPD
+          and PREGME_LANDSPD once; the controller then resets this parameter to -1.
+      type: float
+      default: -1.0
+      unit: m/s
+      min: -1.0
+      max: 10.0
+      decimal: 1
+      increment: 0.1

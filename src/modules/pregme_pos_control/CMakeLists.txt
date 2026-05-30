@@ -8,7 +8,8 @@ px4_add_module(
 		Takeoff.cpp
 		PregmePositionControl.cpp
 	MODULE_CONFIG
-		pregme_pos_control_params.yaml
+		pregme_pos_control_params_zh.yaml
+		# pregme_pos_control_params_en.yaml
 	DEPENDS
 		px4_work_queue
 		controllib

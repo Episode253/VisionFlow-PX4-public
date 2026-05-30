@@ -1,0 +1,388 @@
+module_name: pregme_att_control
+parameters:
+- group: Pregme Attitude Control
+  definitions:
+    USR_I_XX:
+      description:
+        short: Body inertia Ixx
+        long: Diagonal body inertia around the roll axis [kg m^2]. This value is used in the attitude controller inertia matrix.
+          Tune it from vehicle mass properties; incorrect values change the torque feed-forward and gyroscopic compensation.
+      type: float
+      default: 0.2
+      min: 0.0
+      max: 20.0
+      decimal: 2
+      increment: 0.01
+    USR_I_YY:
+      description:
+        short: Body inertia Iyy
+        long: Diagonal body inertia around the pitch axis [kg m^2]. This value is used in the attitude controller inertia
+          matrix. Tune it from vehicle mass properties; incorrect values change the torque feed-forward and gyroscopic compensation.
+      type: float
+      default: 0.19
+      min: 0.0
+      max: 20.0
+      decimal: 2
+      increment: 0.01
+    USR_I_ZZ:
+      description:
+        short: Body inertia Izz
+        long: Diagonal body inertia around the yaw axis [kg m^2]. This value is used in the attitude controller inertia matrix.
+          Tune it from vehicle mass properties; incorrect values change the torque feed-forward and gyroscopic compensation.
+      type: float
+      default: 0.33
+      min: 0.0
+      max: 20.0
+      decimal: 2
+      increment: 0.01
+    USR_I_XY:
+      description:
+        short: Body product of inertia Ixy
+        long: Product-of-inertia term between body X and Y axes [kg m^2]. The controller builds the inertia matrix using -Ixy
+          at the off-diagonal positions. Keep this near zero for symmetric multicopters unless measured mass-property data
+          is available.
+      type: float
+      default: 0.0
+      min: 0.0
+      max: 20.0
+      decimal: 2
+      increment: 0.01
+    USR_I_XZ:
+      description:
+        short: Body product of inertia Ixz
+        long: Product-of-inertia term between body X and Z axes [kg m^2]. The controller builds the inertia matrix using -Ixz
+          at the off-diagonal positions. Keep this near zero for symmetric multicopters unless measured mass-property data
+          is available.
+      type: float
+      default: 0.0
+      min: 0.0
+      max: 20.0
+      decimal: 2
+      increment: 0.01
+    USR_I_YZ:
+      description:
+        short: Body product of inertia Iyz
+        long: Product-of-inertia term between body Y and Z axes [kg m^2]. The controller builds the inertia matrix using -Iyz
+          at the off-diagonal positions. Keep this near zero for symmetric multicopters unless measured mass-property data
+          is available.
+      type: float
+      default: 0.0
+      min: 0.0
+      max: 20.0
+      decimal: 2
+      increment: 0.01
+    USR_LAMBDA_Q_X:
+      description:
+        short: Roll attitude error convergence gain
+        long: Lambda gain for the roll-axis quaternion-vector error sliding surface. Larger values make attitude error converge
+          faster, but can increase required torque and excite oscillation if the rate loop, inertia values, or actuator authority
+          are not matched.
+      type: float
+      default: 20.0
+      min: 0.0
+      max: 60.0
+      decimal: 2
+      increment: 0.1
+    USR_LAMBDA_Q_Y:
+      description:
+        short: Pitch attitude error convergence gain
+        long: Lambda gain for the pitch-axis quaternion-vector error sliding surface. Larger values make attitude error converge
+          faster, but can increase required torque and excite oscillation if the rate loop, inertia values, or actuator authority
+          are not matched.
+      type: float
+      default: 18.0
+      min: 0.0
+      max: 40.0
+      decimal: 2
+      increment: 0.1
+    USR_LAMBDA_Q_Z:
+      description:
+        short: Yaw attitude error convergence gain
+        long: Lambda gain for the yaw-axis quaternion-vector error sliding surface. Larger values make yaw error converge
+          faster, but yaw torque authority is usually weaker on multicopters, so increase carefully.
+      type: float
+      default: 20.0
+      min: 0.0
+      max: 40.0
+      decimal: 2
+      increment: 0.1
+    USR_K_Q_X:
+      description:
+        short: Roll sliding-mode feedback gain
+        long: Feedback gain applied to the roll-axis sliding surface. Increasing it improves disturbance rejection and tracking
+          stiffness, but excessive values can cause high-frequency torque commands, vibration, or actuator saturation.
+      type: float
+      default: 7.8
+      min: 0.0
+      max: 30.0
+      decimal: 2
+      increment: 0.1
+    USR_K_Q_Y:
+      description:
+        short: Pitch sliding-mode feedback gain
+        long: Feedback gain applied to the pitch-axis sliding surface. Increasing it improves disturbance rejection and tracking
+          stiffness, but excessive values can cause high-frequency torque commands, vibration, or actuator saturation.
+      type: float
+      default: 8.6
+      min: 0.0
+      max: 30.0
+      decimal: 2
+      increment: 0.1
+    USR_K_Q_Z:
+      description:
+        short: Yaw sliding-mode feedback gain
+        long: Feedback gain applied to the yaw-axis sliding surface. Increase carefully because yaw control authority is normally
+          lower than roll and pitch on multicopters.
+      type: float
+      default: 12.0
+      min: 0.0
+      max: 30.0
+      decimal: 2
+      increment: 0.1
+    USR_ESO_L_X:
+      description:
+        short: Roll ESO nonlinear gain
+        long: Nonlinear gain L for the roll-axis extended-state observer. It scales the observer correction and disturbance
+          estimate. Larger values react faster to model error or external disturbance, but also amplify gyro noise and vibration.
+      type: float
+      default: 0.2
+      min: 0.0
+      max: 50.0
+      decimal: 2
+    USR_ESO_L_Y:
+      description:
+        short: Pitch ESO nonlinear gain
+        long: Nonlinear gain L for the pitch-axis extended-state observer. It scales the observer correction and disturbance
+          estimate. Larger values react faster to model error or external disturbance, but also amplify gyro noise and vibration.
+      type: float
+      default: 0.2
+      min: 0.0
+      max: 50.0
+      decimal: 2
+    USR_ESO_L_Z:
+      description:
+        short: Yaw ESO nonlinear gain
+        long: Nonlinear gain L for the yaw-axis extended-state observer. It scales the observer correction and disturbance
+          estimate. Larger values react faster to model error or external disturbance, but also amplify gyro noise and vibration.
+      type: float
+      default: 0.5
+      min: 0.0
+      max: 50.0
+      decimal: 2
+    USR_ESO_EPSI:
+      description:
+        short: ESO time-scale epsilon
+        long: Time-scale denominator for the extended-state observer. Smaller values make the observer faster and more aggressive.
+          Very small values can amplify noise or create numerical sensitivity; the controller internally clamps it to a safe
+          positive minimum.
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 20.0
+      decimal: 2
+    USR_ESO_C1:
+      description:
+        short: ESO nonlinear denominator c1
+        long: Shape parameter c1 in the nonlinear ESO correction function. It changes how strongly the correction grows with
+          error. Larger values soften the correction for large error; too small a value can make the observer overly aggressive.
+      type: float
+      default: 0.3
+      min: 0.0
+      max: 50.0
+      decimal: 2
+    USR_ESO_C2:
+      description:
+        short: ESO nonlinear denominator c2
+        long: Offset parameter c2 in the nonlinear ESO correction function. It prevents the denominator from becoming too
+          small and affects small-error sensitivity. Larger values reduce observer correction strength.
+      type: float
+      default: 0.5
+      min: 0.0
+      max: 50.0
+      decimal: 2
+    USR_A_PRESET_L:
+      description:
+        short: Preset trajectory decay rate
+        long: Decay-rate parameter l for the attitude-error preset trajectory. Larger values make the reference error decay
+          faster after a setpoint change, which can improve response speed but may increase transient torque demand.
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 20.0
+      decimal: 2
+    USR_A_PRESET_W:
+      description:
+        short: Preset trajectory initial-error weight
+        long: Initial-error scaling parameter w for the preset trajectory. It scales the initial attitude error and error-rate
+          terms used to generate the transient shaping trajectory.
+      type: float
+      default: 0.1
+      min: 0.0
+      max: 1.0
+      decimal: 2
+    USR_A_PRESET_EP:
+      description:
+        short: Preset trajectory reset threshold
+        long: Quaternion-vector setpoint-change threshold epsilon used to reset the preset trajectory timing. Smaller values
+          make the trajectory reset on smaller setpoint changes; very small values may reset too often because of numerical
+          noise.
+      type: float
+      default: 0.05
+      min: 0.0
+      max: 0.5
+      decimal: 2
+    USR_A_PRESET_K:
+      description:
+        short: Preset trajectory compensation gain
+        long: Gain k applied to the preset trajectory before forming the shaped attitude error. Larger values make the controller
+          follow the transient shaping term more strongly.
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 1.0
+      decimal: 2
+    USR_TAU_COE:
+      description:
+        short: Torque normalization scale
+        long: Scale factor used to convert the controller torque command to normalized PX4 torque setpoints. The published
+          torque is torque / USR_TAU_COE and then constrained to [-1, 1]. Larger values reduce normalized torque output; smaller
+          values make the output stronger and easier to saturate.
+      type: float
+      default: 8.0
+      min: 6.0
+      max: 40.0
+      decimal: 2
+      increment: 0.1
+    USR_ROLLRATE_MAX:
+      description:
+        short: Maximum roll rate setpoint
+        long: Maximum roll body-rate setpoint used by the attitude controller [deg/s]. The value is converted to rad/s internally.
+          It limits the generated roll-rate reference, mainly for manual/stabilized attitude behavior and logging compatibility.
+      type: float
+      default: 220.0
+      unit: deg/s
+      min: 0.0
+      max: 1800.0
+      decimal: 1
+      increment: 5
+    USR_PITRATE_MAX:
+      description:
+        short: Maximum pitch rate setpoint
+        long: Maximum pitch body-rate setpoint used by the attitude controller [deg/s]. The value is converted to rad/s internally.
+          It limits the generated pitch-rate reference, mainly for manual/stabilized attitude behavior and logging compatibility.
+      type: float
+      default: 220.0
+      unit: deg/s
+      min: 0.0
+      max: 1800.0
+      decimal: 1
+      increment: 5
+    USR_YAWRATE_MAX:
+      description:
+        short: Maximum yaw rate setpoint
+        long: Maximum yaw body-rate setpoint used by the attitude controller [deg/s]. The value is converted to rad/s internally.
+          It limits the generated yaw-rate reference.
+      type: float
+      default: 200.0
+      unit: deg/s
+      min: 0.0
+      max: 1800.0
+      decimal: 1
+      increment: 5
+    USR_MAN_Y_MAX:
+      description:
+        short: Manual yaw stick rate limit
+        long: Maximum yaw rate commanded by manual yaw stick input in stabilized mode [deg/s]. Positive or negative stick
+          input is scaled by this value before being integrated into the yaw attitude setpoint.
+      type: float
+      default: 150.0
+      unit: deg/s
+      min: 0.0
+      max: 360.0
+      decimal: 1
+    USR_MAN_TILT_TAU:
+      description:
+        short: Manual tilt input filter time constant
+        long: First-order filter time constant for manual roll and pitch stick inputs [s]. Setting this parameter to 0 disables
+          filtering. Larger values make stick response smoother but slower.
+      type: float
+      default: 0.0
+      unit: s
+      min: 0.0
+      max: 2.0
+      decimal: 2
+    USR_MAN_TILT_MAX:
+      description:
+        short: Maximum manual tilt angle
+        long: Maximum roll/pitch tilt angle generated from manual stick input in stabilized mode [deg]. This limits the attitude
+          setpoint magnitude before quaternion setpoint generation.
+      type: float
+      default: 35.0
+      unit: deg
+      min: 0.0
+      max: 90.0
+      decimal: 1
+    USR_MANTHR_MIN:
+      description:
+        short: Minimum manual thrust
+        long: Minimum normalized thrust used in stabilized/manual throttle mapping when the vehicle is not landed. When landed,
+          the effective minimum is forced to zero for safety.
+      type: float
+      default: 0.08
+      min: 0.0
+      max: 0.95
+      decimal: 2
+      increment: 0.01
+    USR_THR_MAX:
+      description:
+        short: Maximum manual thrust
+        long: Maximum normalized thrust used in stabilized/manual throttle mapping. The final thrust command is constrained
+          between 0 and this value.
+      type: float
+      default: 0.95
+      min: 0.0
+      max: 0.95
+      decimal: 2
+      increment: 0.01
+    USR_THR_HOVER:
+      description:
+        short: Hover thrust
+        long: Normalized thrust corresponding to hover. With the default throttle curve, center stick maps to this value.
+      type: float
+      default: 0.68
+      min: 0.0
+      max: 0.95
+      decimal: 2
+      increment: 0.01
+    USR_THR_CURVE:
+      description:
+        short: Manual throttle curve
+        long: 'Manual throttle mapping mode. 0: rescaled curve with center stick mapped to USR_THR_HOVER. 1: linear mapping
+          from stick range [-1, 1] to [minimum thrust, USR_THR_MAX] without hover-thrust rescaling.'
+      type: int32
+      default: 0
+      min: 0
+      max: 1
+    USR_BAT_SCALE_EN:
+      description:
+        short: Enable battery voltage scaling
+        long: Enable compensation using battery_status.scale. When enabled and a valid battery scale is available, normalized
+          torque and thrust setpoints are multiplied by the scale factor to compensate for battery voltage drop.
+      type: boolean
+      default: true
+    USR_AIRMODE:
+      description:
+        short: Manual airmode behavior
+        long: 'Airmode selection used by the manual attitude setpoint logic. 0: default behavior. 2: keep yaw setpoint integration
+          active even at low throttle, corresponding to roll-pitch-yaw airmode behavior.'
+      type: int32
+      default: 0
+      min: 0
+      max: 2
+    CBRK_RATE_CTRL:
+      description:
+        short: Rate-control output circuit breaker
+        long: Circuit breaker for this custom rate-control output path. When set to the expected breaker key value, the module
+          returns before publishing effective vehicle_torque_setpoint and vehicle_thrust_setpoint. Keep at 0 for normal operation.
+      type: int32
+      default: 0

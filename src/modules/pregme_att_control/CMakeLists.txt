@@ -9,7 +9,8 @@ px4_add_module(
 		pregme_att_control.cpp
 		pregme_att_control.hpp
 	MODULE_CONFIG
-		pregme_att_control_params.yaml
+		pregme_att_control_params_zh.yaml
+		# pregme_att_control_params_en.yaml
 	DEPENDS
 		Att_control
 		mathlib
