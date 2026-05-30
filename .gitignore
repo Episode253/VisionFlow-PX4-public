@@ -131,3 +131,7 @@ windshape_dev/tools/px4_log_eval_system/output/*
 
 install/*
 log/*
+
+platforms/nuttx/NuttX/nuttx/.config
+platforms/nuttx/NuttX/nuttx/.config.old
+platforms/nuttx/NuttX/nuttx/defconfig
