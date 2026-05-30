@@ -2813,7 +2813,7 @@ void Mavlink::handleAndGetCurrentCommandAck()
 
 			if (_vehicle_command_ack_sub.update(&command_ack)) {
 				if (_vehicle_command_ack_sub.get_last_generation() != last_generation + 1) {
-					PX4_ERR("vehicle_command_ack lost, generation %u -> %u", last_generation,
+					PX4_WARN("vehicle_command_ack lost, generation %u -> %u", last_generation,
 						_vehicle_command_ack_sub.get_last_generation());
 				}
 
