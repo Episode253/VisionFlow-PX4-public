@@ -70,17 +70,17 @@
         <magnetometer>
           <x>
             <noise type="gaussian">
-              <stddev>0.0001</stddev>
+              <stddev>0.0000001</stddev>
             </noise>
           </x>
           <y>
             <noise type="gaussian">
-              <stddev>0.0001</stddev>
+              <stddev>0.0000001</stddev>
             </noise>
           </y>
           <z>
             <noise type="gaussian">
-              <stddev>0.0001</stddev>
+              <stddev>0.0000001</stddev>
             </noise>
           </z>
         </magnetometer>
@@ -484,6 +484,20 @@
 
       <enable_lockstep>false</enable_lockstep>
       <useWallTimeForHil>true</useWallTimeForHil>
+
+      <!-- HITL sensor conditioning for current PX4 + Gazebo Harmonic setup -->
+      <hilAccelScale>2.0</hilAccelScale>
+      <hilGyroScale>1.0</hilGyroScale>
+      <hilMagScale>1.0</hilMagScale>
+      <hilMagApplyFluToFrd>false</hilMagApplyFluToFrd>
+      <hilMagFlipX>false</hilMagFlipX>
+      <hilMagFlipY>false</hilMagFlipY>
+      <hilMagFlipZ>false</hilMagFlipZ>
+
+      <!-- Velocity safety: keep static bench HITL from injecting impossible GPS / state velocities. -->
+      <hilGpsUseVelocity>false</hilGpsUseVelocity>
+      <hilGpsMaxSpeed>5.0</hilGpsMaxSpeed>
+      <hilSendStateQuaternion>false</hilSendStateQuaternion>
 
       <motorCount>4</motorCount>
       <fallbackMotorVelocityScaling>1000.0</fallbackMotorVelocityScaling>

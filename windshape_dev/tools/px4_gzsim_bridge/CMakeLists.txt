@@ -17,11 +17,12 @@ if(gz-msgs10_FOUND)
   set(GZ_MSG_VER 10)
   set(Protobuf_IMPORT_DIRS ${gz-msgs10_INCLUDE_DIRS})
 else()
+  find_package(gz-msgs9 REQUIRED)
   set(GZ_MSG_VER 9)
   set(Protobuf_IMPORT_DIRS ${gz-msgs9_INCLUDE_DIRS})
 endif()
 
-find_package(MAVLink)
+find_package(MAVLink REQUIRED)
 
 find_package(Protobuf REQUIRED)
 
@@ -35,6 +36,8 @@ include_directories(
 
 add_library(mavlink_hitl_gazebosim SHARED src/gazebo_mavlink_interface.cpp src/mavlink_interface.cpp)
 set_property(TARGET mavlink_hitl_gazebosim PROPERTY CXX_STANDARD 17)
+set_property(TARGET mavlink_hitl_gazebosim PROPERTY CXX_STANDARD_REQUIRED ON)
+target_compile_options(mavlink_hitl_gazebosim PRIVATE -Wall -Wextra -Wno-unused-parameter)
 target_link_libraries(mavlink_hitl_gazebosim
   PRIVATE ${Boost_LIBRARIES}
   PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}

@@ -208,6 +208,30 @@ namespace mavlink_interface
       gz::msgs::IMU last_imu_message_;
       bool has_imu_message_{false};
       bool use_wall_time_for_hil_{true};
+
+      // HITL sensor conditioning. These are intentionally configurable from SDF
+      // because PX4 HITL builds and board calibration states can disagree in
+      // spectacularly unhelpful ways.
+      double hil_accel_scale_{1.0};
+      double hil_gyro_scale_{1.0};
+      double hil_mag_scale_{1.0};
+      bool hil_mag_apply_flu_to_frd_{false};
+      bool hil_mag_flip_x_{false};
+      bool hil_mag_flip_y_{false};
+      bool hil_mag_flip_z_{false};
+
+      // Velocity-estimator safety knobs.
+      // In this HITL setup, Gazebo NavSat velocity may produce short spikes at
+      // startup / QGC connection time. Keep HIL_GPS velocity disabled by default
+      // for static bench HITL, and rely on GPS position + IMU/baro instead.
+      bool hil_gps_use_velocity_{false};
+      double hil_gps_max_speed_m_s_{5.0};
+
+      // HIL_STATE_QUATERNION is optional here. HIL_SENSOR + HIL_GPS are enough
+      // for PX4 EKF bring-up, while an extra ground-truth state stream can fight
+      // the estimator if pose timestamps / velocities are not perfectly aligned.
+      bool hil_send_state_quaternion_{false};
+
       bool has_latest_gps_{false};
       double latest_gps_lat_deg_{47.397742};
       double latest_gps_lon_deg_{8.545594};

@@ -160,6 +160,53 @@ void GazeboMavlinkInterface::Configure(const gz::sim::Entity &_entity,
   // estimators go to become modern art.
   gazebo::getSdfParam<bool>(_sdf, "useWallTimeForHil", use_wall_time_for_hil_, use_serial_);
 
+  // Sensor conditioning knobs. Defaults are conservative for generic HITL, but
+  // the current q940_ti_0 + CUAV/X7Pro test can set hilAccelScale=2.0 if PX4's
+  // simulated accelerometer calibration path reports half gravity.
+  gazebo::getSdfParam<double>(_sdf, "hilAccelScale", hil_accel_scale_, hil_accel_scale_);
+  gazebo::getSdfParam<double>(_sdf, "hilGyroScale", hil_gyro_scale_, hil_gyro_scale_);
+  gazebo::getSdfParam<double>(_sdf, "hilMagScale", hil_mag_scale_, hil_mag_scale_);
+  gazebo::getSdfParam<bool>(_sdf, "hilMagApplyFluToFrd", hil_mag_apply_flu_to_frd_, hil_mag_apply_flu_to_frd_);
+  gazebo::getSdfParam<bool>(_sdf, "hilMagFlipX", hil_mag_flip_x_, hil_mag_flip_x_);
+  gazebo::getSdfParam<bool>(_sdf, "hilMagFlipY", hil_mag_flip_y_, hil_mag_flip_y_);
+  gazebo::getSdfParam<bool>(_sdf, "hilMagFlipZ", hil_mag_flip_z_, hil_mag_flip_z_);
+
+  // Safety controls for velocity spikes. For a static HITL bench test, GPS
+  // velocity and HIL_STATE_QUATERNION are not required. Disabling them removes
+  // two common sources of impossible EKF vertical velocity.
+  gazebo::getSdfParam<bool>(_sdf, "hilGpsUseVelocity", hil_gps_use_velocity_, hil_gps_use_velocity_);
+  gazebo::getSdfParam<double>(_sdf, "hilGpsMaxSpeed", hil_gps_max_speed_m_s_, hil_gps_max_speed_m_s_);
+  gazebo::getSdfParam<bool>(_sdf, "hilSendStateQuaternion", hil_send_state_quaternion_, hil_send_state_quaternion_);
+
+  if (!std::isfinite(hil_accel_scale_) || hil_accel_scale_ <= 0.0) {
+    gzerr << "[gazebo_mavlink_interface] Invalid hilAccelScale, forcing 1.0" << std::endl;
+    hil_accel_scale_ = 1.0;
+  }
+  if (!std::isfinite(hil_gyro_scale_) || hil_gyro_scale_ <= 0.0) {
+    gzerr << "[gazebo_mavlink_interface] Invalid hilGyroScale, forcing 1.0" << std::endl;
+    hil_gyro_scale_ = 1.0;
+  }
+  if (!std::isfinite(hil_mag_scale_) || hil_mag_scale_ <= 0.0) {
+    gzerr << "[gazebo_mavlink_interface] Invalid hilMagScale, forcing 1.0" << std::endl;
+    hil_mag_scale_ = 1.0;
+  }
+  if (!std::isfinite(hil_gps_max_speed_m_s_) || hil_gps_max_speed_m_s_ <= 0.0) {
+    gzerr << "[gazebo_mavlink_interface] Invalid hilGpsMaxSpeed, forcing 5.0 m/s" << std::endl;
+    hil_gps_max_speed_m_s_ = 5.0;
+  }
+
+  gzmsg << "[gazebo_mavlink_interface] HIL sensor conditioning:"
+        << " accel_scale=" << hil_accel_scale_
+        << " gyro_scale=" << hil_gyro_scale_
+        << " mag_scale=" << hil_mag_scale_
+        << " mag_apply_flu_to_frd=" << (hil_mag_apply_flu_to_frd_ ? "true" : "false")
+        << " mag_flip_xyz=(" << hil_mag_flip_x_ << ","
+        << hil_mag_flip_y_ << "," << hil_mag_flip_z_ << ")"
+        << " gps_use_velocity=" << (hil_gps_use_velocity_ ? "true" : "false")
+        << " gps_max_speed=" << hil_gps_max_speed_m_s_
+        << " send_hil_state_quat=" << (hil_send_state_quaternion_ ? "true" : "false")
+        << std::endl;
+
   gzmsg << "[gazebo_mavlink_interface] HIL output rates: sensor=" << hil_sensor_rate_hz
         << "Hz gps=" << hil_gps_rate_hz << "Hz state=" << hil_state_rate_hz
         << "Hz, time_source=" << (use_wall_time_for_hil_ ? "wall" : "sim")
@@ -432,6 +479,10 @@ void GazeboMavlinkInterface::PostUpdate(const gz::sim::UpdateInfo &_info,
 }
 
 void GazeboMavlinkInterface::PoseCallback(const gz::msgs::Pose_V &_msg){
+  if (!hil_send_state_quaternion_) {
+    return;
+  }
+
   for (int p = 0; p < _msg.pose_size(); p++) {
     const std::string pose_name = _msg.pose(p).name();
     if (!PoseNameMatchesModel(pose_name)) {
@@ -537,15 +588,41 @@ void GazeboMavlinkInterface::BarometerCallback(const gz::msgs::FluidPressure &_m
 }
 
 void GazeboMavlinkInterface::MagnetometerCallback(const gz::msgs::Magnetometer &_msg) {
-  // gz::msgs::Magnetometer is in Tesla. MAVLink HIL_SENSOR expects Gauss.
-  const gz::math::Vector3d mag_flu(
+  // Gazebo Sim publishes magnetic field in Tesla. In the tested PX4 HITL path
+  // the MAVLink receiver / simulator driver expects this value without the old
+  // *10000 conversion. The previous conversion made EKF see ~4807 gauss against
+  // a ~0.48 gauss reference, which is a delightful way to fail every preflight
+  // mag check.
+  gz::math::Vector3d mag_body(
     AddSimpleNoise(_msg.field_tesla().x(), 0, 0.0000001),
     AddSimpleNoise(_msg.field_tesla().y(), 0, 0.0000001),
     AddSimpleNoise(_msg.field_tesla().z(), 0, 0.0000001));
-  const gz::math::Vector3d mag_frd = q_FLU_to_FRD.RotateVector(mag_flu) * 10000.0;
+
+  if (hil_mag_apply_flu_to_frd_) {
+    mag_body = q_FLU_to_FRD.RotateVector(mag_body);
+  }
+
+  mag_body *= hil_mag_scale_;
+
+  if (hil_mag_flip_x_) {
+    mag_body.X() *= -1.0;
+  }
+  if (hil_mag_flip_y_) {
+    mag_body.Y() *= -1.0;
+  }
+  if (hil_mag_flip_z_) {
+    mag_body.Z() *= -1.0;
+  }
+
+  if (!std::isfinite(mag_body.X()) ||
+      !std::isfinite(mag_body.Y()) ||
+      !std::isfinite(mag_body.Z()) ||
+      mag_body.Length() < 1e-9) {
+    return;
+  }
 
   SensorData::Magnetometer mag_data;
-  mag_data.mag_b = Eigen::Vector3d(mag_frd.X(), mag_frd.Y(), mag_frd.Z());
+  mag_data.mag_b = Eigen::Vector3d(mag_body.X(), mag_body.Y(), mag_body.Z());
   mavlink_interface_->UpdateMag(mag_data);
 }
 
@@ -564,18 +641,45 @@ void GazeboMavlinkInterface::GpsCallback(const gz::msgs::NavSat &_msg) {
   hil_gps_msg.eph = 100;
   hil_gps_msg.epv = 120;
 
-  const double vn = _msg.velocity_north();
-  const double ve = _msg.velocity_east();
-  const double vd = -_msg.velocity_up();
+  double vn = 0.0;
+  double ve = 0.0;
+  double vd = 0.0;
+
+  if (hil_gps_use_velocity_) {
+    const double raw_vn = _msg.velocity_north();
+    const double raw_ve = _msg.velocity_east();
+    const double raw_vd = -_msg.velocity_up();
+    const Eigen::Vector3d raw_v(raw_vn, raw_ve, raw_vd);
+
+    if (std::isfinite(raw_vn) && std::isfinite(raw_ve) && std::isfinite(raw_vd) &&
+        raw_v.norm() <= hil_gps_max_speed_m_s_) {
+      vn = raw_vn;
+      ve = raw_ve;
+      vd = raw_vd;
+    } else {
+      static uint64_t rejected_gps_velocity_count = 0;
+      if (rejected_gps_velocity_count++ < 20 || rejected_gps_velocity_count % 100 == 0) {
+        gzerr << "[gazebo_mavlink_interface] rejected implausible GPS velocity NED=("
+              << raw_vn << "," << raw_ve << "," << raw_vd << ") m/s, norm="
+              << raw_v.norm() << " > max=" << hil_gps_max_speed_m_s_
+              << "; sending zero GPS velocity" << std::endl;
+      }
+    }
+  }
+
   Eigen::Vector3d v(vn, ve, vd);
   hil_gps_msg.vel = static_cast<uint16_t>(std::min(65535.0, v.norm() * 100.0));
   hil_gps_msg.vn = static_cast<int16_t>(gazebo::constrain(vn * 100.0, -32768.0, 32767.0));
   hil_gps_msg.ve = static_cast<int16_t>(gazebo::constrain(ve * 100.0, -32768.0, 32767.0));
   hil_gps_msg.vd = static_cast<int16_t>(gazebo::constrain(vd * 100.0, -32768.0, 32767.0));
 
-  gz::math::Angle cog(atan2(ve, vn));
-  cog.Normalize();
-  hil_gps_msg.cog = static_cast<uint16_t>(gazebo::GetDegrees360(cog) * 100.0);
+  if (v.norm() > 0.05) {
+    gz::math::Angle cog(atan2(ve, vn));
+    cog.Normalize();
+    hil_gps_msg.cog = static_cast<uint16_t>(gazebo::GetDegrees360(cog) * 100.0);
+  } else {
+    hil_gps_msg.cog = 0;
+  }
   hil_gps_msg.satellites_visible = 12;
   hil_gps_msg.id = 0;
 
@@ -612,15 +716,18 @@ void GazeboMavlinkInterface::SendSensorMessages(const gz::sim::UpdateInfo &_info
   }
 
   if (has_imu) {
-    const gz::math::Vector3d accel_b = q_FLU_to_FRD.RotateVector(gz::math::Vector3d(
+    const gz::math::Vector3d accel_flu(
       last_imu_message.linear_acceleration().x(),
       last_imu_message.linear_acceleration().y(),
-      last_imu_message.linear_acceleration().z()));
+      last_imu_message.linear_acceleration().z());
 
-    const gz::math::Vector3d gyro_b = q_FLU_to_FRD.RotateVector(gz::math::Vector3d(
+    const gz::math::Vector3d gyro_flu(
       last_imu_message.angular_velocity().x(),
       last_imu_message.angular_velocity().y(),
-      last_imu_message.angular_velocity().z()));
+      last_imu_message.angular_velocity().z());
+
+    const gz::math::Vector3d accel_b = q_FLU_to_FRD.RotateVector(accel_flu) * hil_accel_scale_;
+    const gz::math::Vector3d gyro_b = q_FLU_to_FRD.RotateVector(gyro_flu) * hil_gyro_scale_;
 
     if (std::isfinite(accel_b.X()) && std::isfinite(accel_b.Y()) && std::isfinite(accel_b.Z()) &&
         std::isfinite(gyro_b.X()) && std::isfinite(gyro_b.Y()) && std::isfinite(gyro_b.Z())) {
