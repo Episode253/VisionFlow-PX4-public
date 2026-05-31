@@ -495,8 +495,8 @@
       <hilMagFlipZ>false</hilMagFlipZ>
 
       <!-- Velocity safety: keep static bench HITL from injecting impossible GPS / state velocities. -->
-      <hilGpsUseVelocity>false</hilGpsUseVelocity>
-      <hilGpsMaxSpeed>5.0</hilGpsMaxSpeed>
+      <hilGpsUseVelocity>true</hilGpsUseVelocity>
+      <hilGpsMaxSpeed>30.0</hilGpsMaxSpeed>
       <hilSendStateQuaternion>false</hilSendStateQuaternion>
 
       <motorCount>4</motorCount>
