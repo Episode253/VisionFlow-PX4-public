@@ -135,3 +135,5 @@ log/*
 platforms/nuttx/NuttX/nuttx/.config
 platforms/nuttx/NuttX/nuttx/.config.old
 platforms/nuttx/NuttX/nuttx/defconfig
+
+windshape_dev/tools/px4_gzsim_bridge/build/*
