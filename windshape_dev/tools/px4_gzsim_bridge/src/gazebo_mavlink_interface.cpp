@@ -25,6 +25,7 @@
 #include <random>
 #include <cmath>
 #include <algorithm>
+#include <limits>
 
 #include <gz/plugin/Register.hh>
 #include <gz/sensors/Sensor.hh>
@@ -51,6 +52,10 @@ GazeboMavlinkInterface::GazeboMavlinkInterface() :
   servo_input_index_ {}
 {
   mavlink_interface_ = std::make_shared<MavlinkInterface>();
+  std::fill_n(input_offset_, n_out_max, 0.0);
+  std::fill_n(zero_position_disarmed_, n_out_max, 0.0);
+  std::fill_n(zero_position_armed_, n_out_max, 0.0);
+  std::fill_n(motor_vel_scalings_, n_out_max, fallback_motor_velocity_scaling_);
 }
 
 GazeboMavlinkInterface::~GazeboMavlinkInterface() {
@@ -143,8 +148,23 @@ void GazeboMavlinkInterface::Configure(const gz::sim::Entity &_entity,
   if (hil_state_rate_hz > 1.0) {
     hil_state_interval_us_ = static_cast<uint64_t>(1000000.0 / hil_state_rate_hz);
   }
+  gazebo::getSdfParam<unsigned>(_sdf, "motorCount", configured_motor_count_, configured_motor_count_);
+  configured_motor_count_ = std::max(1u, std::min(configured_motor_count_, n_out_max));
+  gazebo::getSdfParam<double>(_sdf, "fallbackMotorVelocityScaling",
+                              fallback_motor_velocity_scaling_, fallback_motor_velocity_scaling_);
+  fallback_motor_velocity_scaling_ = std::max(1.0, fallback_motor_velocity_scaling_);
+  std::fill_n(motor_vel_scalings_, n_out_max, fallback_motor_velocity_scaling_);
+
+  // Real hardware HITL over serial should normally use wall time. Sim time is
+  // still available for pure UDP/TCP tests. Mixing both in one link is where
+  // estimators go to become modern art.
+  gazebo::getSdfParam<bool>(_sdf, "useWallTimeForHil", use_wall_time_for_hil_, use_serial_);
+
   gzmsg << "[gazebo_mavlink_interface] HIL output rates: sensor=" << hil_sensor_rate_hz
-        << "Hz gps=" << hil_gps_rate_hz << "Hz state=" << hil_state_rate_hz << "Hz" << std::endl;
+        << "Hz gps=" << hil_gps_rate_hz << "Hz state=" << hil_state_rate_hz
+        << "Hz, time_source=" << (use_wall_time_for_hil_ ? "wall" : "sim")
+        << ", motor_count=" << configured_motor_count_
+        << ", fallback_motor_scaling=" << fallback_motor_velocity_scaling_ << std::endl;
 
   // Set motor and servo input_reference_ from inputs.control.
   // Important for GzSim MulticopterMotorModel:
@@ -158,7 +178,10 @@ void GazeboMavlinkInterface::Configure(const gz::sim::Entity &_entity,
   servo_input_reference_.resize(n_out_max);
 
   // Parse the MulticopterMotorModel plugins to get the motor velocity scalings
-  // and detected motor count.
+  // and detected motor count. Start with the configured value so a missing SDF
+  // parse does not silently create a one-motor aircraft, because apparently
+  // chaos needed extra help.
+  n_motors_detected_ = configured_motor_count_;
   ParseMulticopterMotorModelPlugins(model_.SourceFilePath(_ecm));
 
   if (n_motors_detected_ == 0 || n_motors_detected_ > n_out_max) {
@@ -203,6 +226,12 @@ void GazeboMavlinkInterface::Configure(const gz::sim::Entity &_entity,
   {
     enable_lockstep_ = _sdf->Get<bool>("enable_lockstep");
     mavlink_interface_->SetEnableLockstep(enable_lockstep_);
+  }
+  if (use_serial_ && enable_lockstep_) {
+    gzerr << "[gazebo_mavlink_interface] enable_lockstep=true was requested in SERIAL HITL. "
+          << "For real flight-controller HITL this is unsafe; forcing lockstep off." << std::endl;
+    enable_lockstep_ = false;
+    mavlink_interface_->SetEnableLockstep(false);
   }
   gzmsg << "Lockstep is " << (enable_lockstep_ ? "enabled" : "disabled") << std::endl;
 
@@ -360,7 +389,7 @@ void GazeboMavlinkInterface::PreUpdate(const gz::sim::UpdateInfo &_info,
 
   mavlink_interface_->ReadMAVLinkMessages();
 
-  const uint64_t sim_time_us = std::chrono::duration_cast<std::chrono::duration<uint64_t>>(_info.simTime * 1e6).count();
+  const uint64_t sim_time_us = HilTimeUsec(_info);
 
   // Send HIL_SENSOR at a bounded rate. PX4 does not need every Gazebo physics
   // tick here, and sending too much traffic on the same serial link used by QGC
@@ -409,6 +438,8 @@ void GazeboMavlinkInterface::PoseCallback(const gz::msgs::Pose_V &_msg){
       continue;
     }
 
+    // Pose_V callbacks are asynchronous and do not carry UpdateInfo, so use wall
+    // time here. For real serial HITL this is the desired time base anyway.
     const uint64_t now_usec = CurrentWallTimeUsec();
     if (last_hil_state_send_us_ != 0 && now_usec - last_hil_state_send_us_ < hil_state_interval_us_) {
       return;
@@ -472,6 +503,7 @@ void GazeboMavlinkInterface::PoseCallback(const gz::msgs::Pose_V &_msg){
 void GazeboMavlinkInterface::ImuCallback(const gz::msgs::IMU &_msg) {
   const std::lock_guard<std::mutex> lock(last_imu_message_mutex_);
   last_imu_message_ = _msg;
+  has_imu_message_ = true;
 }
 
 void GazeboMavlinkInterface::BarometerCallback(const gz::msgs::FluidPressure &_msg) {
@@ -521,7 +553,7 @@ void GazeboMavlinkInterface::GpsCallback(const gz::msgs::NavSat &_msg) {
   mavlink_hil_gps_t hil_gps_msg{};
   const auto header = _msg.header();
   hil_gps_msg.time_usec = static_cast<uint64_t>((header.stamp().sec() * 1000000) + (header.stamp().nsec() / 1000));
-  if (hil_gps_msg.time_usec == 0) {
+  if (use_wall_time_for_hil_ || hil_gps_msg.time_usec == 0) {
     hil_gps_msg.time_usec = CurrentWallTimeUsec();
   }
 
@@ -572,67 +604,62 @@ void GazeboMavlinkInterface::GpsCallback(const gz::msgs::NavSat &_msg) {
 
 void GazeboMavlinkInterface::SendSensorMessages(const gz::sim::UpdateInfo &_info) {
   gz::msgs::IMU last_imu_message;
+  bool has_imu = false;
   {
     const std::lock_guard<std::mutex> lock(last_imu_message_mutex_);
     last_imu_message = last_imu_message_;
+    has_imu = has_imu_message_;
   }
 
+  if (has_imu) {
+    const gz::math::Vector3d accel_b = q_FLU_to_FRD.RotateVector(gz::math::Vector3d(
+      last_imu_message.linear_acceleration().x(),
+      last_imu_message.linear_acceleration().y(),
+      last_imu_message.linear_acceleration().z()));
 
-  // send always accel and gyro data (not dependent of the bitmask)
-  // required so to keep the timestamps on sync and the lockstep can
-  // work properly
-  // gz::math::Vector3d accel_b = q_FLU_to_FRD.RotateVector(gz::math::Vector3d(
-  //   AddSimpleNoise(last_imu_message.linear_acceleration().x(), 0, 0.006),
-  //   AddSimpleNoise(last_imu_message.linear_acceleration().y(), 0, 0.006),
-  //   AddSimpleNoise(last_imu_message.linear_acceleration().z(), 0, 0.030)));
+    const gz::math::Vector3d gyro_b = q_FLU_to_FRD.RotateVector(gz::math::Vector3d(
+      last_imu_message.angular_velocity().x(),
+      last_imu_message.angular_velocity().y(),
+      last_imu_message.angular_velocity().z()));
 
-  // gz::math::Vector3d gyro_b = q_FLU_to_FRD.RotateVector(gz::math::Vector3d(
-  //   AddSimpleNoise(last_imu_message.angular_velocity().x(), 0, 0.001),
-  //   AddSimpleNoise(last_imu_message.angular_velocity().y(), 0, 0.001),
-  //   AddSimpleNoise(last_imu_message.angular_velocity().z(), 0, 0.001)));
+    if (std::isfinite(accel_b.X()) && std::isfinite(accel_b.Y()) && std::isfinite(accel_b.Z()) &&
+        std::isfinite(gyro_b.X()) && std::isfinite(gyro_b.Y()) && std::isfinite(gyro_b.Z())) {
+      SensorData::Imu imu_data;
+      imu_data.accel_b = Eigen::Vector3d(accel_b.X(), accel_b.Y(), accel_b.Z());
+      imu_data.gyro_b = Eigen::Vector3d(gyro_b.X(), gyro_b.Y(), gyro_b.Z());
+      mavlink_interface_->UpdateIMU(imu_data);
+    }
+  }
 
-  gz::math::Vector3d accel_b = q_FLU_to_FRD.RotateVector(gz::math::Vector3d(
-    last_imu_message.linear_acceleration().x(),
-    last_imu_message.linear_acceleration().y(),
-    last_imu_message.linear_acceleration().z()));
-
-  gz::math::Vector3d gyro_b = q_FLU_to_FRD.RotateVector(gz::math::Vector3d(
-    last_imu_message.angular_velocity().x(),
-    last_imu_message.angular_velocity().y(),
-    last_imu_message.angular_velocity().z()));
-
-  uint64_t time_usec = std::chrono::duration_cast<std::chrono::duration<uint64_t>>(_info.simTime * 1e6).count();
-  SensorData::Imu imu_data;
-  imu_data.accel_b = Eigen::Vector3d(accel_b.X(), accel_b.Y(), accel_b.Z());
-  imu_data.gyro_b = Eigen::Vector3d(gyro_b.X(), gyro_b.Y(), gyro_b.Z());
-  mavlink_interface_->UpdateIMU(imu_data);
-  mavlink_interface_->SendSensorMessages(time_usec);
+  // If no IMU has arrived yet, do not overwrite MavlinkInterface's safe
+  // constructor fallback. Empty IMU packets are an excellent way to teach PX4
+  // nihilism, so we avoid that.
+  mavlink_interface_->SendSensorMessages(HilTimeUsec(_info));
 }
 
 void GazeboMavlinkInterface::SendStatusMessages(const gz::sim::UpdateInfo &_info, const gz::sim::EntityComponentManager &_ecm) {
-  uint64_t time_usec = std::chrono::duration_cast<std::chrono::duration<uint64_t>>(_info.simTime * 1e6).count();
+  const uint64_t time_usec = HilTimeUsec(_info);
   struct StatusData::EscStatus status{};
-  std::vector<double> vels;
-  char joint_name_c[] = "rotor_0_joint"; // This assumes rotor naming for all model is consistent
-  gz::sim::Entity joint_entity = _ecm.EntityByComponents(gz::sim::components::Name(joint_name_c), gz::sim::components::Joint());;
 
-  double vel;
-  int i = 0;
-  while (joint_entity != gz::sim::kNullEntity) {
-    // Get velocity component data from joint entity
-    std::optional<std::vector<double>> joint_velocity = _ecm.ComponentData<gz::sim::components::JointVelocity>(joint_entity);
-    if (joint_velocity && (*joint_velocity).size() > 0) {
-      status.esc[i].rpm = (*joint_velocity)[0] * RAD_S_TO_RPM;
+  for (int i = 0; i < static_cast<int>(std::min<unsigned>(n_motors_detected_, MAX_N_ESCS)); ++i) {
+    const std::string joint_name = "rotor_" + std::to_string(i) + "_joint";
+    const gz::sim::Entity joint_entity = _ecm.EntityByComponents(
+      gz::sim::components::Name(joint_name), gz::sim::components::Joint());
+
+    if (joint_entity == gz::sim::kNullEntity) {
+      continue;
     }
-    // Get joint entity
-    i++;
-    joint_name_c[6] = '0' + i;
-    joint_entity = _ecm.EntityByComponents(gz::sim::components::Name(joint_name_c), gz::sim::components::Joint());
+
+    const auto joint_velocity = _ecm.ComponentData<gz::sim::components::JointVelocity>(joint_entity);
+    if (joint_velocity && !joint_velocity->empty()) {
+      status.esc[i].rpm = static_cast<int>((*joint_velocity)[0] * RAD_S_TO_RPM);
+      status.esc_count = std::max(status.esc_count, i + 1);
+    }
   }
 
-  status.esc_count = i;
-
-  mavlink_interface_->SendEscStatusMessages(time_usec, status);
+  if (status.esc_count > 0) {
+    mavlink_interface_->SendEscStatusMessages(time_usec, status);
+  }
 }
 
 void GazeboMavlinkInterface::handle_actuator_controls(const gz::sim::UpdateInfo &_info) {
@@ -827,6 +854,15 @@ uint64_t GazeboMavlinkInterface::CurrentWallTimeUsec() const
     std::chrono::system_clock::now().time_since_epoch()).count());
 }
 
+uint64_t GazeboMavlinkInterface::HilTimeUsec(const gz::sim::UpdateInfo &_info) const
+{
+  if (use_wall_time_for_hil_) {
+    return CurrentWallTimeUsec();
+  }
+  return static_cast<uint64_t>(
+    std::chrono::duration_cast<std::chrono::microseconds>(_info.simTime).count());
+}
+
 void GazeboMavlinkInterface::RotateQuaternion(gz::math::Quaterniond &q_FRD_to_NED,
     const gz::math::Quaterniond q_FLU_to_ENU)
 {
@@ -848,46 +884,74 @@ void GazeboMavlinkInterface::RotateQuaternion(gz::math::Quaterniond &q_FRD_to_NE
 
 void GazeboMavlinkInterface::ParseMulticopterMotorModelPlugins(const std::string &sdfFilePath)
 {
-  // Load the SDF file
+  if (sdfFilePath.empty()) {
+    gzerr << "[gazebo_mavlink_interface] Empty model SourceFilePath; using configured motor count "
+          << n_motors_detected_ << " and fallback scaling "
+          << fallback_motor_velocity_scaling_ << std::endl;
+    return;
+  }
+
   sdf::Root root;
-  sdf::Errors errors = root.Load(sdfFilePath);
+  const sdf::Errors errors = root.Load(sdfFilePath);
   if (!errors.empty())
   {
     for (const auto &error : errors)
     {
-      gzerr << "[gazebo_mavlink_interface] Error: " << error.Message() << std::endl;
+      gzerr << "[gazebo_mavlink_interface] SDF parse error: " << error.Message() << std::endl;
     }
+    gzerr << "[gazebo_mavlink_interface] Using configured motor count " << n_motors_detected_
+          << " with fallback scaling " << fallback_motor_velocity_scaling_ << std::endl;
     return;
   }
 
-  // Load the model
   const sdf::Model *model = root.Model();
   if (!model)
   {
-    gzerr << "[gazebo_mavlink_interface] No models found in SDF file." << std::endl;
+    gzerr << "[gazebo_mavlink_interface] No root model found in SDF file; using configured motor count."
+          << std::endl;
     return;
   }
 
-  // Iterate through all plugins in the model
-  for (const sdf::Plugin plugin : model->Plugins())
+  unsigned detected_count = 0;
+  for (const sdf::Plugin &plugin : model->Plugins())
   {
-    // Check if the plugin is a MulticopterMotorModel
-    if (plugin.Name() == "gz::sim::systems::MulticopterMotorModel") {
-      if (plugin.Element()->HasElement("motorNumber"))
-      {
-        const int motorNumber = plugin.Element()->Get<int>("motorNumber");
-        if (motorNumber >= n_out_max)
-        {
-          gzerr << "[gazebo_mavlink_interface] Motor number " << motorNumber
-            << " exceeds maximum number of motors " << n_out_max << std::endl;
-          continue;
-        }
-        n_motors_detected_ = std::max<unsigned>(n_motors_detected_, static_cast<unsigned>(motorNumber + 1));
-        if (plugin.Element()->HasElement("maxRotVelocity"))
-        {
-          motor_vel_scalings_[motorNumber] = plugin.Element()->Get<double>("maxRotVelocity");
-        }
+    const std::string plugin_name = plugin.Name();
+    const std::string plugin_file = plugin.Filename();
+    if (plugin_name.find("MulticopterMotorModel") == std::string::npos &&
+        plugin_file.find("multicopter-motor-model") == std::string::npos) {
+      continue;
+    }
+
+    if (!plugin.Element() || !plugin.Element()->HasElement("motorNumber")) {
+      continue;
+    }
+
+    const int motorNumber = plugin.Element()->Get<int>("motorNumber");
+    if (motorNumber < 0 || motorNumber >= static_cast<int>(n_out_max))
+    {
+      gzerr << "[gazebo_mavlink_interface] Ignoring invalid motorNumber=" << motorNumber
+            << ", allowed range is [0," << (n_out_max - 1) << "]" << std::endl;
+      continue;
+    }
+
+    detected_count = std::max<unsigned>(detected_count, static_cast<unsigned>(motorNumber + 1));
+
+    if (plugin.Element()->HasElement("maxRotVelocity"))
+    {
+      const double scale = plugin.Element()->Get<double>("maxRotVelocity");
+      if (std::isfinite(scale) && scale > 0.0) {
+        motor_vel_scalings_[motorNumber] = scale;
       }
     }
   }
+
+  if (detected_count > 0) {
+    n_motors_detected_ = std::max(n_motors_detected_, detected_count);
+  }
+
+  gzmsg << "[gazebo_mavlink_interface] motor scaling:";
+  for (unsigned i = 0; i < n_motors_detected_; ++i) {
+    gzmsg << " motor" << i << "=" << motor_vel_scalings_[i];
+  }
+  gzmsg << std::endl;
 }

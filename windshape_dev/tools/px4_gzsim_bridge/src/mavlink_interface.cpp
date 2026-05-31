@@ -233,6 +233,9 @@ void MavlinkInterface::ProcessQgcUdpMessage()
 
 bool MavlinkInterface::WriteAll(const uint8_t *buffer, size_t len)
 {
+  if (buffer == nullptr || len == 0 || fds_[CONNECTION_FD].fd < 0) {
+    return false;
+  }
   const std::lock_guard<std::mutex> lock(serial_write_mutex_);
   const auto start = std::chrono::steady_clock::now();
   size_t written = 0;
@@ -772,6 +775,8 @@ void MavlinkInterface::SendSensorMessages(uint64_t time_usec) {
   {
     const std::lock_guard<std::mutex> lock(sensor_msg_mutex_);
 
+    accel_b = accel_b_;
+    gyro_b = gyro_b_;
     mag_b = mag_b_;
     temperature = temperature_;
     abs_pressure = abs_pressure_;
@@ -788,6 +793,14 @@ void MavlinkInterface::SendSensorMessages(uint64_t time_usec) {
 
   // Defensive fallbacks. A zero magnetic field or zero pressure is invalid for
   // PX4 preflight checks. Do not let an empty Gazebo callback poison the EKF.
+  if (!std::isfinite(accel_b.x()) || !std::isfinite(accel_b.y()) || !std::isfinite(accel_b.z()) ||
+      accel_b.norm() < 1e-6) {
+    accel_b = Eigen::Vector3d(0.0, 0.0, -9.80665);
+  }
+  if (!std::isfinite(gyro_b.x()) || !std::isfinite(gyro_b.y()) || !std::isfinite(gyro_b.z())) {
+    gyro_b = Eigen::Vector3d::Zero();
+  }
+
   if (!std::isfinite(mag_b.x()) || !std::isfinite(mag_b.y()) || !std::isfinite(mag_b.z()) ||
       mag_b.norm() < 1e-6) {
     mag_b = Eigen::Vector3d(0.2, 0.0, 0.4);
@@ -836,15 +849,20 @@ void MavlinkInterface::SendSensorMessages(uint64_t time_usec) {
 }
 
 void MavlinkInterface::SendEscStatusMessages(uint64_t time_usec, struct StatusData::EscStatus &status) {
+  if (status.esc_count <= 0) {
+    return;
+  }
+
   mavlink_esc_status_t esc_status_msg{};
   mavlink_esc_info_t esc_info_msg{};
   static constexpr uint8_t batch_size = MAVLINK_MSG_ESC_STATUS_FIELD_RPM_LEN;
   static uint16_t counter = 0;
 
   esc_status_msg.time_usec = time_usec;
-  for (int i = 0; i < batch_size; i++) {
+  esc_info_msg.time_usec = time_usec;
+  const int count = std::min<int>(status.esc_count, batch_size);
+  for (int i = 0; i < count; i++) {
     esc_status_msg.rpm[i] = status.esc[i].rpm;
-
     esc_info_msg.failure_flags[i] = 0;
     esc_info_msg.error_count[i] = 0;
     esc_info_msg.temperature[i] = 20;
@@ -856,9 +874,9 @@ void MavlinkInterface::SendEscStatusMessages(uint64_t time_usec, struct StatusDa
   PushSendMessage(msg_shared);
 
   esc_info_msg.counter = counter++;
-  esc_info_msg.count = status.esc_count;
+  esc_info_msg.count = std::min<int>(status.esc_count, batch_size);
   esc_info_msg.connection_type = 0; // TODO: use two highest bits for selected input
-  esc_info_msg.info = (1u << status.esc_count) - 1;
+  esc_info_msg.info = (status.esc_count >= 32) ? 0xFFFFFFFFu : ((1u << status.esc_count) - 1u);
 
   mavlink_msg_esc_info_encode_chan(254, 25, MAVLINK_COMM_0, &msg, &esc_info_msg);
   msg_shared = std::make_shared<mavlink_message_t>(msg);
@@ -882,11 +900,9 @@ void MavlinkInterface::UpdateAirspeed(const SensorData::Airspeed &data) {
 }
 
 void MavlinkInterface::UpdateIMU(const SensorData::Imu &data) {
-  // Imu is updated only before sending, so locking handled there
-  //   by last_imu_message_mutex_
+  const std::lock_guard<std::mutex> lock(sensor_msg_mutex_);
   accel_b_ = data.accel_b;
   gyro_b_ = data.gyro_b;
-
   imu_updated_ = true;
 }
 
@@ -928,7 +944,7 @@ void MavlinkInterface::ReadMAVLinkMessages()
 
 void MavlinkInterface::acceptConnections()
 {
-  if (fds_[CONNECTION_FD].fd > 0) {
+  if (fds_[CONNECTION_FD].fd >= 0) {
     return;
   }
 
@@ -950,7 +966,7 @@ void MavlinkInterface::acceptConnections()
 
 bool MavlinkInterface::tryConnect()
 {
-  if (fds_[CONNECTION_FD].fd > 0) {
+  if (fds_[CONNECTION_FD].fd >= 0) {
     return true;
   }
 
@@ -1120,7 +1136,7 @@ void MavlinkInterface::send_mavlink_message(const mavlink_message_t *message)
   uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
   int packetlen = mavlink_msg_to_send_buffer(buffer, message);
 
-  if (fds_[CONNECTION_FD].fd > 0) {
+  if (fds_[CONNECTION_FD].fd >= 0) {
     ssize_t len;
     if (use_serial_) {
       len = WriteAll(buffer, packetlen) ? static_cast<ssize_t>(packetlen) : -1;
@@ -1177,8 +1193,12 @@ void MavlinkInterface::close()
 
   if (fds_[CONNECTION_FD].fd >= 0) {
     ::close(fds_[CONNECTION_FD].fd);
-    fds_[CONNECTION_FD].fd = -1;
-    fds_[CONNECTION_FD] = { 0, 0, 0 };
+    fds_[CONNECTION_FD] = { -1, 0, 0 };
+  }
+
+  if (fds_[LISTEN_FD].fd >= 0 && fds_[LISTEN_FD].fd != fds_[CONNECTION_FD].fd) {
+    ::close(fds_[LISTEN_FD].fd);
+    fds_[LISTEN_FD] = { -1, 0, 0 };
   }
 
   if (simulator_second_socket_fd_ >= 0) {

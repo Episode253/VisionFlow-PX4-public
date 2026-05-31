@@ -18,10 +18,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MAVLINK_INTERFACE_HH_
-#define MAVLINK_INTERFACE_HH_
+#ifndef GAZEBO_MAVLINK_INTERFACE_HH_
+#define GAZEBO_MAVLINK_INTERFACE_HH_
 
 #include <vector>
+#include <array>
 #include <regex>
 #include <thread>
 #include <mutex>
@@ -168,9 +169,10 @@ namespace mavlink_interface
         const gz::math::Quaterniond q_FLU_to_ENU);
       bool PoseNameMatchesModel(const std::string &pose_name) const;
       uint64_t CurrentWallTimeUsec() const;
+      uint64_t HilTimeUsec(const gz::sim::UpdateInfo &_info) const;
       void ParseMulticopterMotorModelPlugins(const std::string &sdfFilePath);
 
-      static const unsigned n_out_max = 16;
+      inline static constexpr unsigned n_out_max = 16;
 
       double input_offset_[n_out_max];
       std::string joint_control_type_[n_out_max];
@@ -178,8 +180,10 @@ namespace mavlink_interface
       double zero_position_disarmed_[n_out_max];
       double zero_position_armed_[n_out_max];
       int motor_input_index_[n_out_max];
-      double motor_vel_scalings_[n_out_max] {1.0};
+      double motor_vel_scalings_[n_out_max] {};
       int servo_input_index_[n_out_max];
+      double fallback_motor_velocity_scaling_{1000.0};
+      unsigned configured_motor_count_{4};
       bool input_is_cmd_vel_{false};
       bool input_is_cmd_vel_last_{false};
 
@@ -202,6 +206,8 @@ namespace mavlink_interface
       std::mutex latest_gps_mutex_ {};
 
       gz::msgs::IMU last_imu_message_;
+      bool has_imu_message_{false};
+      bool use_wall_time_for_hil_{true};
       bool has_latest_gps_{false};
       double latest_gps_lat_deg_{47.397742};
       double latest_gps_lon_deg_{8.545594};
@@ -260,4 +266,4 @@ namespace mavlink_interface
   };
 }
 
-#endif
+#endif  // GAZEBO_MAVLINK_INTERFACE_HH_

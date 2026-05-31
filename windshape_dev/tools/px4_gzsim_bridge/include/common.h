@@ -21,7 +21,6 @@
  */
 
 
-#include <tinyxml.h>
 #include <typeinfo>
 #include <Eigen/Dense>
 #include <gz/math.hh>
@@ -54,7 +53,7 @@ bool getSdfParam(const std::shared_ptr<const sdf::Element> sdf, const std::strin
   else {
     param = default_value;
     if (verbose)
-      ignerr << "[rotors_gazebo_plugins] Please specify a value for parameter \"" << name << "\".\n";
+      gzerr << "[hitl_gazebo_common] Please specify a value for parameter \"" << name << "\".\n";
   }
   return false;
 }
@@ -78,10 +77,10 @@ class FirstOrderFilter {
 This class can be used to apply a first order filter on a signal.
 It allows different acceleration and deceleration time constants.
 
-Short reveiw of discrete time implementation of firest order system:
+Short review of discrete time implementation of first order system:
 Laplace:
     X(s)/U(s) = 1/(tau*s + 1)
-continous time system:
+continuous time system:
     dx(t) = (-1/tau)*x(t) + (1/tau)*u(t)
 discretized system (ZoH):
     x(k+1) = exp(samplingTime*(-1/tau))*x(k) + (1 - exp(samplingTime*(-1/tau))) * u(k)

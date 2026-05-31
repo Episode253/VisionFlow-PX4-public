@@ -24,6 +24,7 @@
 #include <vector>
 #include <queue>
 #include <array>
+#include <algorithm>
 #include <regex>
 #include <thread>
 #include <mutex>
