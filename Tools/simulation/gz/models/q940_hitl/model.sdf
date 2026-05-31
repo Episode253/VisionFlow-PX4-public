@@ -474,7 +474,7 @@
       <protocol_version>2.0</protocol_version>
 
       <use_serial>true</use_serial>
-      <serial_device>/dev/ttyACM1</serial_device>
+      <serial_device>/dev/ttyACM0</serial_device>
       <serial_baudrate>921600</serial_baudrate>
 
       <qgcUdpForward>true</qgcUdpForward>
@@ -486,7 +486,7 @@
       <useWallTimeForHil>true</useWallTimeForHil>
 
       <!-- HITL sensor conditioning for current PX4 + Gazebo Harmonic setup -->
-      <hilAccelScale>2.0</hilAccelScale>
+      <hilAccelScale>1.0</hilAccelScale>
       <hilGyroScale>1.0</hilGyroScale>
       <hilMagScale>1.0</hilMagScale>
       <hilMagApplyFluToFrd>false</hilMagApplyFluToFrd>
