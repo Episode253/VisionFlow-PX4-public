@@ -35,3 +35,7 @@ bash windshape_dev/arm_control/ti5_arm_web_control.sh
 ## 启动 mavros 节点
 
 source thirdparty/install/setup.bash && ros2 launch mavros px4.launch fcu_url:=udp://:14540@localhost:14557
+
+## 启动 HITL 节点（这部分较为复杂，将出单独的README做出说明）
+
+gz sim -r Tools/simulation/gz/worlds/laboratory_landingbox_hitl.sdf
