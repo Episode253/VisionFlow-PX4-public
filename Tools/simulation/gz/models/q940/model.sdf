@@ -461,6 +461,45 @@
       <motorType>velocity</motorType>
     </plugin>
 
+    <!-- PX4 HITL bridge: Gazebo Harmonic <-> CUAV X7 Pro -->
+    <plugin
+      filename="libmavlink_hitl_gazebosim.so"
+      name="mavlink_interface::GazeboMavlinkInterface">
+
+      <robotNamespace></robotNamespace>
+      <protocol_version>2.0</protocol_version>
+
+      <!-- Direct serial connection to CUAV X7 Pro -->
+      <use_serial>true</use_serial>
+      <serial_device>/dev/ttyACM0</serial_device>
+      <serial_baudrate>2000000</serial_baudrate>
+
+      <!-- <qgcUdpForward>true</qgcUdpForward>
+      <qgcUdpAddr>127.0.0.1</qgcUdpAddr>
+      <qgcUdpRemotePort>14550</qgcUdpRemotePort>
+      <qgcUdpLocalPort>14557</qgcUdpLocalPort>
+
+      <hilSensorRateHz>100</hilSensorRateHz>
+      <hilGpsRateHz>10</hilGpsRateHz>
+      <hilStateRateHz>20</hilStateRateHz> -->
+
+      <!-- Sensor topics relative to this model -->
+      <imuSubTopic>/link/base_link/sensor/imu_sensor/imu</imuSubTopic>
+      <gpsSubTopic>/link/base_link/sensor/navsat_sensor/navsat</gpsSubTopic>
+      <magSubTopic>/link/base_link/sensor/magnetometer_sensor/magnetometer</magSubTopic>
+      <baroSubTopic>/link/base_link/sensor/air_pressure_sensor/air_pressure</baroSubTopic>
+
+      <!-- World pose topic -->
+      <poseSubTopic>/pose/info</poseSubTopic>
+
+      <!-- Home position, keep same as your previous HIL_GPS test -->
+      <homeLatitude>47.397742</homeLatitude>
+      <homeLongitude>8.545594</homeLongitude>
+      <homeAltitude>488.0</homeAltitude>
+
+      <enable_lockstep>false</enable_lockstep>
+    </plugin>
+
     <!-- Ground-truth odometry publisher -->
     <plugin
       filename="gz-sim-odometry-publisher-system"
