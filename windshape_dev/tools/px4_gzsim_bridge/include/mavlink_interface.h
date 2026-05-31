@@ -23,6 +23,7 @@
 
 #include <vector>
 #include <queue>
+#include <array>
 #include <regex>
 #include <thread>
 #include <mutex>
@@ -48,6 +49,8 @@
 #include <string>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <termios.h>
+#include <poll.h>
 
 #include <Eigen/Eigen>
 #include<Eigen/StdVector>
@@ -59,8 +62,8 @@ static const uint32_t kDefaultMavlinkUdpRemotePort = 14560;
 static const uint32_t kDefaultMavlinkUdpLocalPort = 0;
 static const uint32_t kDefaultMavlinkTcpPort = 4560;
 
-static const size_t kMaxRecvBufferSize = 30;
-static const size_t kMaxSendBufferSize = 30;
+static const size_t kMaxRecvBufferSize = 1024;
+static const size_t kMaxSendBufferSize = 512;
 
 using lock_guard = std::lock_guard<std::recursive_mutex>;
 static constexpr auto kDefaultDevice = "/dev/ttyACM0";
@@ -172,6 +175,11 @@ public:
         uint8_t min_length, uint8_t length, uint8_t crc_extra);
     bool GetReceivedFirstActuator() {return received_first_actuator_;}
     void SetBaudrate(int baudrate) {baudrate_ = baudrate;}
+    void SetUseSerial(bool use_serial) {use_serial_ = use_serial;}
+    void SetQgcUdpForward(bool enabled) {qgc_udp_forward_enabled_ = enabled;}
+    void SetQgcUdpAddr(std::string addr) {qgc_udp_addr_str_ = addr;}
+    void SetQgcUdpRemotePort(int port) {qgc_udp_remote_port_ = port;}
+    void SetQgcUdpLocalPort(int port) {qgc_udp_local_port_ = port;}
     void SetUseTcp(bool use_tcp) {use_tcp_ = use_tcp;}
     void SetUseTcpClientMode(bool tcp_client_mode) {tcp_client_mode_ = tcp_client_mode;}
     void SetDevice(std::string device) {device_ = device;}
@@ -202,8 +210,15 @@ private:
     void acceptConnections();
     void RegisterNewHILSensorInstance(int id);
     bool tryConnect();
+    void OpenSerialPort();
+    speed_t BaudToTermiosSpeed(unsigned int baudrate) const;
+    bool WriteAll(const uint8_t *buffer, size_t len);
+    void OpenQgcUdpForwarding();
+    void ForwardMavlinkMessageToQgc(const mavlink_message_t *message);
+    void ProcessQgcUdpMessage();
+    void SendGcsHeartbeatToSerial();
 
-    // UDP/TCP send/receive thread workers
+    // UDP/TCP/Serial send/receive thread workers
     void ReceiveWorker();
     void SendWorker();
 
@@ -229,6 +244,7 @@ private:
         N_FDS
     };
     struct pollfd fds_[N_FDS];
+    bool use_serial_{false};
     bool use_tcp_{false};
     bool tcp_client_mode_{false};
     std::atomic<bool> close_conn_{false};
@@ -241,6 +257,16 @@ private:
     int mavlink_udp_local_port_{kDefaultMavlinkUdpLocalPort}; // MAVLink refers to the PX4 simulator interface here
     int secondary_mavlink_udp_local_port_{kDefaultMavlinkUdpLocalPort+1};
     int mavlink_tcp_port_{kDefaultMavlinkTcpPort}; // MAVLink refers to the PX4 simulator interface here
+
+    bool qgc_udp_forward_enabled_{false};
+    std::string qgc_udp_addr_str_{"127.0.0.1"};
+    int qgc_udp_remote_port_{14550}; // QGC listens here by default
+    int qgc_udp_local_port_{14557};  // QGC replies to this source port
+    int qgc_udp_socket_fd_{-1};
+    struct sockaddr_in qgc_remote_addr_{};
+    socklen_t qgc_remote_addr_len_{sizeof(qgc_remote_addr_)};
+    struct sockaddr_in qgc_local_addr_{};
+    socklen_t qgc_local_addr_len_{sizeof(qgc_local_addr_)};
 
     int simulator_socket_fd_{-1};
     int simulator_second_socket_fd_{-1};
@@ -256,6 +282,7 @@ private:
     std::recursive_mutex mutex_;
     std::mutex actuator_mutex_;
     std::mutex sensor_msg_mutex_;
+    std::mutex serial_write_mutex_;
 
     std::array<uint8_t, MAX_SIZE> rx_buf_{};
     unsigned int baudrate_{kDefaultBaudRate};
@@ -285,7 +312,7 @@ private:
     std::thread receiver_thread_;
 
     std::mutex sender_buff_mtx_;
-    std::queue<std::shared_ptr<mavlink_message_t>> sender_buffer_;
+    std::deque<std::shared_ptr<mavlink_message_t>> sender_buffer_;
     std::thread sender_thread_;
     std::condition_variable sender_cv_;
     std::mutex mav_status_mutex_;

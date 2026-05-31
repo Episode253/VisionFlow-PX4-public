@@ -132,6 +132,11 @@ namespace mavlink_interface
 
       float protocol_version_{2.0};
 
+      double home_latitude_rad_{kDefaultHomeLatitude};
+      double home_longitude_rad_{kDefaultHomeLongitude};
+      double home_altitude_m_{kDefaultHomeAltitude};
+      bool use_serial_{false};
+
       std::string namespace_{kDefaultNamespace};
       std::string mavlink_control_sub_topic_;
       std::string link_name_;
@@ -161,6 +166,8 @@ namespace mavlink_interface
       float AddSimpleNoise(float value, float mean, float stddev);
       void RotateQuaternion(gz::math::Quaterniond &q_FRD_to_NED,
         const gz::math::Quaterniond q_FLU_to_ENU);
+      bool PoseNameMatchesModel(const std::string &pose_name) const;
+      uint64_t CurrentWallTimeUsec() const;
       void ParseMulticopterMotorModelPlugins(const std::string &sdfFilePath);
 
       static const unsigned n_out_max = 16;
@@ -192,9 +199,24 @@ namespace mavlink_interface
       std::string cmd_vel_sub_topic_{kDefaultCmdVelTopic};
 
       std::mutex last_imu_message_mutex_ {};
+      std::mutex latest_gps_mutex_ {};
 
       gz::msgs::IMU last_imu_message_;
+      bool has_latest_gps_{false};
+      double latest_gps_lat_deg_{47.397742};
+      double latest_gps_lon_deg_{8.545594};
+      double latest_gps_alt_m_{488.0};
       gz::msgs::Actuators motor_velocity_message_;
+      unsigned n_motors_detected_{4};
+      // Rate limit outgoing HIL messages so QGC parameter traffic and HITL
+      // sensor traffic do not starve each other on the same serial link.
+      uint64_t last_hil_sensor_send_us_{0};
+      uint64_t last_hil_gps_send_us_{0};
+      uint64_t last_hil_state_send_us_{0};
+      uint64_t hil_sensor_interval_us_{10000};  // 100 Hz
+      uint64_t hil_gps_interval_us_{100000};    // 10 Hz
+      uint64_t hil_state_interval_us_{50000};   // 20 Hz
+
 
       std::chrono::steady_clock::duration last_imu_time_{0};
       std::chrono::steady_clock::duration lastControllerUpdateTime{0};
@@ -206,7 +228,7 @@ namespace mavlink_interface
 
       double imu_update_interval_ = 0.004; ///< Used for non-lockstep
 
-      uint64_t status_update_interval_ = 200; ///< Interval for sending ESC status / info in ms
+      uint64_t status_update_interval_ = 1000; ///< Interval for sending ESC status / info in ms
       uint64_t status_last_update_time_ = 0;
 
       gz::math::Vector3d gravity_W_{gz::math::Vector3d(0.0, 0.0, -9.8)};

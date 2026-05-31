@@ -23,6 +23,8 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <random>
+#include <cmath>
+#include <algorithm>
 
 #include <gz/plugin/Register.hh>
 #include <gz/sensors/Sensor.hh>
@@ -85,12 +87,102 @@ void GazeboMavlinkInterface::Configure(const gz::sim::Entity &_entity,
   gazebo::getSdfParam<std::string>(_sdf, "cmdVelSubTopic", cmd_vel_sub_topic_, cmd_vel_sub_topic_);
   gazebo::getSdfParam<std::string>(_sdf, "baroSubTopic", baro_sub_topic_, baro_sub_topic_);
 
-  // Set motor and servo input_reference_ from inputs.control
+  double home_latitude_deg = home_latitude_rad_ * 180.0 / M_PI;
+  double home_longitude_deg = home_longitude_rad_ * 180.0 / M_PI;
+  gazebo::getSdfParam<double>(_sdf, "homeLatitude", home_latitude_deg, home_latitude_deg);
+  gazebo::getSdfParam<double>(_sdf, "homeLongitude", home_longitude_deg, home_longitude_deg);
+  gazebo::getSdfParam<double>(_sdf, "homeAltitude", home_altitude_m_, home_altitude_m_);
+  home_latitude_rad_ = home_latitude_deg * M_PI / 180.0;
+  home_longitude_rad_ = home_longitude_deg * M_PI / 180.0;
+
+  if (_sdf->HasElement("use_serial")) {
+    use_serial_ = _sdf->Get<bool>("use_serial");
+    mavlink_interface_->SetUseSerial(use_serial_);
+  }
+  if (_sdf->HasElement("serial_device")) {
+    mavlink_interface_->SetDevice(_sdf->Get<std::string>("serial_device"));
+  }
+  if (_sdf->HasElement("serial_baudrate")) {
+    mavlink_interface_->SetBaudrate(_sdf->Get<int>("serial_baudrate"));
+  }
+
+  // When the bridge owns the serial device, QGC cannot connect to /dev/ttyACM0
+  // directly. Enable a small MAVLink UDP forwarder by default in serial mode:
+  // PX4 serial -> QGC UDP 14550, and QGC replies -> serial via local UDP 14557.
+  bool qgc_udp_forward = use_serial_;
+  gazebo::getSdfParam<bool>(_sdf, "qgcUdpForward", qgc_udp_forward, qgc_udp_forward);
+  mavlink_interface_->SetQgcUdpForward(qgc_udp_forward);
+
+  std::string qgc_udp_addr = "127.0.0.1";
+  int qgc_udp_remote_port = 14550;
+  int qgc_udp_local_port = 14557;
+  gazebo::getSdfParam<std::string>(_sdf, "qgcUdpAddr", qgc_udp_addr, qgc_udp_addr);
+  gazebo::getSdfParam<int>(_sdf, "qgcUdpRemotePort", qgc_udp_remote_port, qgc_udp_remote_port);
+  gazebo::getSdfParam<int>(_sdf, "qgcUdpLocalPort", qgc_udp_local_port, qgc_udp_local_port);
+  mavlink_interface_->SetQgcUdpAddr(qgc_udp_addr);
+  mavlink_interface_->SetQgcUdpRemotePort(qgc_udp_remote_port);
+  mavlink_interface_->SetQgcUdpLocalPort(qgc_udp_local_port);
+
+  gzmsg << "[gazebo_mavlink_interface] QGC UDP forwarding is "
+        << (qgc_udp_forward ? "enabled" : "disabled")
+        << " local_port=" << qgc_udp_local_port
+        << " remote=" << qgc_udp_addr << ":" << qgc_udp_remote_port << std::endl;
+
+  double hil_sensor_rate_hz = 100.0;
+  double hil_gps_rate_hz = 10.0;
+  double hil_state_rate_hz = 20.0;
+  gazebo::getSdfParam<double>(_sdf, "hilSensorRateHz", hil_sensor_rate_hz, hil_sensor_rate_hz);
+  gazebo::getSdfParam<double>(_sdf, "hilGpsRateHz", hil_gps_rate_hz, hil_gps_rate_hz);
+  gazebo::getSdfParam<double>(_sdf, "hilStateRateHz", hil_state_rate_hz, hil_state_rate_hz);
+  if (hil_sensor_rate_hz > 1.0) {
+    hil_sensor_interval_us_ = static_cast<uint64_t>(1000000.0 / hil_sensor_rate_hz);
+  }
+  if (hil_gps_rate_hz > 1.0) {
+    hil_gps_interval_us_ = static_cast<uint64_t>(1000000.0 / hil_gps_rate_hz);
+  }
+  if (hil_state_rate_hz > 1.0) {
+    hil_state_interval_us_ = static_cast<uint64_t>(1000000.0 / hil_state_rate_hz);
+  }
+  gzmsg << "[gazebo_mavlink_interface] HIL output rates: sensor=" << hil_sensor_rate_hz
+        << "Hz gps=" << hil_gps_rate_hz << "Hz state=" << hil_state_rate_hz << "Hz" << std::endl;
+
+  // Set motor and servo input_reference_ from inputs.control.
+  // Important for GzSim MulticopterMotorModel:
+  // it expects the model Actuators component to already contain a velocity array
+  // whose size covers all motorNumber indexes. If the array is empty at the
+  // first physics update, Gazebo prints:
+  // "You tried to access index X of the Actuator velocity array which is of size 0".
+  // We therefore parse motor plugins and create a zero-filled Actuators component
+  // during Configure, before the first PreUpdate.
   motor_input_reference_.resize(n_out_max);
   servo_input_reference_.resize(n_out_max);
 
   // Parse the MulticopterMotorModel plugins to get the motor velocity scalings
+  // and detected motor count.
   ParseMulticopterMotorModelPlugins(model_.SourceFilePath(_ecm));
+
+  if (n_motors_detected_ == 0 || n_motors_detected_ > n_out_max) {
+    gzerr << "[gazebo_mavlink_interface] Invalid detected motor count: "
+          << n_motors_detected_ << ", fallback to 4" << std::endl;
+    n_motors_detected_ = 4;
+  }
+
+  motor_input_reference_.resize(n_motors_detected_);
+  motor_input_reference_.setZero();
+  motor_velocity_message_.mutable_velocity()->Resize(n_motors_detected_, 0.0);
+
+  auto existingActuators = _ecm.Component<gz::sim::components::Actuators>(model_.Entity());
+  if (existingActuators) {
+    existingActuators->SetData(motor_velocity_message_, [](const auto &, const auto &) { return false; });
+    _ecm.SetChanged(model_.Entity(), gz::sim::components::Actuators::typeId,
+                    gz::sim::ComponentState::PeriodicChange);
+  } else {
+    _ecm.CreateComponent(model_.Entity(),
+                         gz::sim::components::Actuators(motor_velocity_message_));
+  }
+
+  gzmsg << "[gazebo_mavlink_interface] initialized Actuators velocity array with "
+        << n_motors_detected_ << " motors" << std::endl;
 
   bool use_tcp = false;
   if (_sdf->HasElement("use_tcp"))
@@ -105,7 +197,7 @@ void GazeboMavlinkInterface::Configure(const gz::sim::Entity &_entity,
     tcp_client_mode = _sdf->Get<bool>("tcp_client_mode");
     mavlink_interface_->SetUseTcpClientMode(tcp_client_mode);
   }
-  gzmsg << "Connecting to PX4 HITL using " << (use_tcp ? (tcp_client_mode ? "TCP (client mode)" : "TCP (server mode)") : "UDP") << std::endl;
+  gzmsg << "Connecting to PX4 HITL using " << (use_serial_ ? "SERIAL" : (use_tcp ? (tcp_client_mode ? "TCP (client mode)" : "TCP (server mode)") : "UDP")) << std::endl;
 
   if (_sdf->HasElement("enable_lockstep"))
   {
@@ -167,6 +259,15 @@ void GazeboMavlinkInterface::Configure(const gz::sim::Entity &_entity,
   // Subscribe to entity pose info message
   auto pose_topic = world_name + pose_sub_topic_;
   node.Subscribe(pose_topic, &GazeboMavlinkInterface::PoseCallback, this);
+
+  gzmsg << "[gazebo_mavlink_interface] model: " << model_name_ << std::endl;
+  gzmsg << "[gazebo_mavlink_interface] imu topic: " << imu_topic << std::endl;
+  gzmsg << "[gazebo_mavlink_interface] gps topic: " << gps_topic << std::endl;
+  gzmsg << "[gazebo_mavlink_interface] mag topic: " << mag_topic << std::endl;
+  gzmsg << "[gazebo_mavlink_interface] baro topic: " << baro_topic << std::endl;
+  gzmsg << "[gazebo_mavlink_interface] pose topic: " << pose_topic << std::endl;
+  gzmsg << "[gazebo_mavlink_interface] home: lat=" << home_latitude_deg
+        << " lon=" << home_longitude_deg << " alt=" << home_altitude_m_ << std::endl;
 
   // This doesn't seem to be used anywhere but we leave it here
   // for potential compatibility
@@ -259,8 +360,15 @@ void GazeboMavlinkInterface::PreUpdate(const gz::sim::UpdateInfo &_info,
 
   mavlink_interface_->ReadMAVLinkMessages();
 
-  // Always send Gyro and Accel data at full rate (= sim update rate)
-  SendSensorMessages(_info);
+  const uint64_t sim_time_us = std::chrono::duration_cast<std::chrono::duration<uint64_t>>(_info.simTime * 1e6).count();
+
+  // Send HIL_SENSOR at a bounded rate. PX4 does not need every Gazebo physics
+  // tick here, and sending too much traffic on the same serial link used by QGC
+  // causes queue pressure and intermittent QGC disconnects during parameter sync.
+  if (last_hil_sensor_send_us_ == 0 || sim_time_us - last_hil_sensor_send_us_ >= hil_sensor_interval_us_) {
+    SendSensorMessages(_info);
+    last_hil_sensor_send_us_ = sim_time_us;
+  }
 
   handle_actuator_controls(_info);
 
@@ -272,6 +380,15 @@ void GazeboMavlinkInterface::PreUpdate(const gz::sim::UpdateInfo &_info,
       PublishMotorVelocities(_ecm, motor_input_reference_);
       PublishServoVelocities(servo_input_reference_);
     }
+  } else {
+    // Keep the Actuators component non-empty before PX4 sends the first
+    // HIL_ACTUATOR_CONTROLS message. This prevents MulticopterMotorModel from
+    // reading an empty velocity array at startup.
+    if (motor_input_reference_.size() != n_motors_detected_) {
+      motor_input_reference_.resize(n_motors_detected_);
+    }
+    motor_input_reference_.setZero();
+    PublishMotorVelocities(_ecm, motor_input_reference_);
   }
 }
 
@@ -287,45 +404,69 @@ void GazeboMavlinkInterface::PostUpdate(const gz::sim::UpdateInfo &_info,
 
 void GazeboMavlinkInterface::PoseCallback(const gz::msgs::Pose_V &_msg){
   for (int p = 0; p < _msg.pose_size(); p++) {
-    if (_msg.pose(p).name() == model_name_) {
-      gz::msgs::Vector3d pose_position = _msg.pose(p).position();
-      gz::msgs::Quaternion pose_orientation = _msg.pose(p).orientation();
-
-      // orientation transform
-      gz::math::Quaterniond q_gr = gz::math::Quaterniond(
-                    pose_orientation.w(),
-                    pose_orientation.x(),
-                    pose_orientation.y(),
-                    pose_orientation.z());
-
-      gz::math::Quaterniond q_nb;
-      RotateQuaternion(q_nb, q_gr);
-
-      // send pose info
-      mavlink_hil_state_quaternion_t hil_state_quat;
-
-      hil_state_quat.attitude_quaternion[0] = q_nb.W();
-      hil_state_quat.attitude_quaternion[1] = q_nb.X();
-      hil_state_quat.attitude_quaternion[2] = q_nb.Y();
-      hil_state_quat.attitude_quaternion[3] = q_nb.Z();
-
-      hil_state_quat.lat = pose_position.x() * 1e3;
-      hil_state_quat.lon = pose_position.y() * 1e3;
-      hil_state_quat.alt = pose_position.z() * 1e3;
-
-      mavlink_message_t msg;
-      mavlink_msg_hil_state_quaternion_encode_chan(254, 25, MAVLINK_COMM_0, &msg, &hil_state_quat);
-      // Override default global mavlink channel status with instance specific status
-      mavlink_interface_->FinalizeOutgoingMessage(&msg, 254, 25,
-        MAVLINK_MSG_ID_HIL_STATE_QUATERNION_MIN_LEN,
-        MAVLINK_MSG_ID_HIL_STATE_QUATERNION_LEN,
-        MAVLINK_MSG_ID_HIL_STATE_QUATERNION_CRC);
-      mavlink_interface_->PushSendMessage(&msg);
+    const std::string pose_name = _msg.pose(p).name();
+    if (!PoseNameMatchesModel(pose_name)) {
+      continue;
     }
+
+    const uint64_t now_usec = CurrentWallTimeUsec();
+    if (last_hil_state_send_us_ != 0 && now_usec - last_hil_state_send_us_ < hil_state_interval_us_) {
+      return;
+    }
+    last_hil_state_send_us_ = now_usec;
+
+    const gz::msgs::Vector3d pose_position = _msg.pose(p).position();
+    const gz::msgs::Quaternion pose_orientation = _msg.pose(p).orientation();
+
+    // Gazebo pose is ENU + FLU. PX4 HIL_STATE_QUATERNION expects NED + FRD.
+    const gz::math::Quaterniond q_flu_to_enu(
+      pose_orientation.w(), pose_orientation.x(), pose_orientation.y(), pose_orientation.z());
+
+    gz::math::Quaterniond q_frd_to_ned;
+    RotateQuaternion(q_frd_to_ned, q_flu_to_enu);
+    q_frd_to_ned.Normalize();
+
+    mavlink_hil_state_quaternion_t hil_state_quat{};
+    hil_state_quat.time_usec = now_usec;
+    hil_state_quat.attitude_quaternion[0] = q_frd_to_ned.W();
+    hil_state_quat.attitude_quaternion[1] = q_frd_to_ned.X();
+    hil_state_quat.attitude_quaternion[2] = q_frd_to_ned.Y();
+    hil_state_quat.attitude_quaternion[3] = q_frd_to_ned.Z();
+
+    // Convert local ENU position to global GPS coordinates.
+    gz::math::Vector3d pos_enu(pose_position.x(), pose_position.y(), pose_position.z());
+    double lat_home = home_latitude_rad_;
+    double lon_home = home_longitude_rad_;
+    double alt_home = home_altitude_m_;
+    const auto lat_lon_rad = reproject(pos_enu, lat_home, lon_home, alt_home);
+
+    hil_state_quat.lat = static_cast<int32_t>(lat_lon_rad.first * 180.0 / M_PI * 1e7);
+    hil_state_quat.lon = static_cast<int32_t>(lat_lon_rad.second * 180.0 / M_PI * 1e7);
+    hil_state_quat.alt = static_cast<int32_t>((home_altitude_m_ + pose_position.z()) * 1000.0);
+
+    // Pose_V does not reliably carry linear/angular velocity for all worlds.
+    // Keep these zero for a safe static truth message. The EKF uses HIL_SENSOR/HIL_GPS.
+    hil_state_quat.rollspeed = 0.0f;
+    hil_state_quat.pitchspeed = 0.0f;
+    hil_state_quat.yawspeed = 0.0f;
+    hil_state_quat.vx = 0;
+    hil_state_quat.vy = 0;
+    hil_state_quat.vz = 0;
+    hil_state_quat.ind_airspeed = 0;
+    hil_state_quat.true_airspeed = 0;
+    hil_state_quat.xacc = 0;
+    hil_state_quat.yacc = 0;
+    hil_state_quat.zacc = -1000;
+
+    mavlink_message_t msg{};
+    mavlink_msg_hil_state_quaternion_encode_chan(254, 25, MAVLINK_COMM_0, &msg, &hil_state_quat);
+    mavlink_interface_->FinalizeOutgoingMessage(&msg, 254, 25,
+      MAVLINK_MSG_ID_HIL_STATE_QUATERNION_MIN_LEN,
+      MAVLINK_MSG_ID_HIL_STATE_QUATERNION_LEN,
+      MAVLINK_MSG_ID_HIL_STATE_QUATERNION_CRC);
+    mavlink_interface_->PushSendMessage(&msg);
+    return;
   }
-
-
-
 }
 
 void GazeboMavlinkInterface::ImuCallback(const gz::msgs::IMU &_msg) {
@@ -364,46 +505,64 @@ void GazeboMavlinkInterface::BarometerCallback(const gz::msgs::FluidPressure &_m
 }
 
 void GazeboMavlinkInterface::MagnetometerCallback(const gz::msgs::Magnetometer &_msg) {
+  // gz::msgs::Magnetometer is in Tesla. MAVLink HIL_SENSOR expects Gauss.
+  const gz::math::Vector3d mag_flu(
+    AddSimpleNoise(_msg.field_tesla().x(), 0, 0.0000001),
+    AddSimpleNoise(_msg.field_tesla().y(), 0, 0.0000001),
+    AddSimpleNoise(_msg.field_tesla().z(), 0, 0.0000001));
+  const gz::math::Vector3d mag_frd = q_FLU_to_FRD.RotateVector(mag_flu) * 10000.0;
+
   SensorData::Magnetometer mag_data;
-  mag_data.mag_b = Eigen::Vector3d(
-    AddSimpleNoise(_msg.field_tesla().x(), 0, 0.0001),
-    AddSimpleNoise(_msg.field_tesla().y(), 0, 0.0001),
-    AddSimpleNoise(_msg.field_tesla().z(), 0, 0.0001)
-  );
+  mag_data.mag_b = Eigen::Vector3d(mag_frd.X(), mag_frd.Y(), mag_frd.Z());
   mavlink_interface_->UpdateMag(mag_data);
 }
 
-//void GazeboMavlinkInterface::GpsCallback(const sensor_msgs::msgs::SITLGps &_msg) {
 void GazeboMavlinkInterface::GpsCallback(const gz::msgs::NavSat &_msg) {
-    // fill HIL GPS Mavlink msg
-  //std::cerr << "GpsCallback" << std::endl;
-  mavlink_hil_gps_t hil_gps_msg;
+  mavlink_hil_gps_t hil_gps_msg{};
   const auto header = _msg.header();
   hil_gps_msg.time_usec = static_cast<uint64_t>((header.stamp().sec() * 1000000) + (header.stamp().nsec() / 1000));
+  if (hil_gps_msg.time_usec == 0) {
+    hil_gps_msg.time_usec = CurrentWallTimeUsec();
+  }
+
   hil_gps_msg.fix_type = 3;
   hil_gps_msg.lat = static_cast<int32_t>(_msg.latitude_deg() * 1e7);
   hil_gps_msg.lon = static_cast<int32_t>(_msg.longitude_deg() * 1e7);
   hil_gps_msg.alt = static_cast<int32_t>(_msg.altitude() * 1000.0);
   hil_gps_msg.eph = 100;
-  hil_gps_msg.epv = 100;
-  Eigen::Vector3d v(_msg.velocity_north(), _msg.velocity_east(), -_msg.velocity_up());
-  hil_gps_msg.vel = static_cast<uint16_t>(v.norm() * 100.0);
-  hil_gps_msg.vn = static_cast<int16_t>(_msg.velocity_north() * 100.0);
-  hil_gps_msg.ve = static_cast<int16_t>(_msg.velocity_east() * 100.0);
-  hil_gps_msg.vd = static_cast<int16_t>(-_msg.velocity_up() * 100.0);
-  // MAVLINK_HIL_GPS_T CoG is [0, 360]. math::Angle::Normalize() is [-pi, pi].
-  gz::math::Angle cog(atan2(_msg.velocity_east(), _msg.velocity_north()));
+  hil_gps_msg.epv = 120;
+
+  const double vn = _msg.velocity_north();
+  const double ve = _msg.velocity_east();
+  const double vd = -_msg.velocity_up();
+  Eigen::Vector3d v(vn, ve, vd);
+  hil_gps_msg.vel = static_cast<uint16_t>(std::min(65535.0, v.norm() * 100.0));
+  hil_gps_msg.vn = static_cast<int16_t>(gazebo::constrain(vn * 100.0, -32768.0, 32767.0));
+  hil_gps_msg.ve = static_cast<int16_t>(gazebo::constrain(ve * 100.0, -32768.0, 32767.0));
+  hil_gps_msg.vd = static_cast<int16_t>(gazebo::constrain(vd * 100.0, -32768.0, 32767.0));
+
+  gz::math::Angle cog(atan2(ve, vn));
   cog.Normalize();
   hil_gps_msg.cog = static_cast<uint16_t>(gazebo::GetDegrees360(cog) * 100.0);
-  hil_gps_msg.satellites_visible = 10;
-  hil_gps_msg.id = 0; // Workaround for mavlink zero trimming feature
+  hil_gps_msg.satellites_visible = 12;
+  hil_gps_msg.id = 0;
 
-  //gzmsg << "[GpsCallback] alt: " << _msg.altitude() << std::endl;
+  {
+    std::lock_guard<std::mutex> lock(latest_gps_mutex_);
+    has_latest_gps_ = true;
+    latest_gps_lat_deg_ = _msg.latitude_deg();
+    latest_gps_lon_deg_ = _msg.longitude_deg();
+    latest_gps_alt_m_ = _msg.altitude();
+  }
 
-  // send HIL_GPS Mavlink msg
-  mavlink_message_t msg;
+  const uint64_t now_usec = CurrentWallTimeUsec();
+  if (last_hil_gps_send_us_ != 0 && now_usec - last_hil_gps_send_us_ < hil_gps_interval_us_) {
+    return;
+  }
+  last_hil_gps_send_us_ = now_usec;
+
+  mavlink_message_t msg{};
   mavlink_msg_hil_gps_encode_chan(254, 25, MAVLINK_COMM_0, &msg, &hil_gps_msg);
-  // Override default global mavlink channel status with instance specific status
   mavlink_interface_->FinalizeOutgoingMessage(&msg, 254, 25,
     MAVLINK_MSG_ID_HIL_GPS_MIN_LEN,
     MAVLINK_MSG_ID_HIL_GPS_LEN,
@@ -412,9 +571,11 @@ void GazeboMavlinkInterface::GpsCallback(const gz::msgs::NavSat &_msg) {
 }
 
 void GazeboMavlinkInterface::SendSensorMessages(const gz::sim::UpdateInfo &_info) {
-  const std::lock_guard<std::mutex> lock(last_imu_message_mutex_);
-  const gz::msgs::IMU last_imu_message = last_imu_message_;
-  last_imu_message_mutex_.unlock();
+  gz::msgs::IMU last_imu_message;
+  {
+    const std::lock_guard<std::mutex> lock(last_imu_message_mutex_);
+    last_imu_message = last_imu_message_;
+  }
 
 
   // send always accel and gyro data (not dependent of the bitmask)
@@ -450,7 +611,7 @@ void GazeboMavlinkInterface::SendSensorMessages(const gz::sim::UpdateInfo &_info
 
 void GazeboMavlinkInterface::SendStatusMessages(const gz::sim::UpdateInfo &_info, const gz::sim::EntityComponentManager &_ecm) {
   uint64_t time_usec = std::chrono::duration_cast<std::chrono::duration<uint64_t>>(_info.simTime * 1e6).count();
-  struct StatusData::EscStatus status;
+  struct StatusData::EscStatus status{};
   std::vector<double> vels;
   char joint_name_c[] = "rotor_0_joint"; // This assumes rotor naming for all model is consistent
   gz::sim::Entity joint_entity = _ecm.EntityByComponents(gz::sim::components::Name(joint_name_c), gz::sim::components::Joint());;
@@ -518,22 +679,24 @@ void GazeboMavlinkInterface::handle_actuator_controls(const gz::sim::UpdateInfo 
     }
   }
 
-  // Read Input References for motors
-  if (motor_input_reference_.size() == n_out_max) {
-    unsigned n_motors = 0;
-    for (unsigned i = 0; i < n_out_max; i++) {
-      if (mavlink_interface_->IsInputMotorAtIndex(i)) {
-        motor_input_index_[n_motors++] = i;
-      }
-    }
-    motor_input_reference_.resize(n_motors);
+  // Read Input References for motors.
+  // Keep output vector size fixed to detected motor count. Do not shrink it to
+  // zero when PX4 disarmed flags are not available yet, otherwise Gazebo motor
+  // plugins will keep seeing an empty Actuators.velocity array.
+  if (motor_input_reference_.size() != n_motors_detected_) {
+    motor_input_reference_.resize(n_motors_detected_);
   }
 
-  for (int i = 0; i < motor_input_reference_.size(); i++) {
+  for (unsigned i = 0; i < n_motors_detected_; i++) {
+    // PX4 HIL_ACTUATOR_CONTROLS motor outputs are normally in controls[0..N-1]
+    // for quadrotor HITL. If flags are valid, still allow the direct mapping.
+    motor_input_index_[i] = i;
+
     if (armed) {
-      motor_input_reference_[i] = actuator_controls[motor_input_index_[i]] * motor_vel_scalings_[i];
+      const double u = gazebo::constrain(actuator_controls[motor_input_index_[i]], 0.0, 1.0);
+      motor_input_reference_[i] = u * motor_vel_scalings_[i];
     } else {
-      motor_input_reference_[i] = 0;
+      motor_input_reference_[i] = 0.0;
     }
   }
 
@@ -572,6 +735,9 @@ void GazeboMavlinkInterface::PublishMotorVelocities(
   {
     auto compFunc = [](const gz::msgs::Actuators &_a, const gz::msgs::Actuators &_b)
     {
+      if (_a.velocity_size() != _b.velocity_size()) {
+        return false;
+      }
       return std::equal(_a.velocity().begin(), _a.velocity().end(),
                         _b.velocity().begin());
     };
@@ -644,6 +810,23 @@ float GazeboMavlinkInterface::AddSimpleNoise(float value, float mean, float stdd
   return value + dist(rnd_gen_);
 }
 
+
+bool GazeboMavlinkInterface::PoseNameMatchesModel(const std::string &pose_name) const
+{
+  if (pose_name == model_name_) {
+    return true;
+  }
+  const std::string scoped_suffix = "::" + model_name_;
+  return pose_name.size() >= scoped_suffix.size() &&
+         pose_name.compare(pose_name.size() - scoped_suffix.size(), scoped_suffix.size(), scoped_suffix) == 0;
+}
+
+uint64_t GazeboMavlinkInterface::CurrentWallTimeUsec() const
+{
+  return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(
+    std::chrono::system_clock::now().time_since_epoch()).count());
+}
+
 void GazeboMavlinkInterface::RotateQuaternion(gz::math::Quaterniond &q_FRD_to_NED,
     const gz::math::Quaterniond q_FLU_to_ENU)
 {
@@ -699,7 +882,8 @@ void GazeboMavlinkInterface::ParseMulticopterMotorModelPlugins(const std::string
             << " exceeds maximum number of motors " << n_out_max << std::endl;
           continue;
         }
-        if (plugin.Element()->HasElement("motorNumber"))
+        n_motors_detected_ = std::max<unsigned>(n_motors_detected_, static_cast<unsigned>(motorNumber + 1));
+        if (plugin.Element()->HasElement("maxRotVelocity"))
         {
           motor_vel_scalings_[motorNumber] = plugin.Element()->Get<double>("maxRotVelocity");
         }

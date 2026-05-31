@@ -1,12 +1,263 @@
 #include "mavlink_interface.h"
 
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <algorithm>
+#include <netinet/tcp.h>
+#include <poll.h>
+#include <cstring>
+#include <cmath>
+
 #define MAX_CONSECUTIVE_SPARE_MSG 10
 
 MavlinkInterface::MavlinkInterface() {
+  memset(fds_, 0, sizeof(fds_));
+  fds_[LISTEN_FD].fd = -1;
+  fds_[CONNECTION_FD].fd = -1;
+  std::fill_n(input_is_motor_, n_out_max, false);
+  input_reference_.resize(n_out_max);
+  input_reference_.setZero();
+
+  // Safe HITL defaults. PX4 needs valid IMU + mag + baro from the first
+  // HIL_SENSOR frames, otherwise QGC reports: no baro, no compass, no heading,
+  // no position estimate. These values are overwritten by Gazebo callbacks as
+  // soon as sensor topics start publishing.
+  accel_b_ = Eigen::Vector3d(0.0, 0.0, -9.80665);
+  gyro_b_ = Eigen::Vector3d::Zero();
+  mag_b_ = Eigen::Vector3d(0.2, 0.0, 0.4);       // Gauss, same as the known-good Python test
+  temperature_ = 25.0;
+  abs_pressure_ = 1013.25;                       // hPa
+  pressure_alt_ = 0.0;                           // m
+  diff_pressure_ = 0.0;
+  imu_updated_ = true;
+  mag_updated_ = true;
+  baro_updated_ = true;
 }
 
 MavlinkInterface::~MavlinkInterface() {
   close();
+}
+
+
+speed_t MavlinkInterface::BaudToTermiosSpeed(unsigned int baudrate) const
+{
+  switch (baudrate) {
+    case 9600: return B9600;
+    case 19200: return B19200;
+    case 38400: return B38400;
+    case 57600: return B57600;
+    case 115200: return B115200;
+    case 230400: return B230400;
+    case 460800: return B460800;
+    case 500000: return B500000;
+    case 576000: return B576000;
+    case 921600: return B921600;
+#ifdef B1000000
+    case 1000000: return B1000000;
+#endif
+#ifdef B1500000
+    case 1500000: return B1500000;
+#endif
+#ifdef B2000000
+    case 2000000: return B2000000;
+#endif
+#ifdef B3000000
+    case 3000000: return B3000000;
+#endif
+    default:
+      std::cerr << "Unsupported baudrate " << baudrate << ", falling back to 921600" << std::endl;
+      return B921600;
+  }
+}
+
+void MavlinkInterface::OpenSerialPort()
+{
+  simulator_socket_fd_ = ::open(device_.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
+  if (simulator_socket_fd_ < 0) {
+    std::cerr << "Opening serial device " << device_ << " failed: " << strerror(errno) << ", aborting" << std::endl;
+    abort();
+  }
+
+  termios tio{};
+  if (tcgetattr(simulator_socket_fd_, &tio) != 0) {
+    std::cerr << "tcgetattr failed: " << strerror(errno) << ", aborting" << std::endl;
+    abort();
+  }
+
+  cfmakeraw(&tio);
+  const speed_t speed = BaudToTermiosSpeed(baudrate_);
+  cfsetispeed(&tio, speed);
+  cfsetospeed(&tio, speed);
+
+  tio.c_cflag |= (CLOCAL | CREAD);
+  tio.c_cflag &= ~CSTOPB;
+  tio.c_cflag &= ~CRTSCTS;
+  tio.c_cflag &= ~PARENB;
+  tio.c_cflag &= ~CSIZE;
+  tio.c_cflag |= CS8;
+  tio.c_cc[VMIN] = 0;
+  tio.c_cc[VTIME] = 1;
+
+  if (tcsetattr(simulator_socket_fd_, TCSANOW, &tio) != 0) {
+    std::cerr << "tcsetattr failed: " << strerror(errno) << ", aborting" << std::endl;
+    abort();
+  }
+
+  tcflush(simulator_socket_fd_, TCIOFLUSH);
+  memset(fds_, 0, sizeof(fds_));
+  fds_[CONNECTION_FD].fd = simulator_socket_fd_;
+  fds_[CONNECTION_FD].events = POLLIN | POLLOUT;
+
+  std::cout << "Opening serial MAVLink device " << device_ << " @ " << baudrate_ << std::endl;
+}
+
+
+void MavlinkInterface::OpenQgcUdpForwarding()
+{
+  if (!qgc_udp_forward_enabled_) {
+    return;
+  }
+
+  memset(&qgc_remote_addr_, 0, sizeof(qgc_remote_addr_));
+  qgc_remote_addr_.sin_family = AF_INET;
+  qgc_remote_addr_.sin_port = htons(qgc_udp_remote_port_);
+  qgc_remote_addr_.sin_addr.s_addr = inet_addr(qgc_udp_addr_str_.c_str());
+  if (qgc_remote_addr_.sin_addr.s_addr == INADDR_NONE) {
+    std::cerr << "Invalid qgc_udp_addr: " << qgc_udp_addr_str_
+              << ", disabling QGC UDP forwarding" << std::endl;
+    qgc_udp_forward_enabled_ = false;
+    return;
+  }
+
+  memset(&qgc_local_addr_, 0, sizeof(qgc_local_addr_));
+  qgc_local_addr_.sin_family = AF_INET;
+  qgc_local_addr_.sin_addr.s_addr = htonl(INADDR_ANY);
+  qgc_local_addr_.sin_port = htons(qgc_udp_local_port_);
+
+  qgc_udp_socket_fd_ = socket(AF_INET, SOCK_DGRAM, 0);
+  if (qgc_udp_socket_fd_ < 0) {
+    std::cerr << "Creating QGC UDP forwarding socket failed: "
+              << strerror(errno) << ", disabling QGC UDP forwarding" << std::endl;
+    qgc_udp_forward_enabled_ = false;
+    return;
+  }
+
+  int reuse = 1;
+  setsockopt(qgc_udp_socket_fd_, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+#ifdef SO_REUSEPORT
+  setsockopt(qgc_udp_socket_fd_, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse));
+#endif
+
+  if (bind(qgc_udp_socket_fd_, reinterpret_cast<struct sockaddr *>(&qgc_local_addr_),
+           qgc_local_addr_len_) < 0) {
+    std::cerr << "Binding QGC UDP forwarding socket on local port "
+              << qgc_udp_local_port_ << " failed: " << strerror(errno)
+              << ", disabling QGC UDP forwarding" << std::endl;
+    ::close(qgc_udp_socket_fd_);
+    qgc_udp_socket_fd_ = -1;
+    qgc_udp_forward_enabled_ = false;
+    return;
+  }
+
+  std::cout << "QGC UDP forwarding enabled: serial <-> UDP "
+            << qgc_udp_addr_str_ << ":" << qgc_udp_remote_port_
+            << " using local UDP port " << qgc_udp_local_port_
+            << " [v8 complete-frame forwarding + serial GCS heartbeat]" << std::endl;
+}
+
+void MavlinkInterface::ForwardMavlinkMessageToQgc(const mavlink_message_t *message)
+{
+  if (!qgc_udp_forward_enabled_ || qgc_udp_socket_fd_ < 0 || message == nullptr) {
+    return;
+  }
+
+  // QGC needs complete MAVLink frames in UDP datagrams. Do not forward raw
+  // serial read chunks: a serial read can contain half a MAVLink frame or many
+  // frames. Re-serialize each parsed MAVLink message into one UDP datagram.
+  uint8_t packet[MAVLINK_MAX_PACKET_LEN];
+  const uint16_t len = mavlink_msg_to_send_buffer(packet, message);
+  if (len == 0) {
+    return;
+  }
+
+  const ssize_t ret = sendto(qgc_udp_socket_fd_, packet, len, 0,
+                             reinterpret_cast<struct sockaddr *>(&qgc_remote_addr_),
+                             qgc_remote_addr_len_);
+
+  static uint64_t qgc_forward_count = 0;
+  if (ret < 0) {
+    static int error_count = 0;
+    if (error_count++ < 20) {
+      std::cerr << "QGC UDP forwarding parsed MAVLink message failed: "
+                << strerror(errno) << std::endl;
+    }
+  } else {
+    ++qgc_forward_count;
+    if (qgc_forward_count == 1 || qgc_forward_count % 100 == 0) {
+      std::cout << "[QGC_FORWARD] sent " << qgc_forward_count
+                << " complete MAVLink frames to "
+                << qgc_udp_addr_str_ << ":" << qgc_udp_remote_port_
+                << std::endl;
+    }
+  }
+}
+
+void MavlinkInterface::ProcessQgcUdpMessage()
+{
+  if (!qgc_udp_forward_enabled_ || qgc_udp_socket_fd_ < 0 || !use_serial_) {
+    return;
+  }
+
+  uint8_t qgc_buf[4096];
+  struct sockaddr_in sender_addr {};
+  socklen_t sender_len = sizeof(sender_addr);
+  const ssize_t ret = recvfrom(qgc_udp_socket_fd_, qgc_buf, sizeof(qgc_buf), 0,
+                               reinterpret_cast<struct sockaddr *>(&sender_addr), &sender_len);
+  if (ret <= 0) {
+    return;
+  }
+
+  // QGC commands / parameter requests are raw MAVLink frames. Forward them
+  // directly to the real flight controller serial link. We intentionally do
+  // not parse or filter here; PX4 remains the authority on what to accept.
+  if (!WriteAll(qgc_buf, static_cast<size_t>(ret))) {
+    static int error_count = 0;
+    if (error_count++ < 10) {
+      std::cerr << "Forwarding QGC UDP packet to serial failed: "
+                << strerror(errno) << std::endl;
+    }
+  }
+}
+
+
+bool MavlinkInterface::WriteAll(const uint8_t *buffer, size_t len)
+{
+  const std::lock_guard<std::mutex> lock(serial_write_mutex_);
+  const auto start = std::chrono::steady_clock::now();
+  size_t written = 0;
+
+  while (written < len) {
+    const ssize_t ret = ::write(fds_[CONNECTION_FD].fd, buffer + written, len - written);
+    if (ret > 0) {
+      written += static_cast<size_t>(ret);
+      continue;
+    }
+
+    if (ret < 0 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
+      // Do not let one congested serial write block the sender thread forever.
+      // Dropping one stale HIL sample is better than letting QGC lose heartbeat.
+      if (std::chrono::steady_clock::now() - start > std::chrono::milliseconds(20)) {
+        return false;
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      continue;
+    }
+
+    return false;
+  }
+
+  return true;
 }
 
 void MavlinkInterface::Load()
@@ -29,6 +280,14 @@ void MavlinkInterface::Load()
 
   // initialize sender status to zero
   memset((char *)&sender_m_status_, 0, sizeof(sender_m_status_));
+
+  if (use_serial_) {
+    OpenSerialPort();
+    OpenQgcUdpForwarding();
+    receiver_thread_ = std::thread([this] () { ReceiveWorker(); });
+    sender_thread_ = std::thread([this] () { SendWorker(); });
+    return;
+  }
 
   memset((char *)&remote_simulator_addr_, 0, sizeof(remote_simulator_addr_));
   remote_simulator_addr_.sin_family = AF_INET;
@@ -198,8 +457,13 @@ void MavlinkInterface::ProcessReceivedMessage(int ret, char *thrd_name) {
 
   // data received
   int len = ret;
-  mavlink_status_t status;
-  mavlink_message_t message;
+
+  // Do not mirror arbitrary raw serial chunks to QGC. Serial reads may split a
+  // MAVLink frame across two buffers, which creates malformed UDP datagrams for
+  // QGC and can leave the UI stuck at "Disconnected". We parse first, then
+  // forward complete MAVLink frames below.
+  mavlink_status_t status{};
+  mavlink_message_t message{};
 
   for(int i = 0; i < len; i++)
   {
@@ -216,14 +480,27 @@ void MavlinkInterface::ProcessReceivedMessage(int ret, char *thrd_name) {
     }
 
     if (msg_received != Framing::incomplete) {
+      // Forward every valid PX4 MAVLink message to QGC as a complete MAVLink
+      // UDP frame. This keeps QGC parameter sync, console and vehicle state
+      // alive while the bridge still filters what it consumes internally.
+      if (use_serial_) {
+        ForwardMavlinkMessageToQgc(&message);
+      }
+
+      // The bridge itself only consumes HEARTBEAT and HIL_ACTUATOR_CONTROLS.
+      // PX4 also streams many telemetry messages at high rate; queuing all of
+      // them overflows the receiver FIFO before PreUpdate can drain it.
+      if (message.msgid != MAVLINK_MSG_ID_HEARTBEAT &&
+          message.msgid != MAVLINK_MSG_ID_HIL_ACTUATOR_CONTROLS) {
+        continue;
+      }
+
       auto msg = std::make_shared<mavlink_message_t>(message);
       const std::lock_guard<std::mutex> guard(receiver_buff_mtx_);
-      if (receiver_buffer_.size() > kMaxRecvBufferSize) {
-        std::cerr << "[" << thrd_name << "] Messages buffer overflow!" << std::endl;
-        // clear the buffer
-        while (!receiver_buffer_.empty()) {
-          receiver_buffer_.pop();
-        }
+      if (receiver_buffer_.size() >= kMaxRecvBufferSize) {
+        // Keep the newest messages. Dropping one stale message is safer than
+        // clearing the whole FIFO and losing fresh actuator controls.
+        receiver_buffer_.pop();
       }
       receiver_buffer_.push(msg);
     }
@@ -256,17 +533,20 @@ void MavlinkInterface::ReceiveWorker() {
 
   fd_set readfds;
   int maxfd;
-  if (ft_enabled_) {
-    maxfd = std::max(simulator_socket_fd_, simulator_second_socket_fd_) + 1;
-  } else {
-    maxfd = simulator_socket_fd_ + 1;
-  }
 
   while(!close_conn_ && !gotSigInt_) {
     FD_ZERO(&readfds);
     FD_SET(simulator_socket_fd_, &readfds);
+    maxfd = simulator_socket_fd_ + 1;
+
     if (ft_enabled_) {
       FD_SET(simulator_second_socket_fd_, &readfds);
+      maxfd = std::max(maxfd, simulator_second_socket_fd_ + 1);
+    }
+
+    if (qgc_udp_forward_enabled_ && qgc_udp_socket_fd_ >= 0) {
+      FD_SET(qgc_udp_socket_fd_, &readfds);
+      maxfd = std::max(maxfd, qgc_udp_socket_fd_ + 1);
     }
 
     struct timeval tv = {1, 0}; // 1 second timeout
@@ -283,11 +563,21 @@ void MavlinkInterface::ReceiveWorker() {
     }
 
     if (FD_ISSET(simulator_socket_fd_, &readfds)) {
-      // Receive data from sock1
-      int ret = recvfrom(simulator_socket_fd_, buf_, sizeof(buf_), 0, (struct sockaddr *)&remote_addr, &remote_addr_len);
-      // ... process data
+      int ret = 0;
+      if (use_serial_) {
+        ret = static_cast<int>(::read(simulator_socket_fd_, buf_, sizeof(buf_)));
+      } else {
+        // Receive data from sock1
+        ret = recvfrom(simulator_socket_fd_, buf_, sizeof(buf_), 0, (struct sockaddr *)&remote_addr, &remote_addr_len);
+      }
       ProcessReceivedMessage(ret, thrd_name);
     }
+
+    if (qgc_udp_forward_enabled_ && qgc_udp_socket_fd_ >= 0 &&
+        FD_ISSET(qgc_udp_socket_fd_, &readfds)) {
+      ProcessQgcUdpMessage();
+    }
+
     if (ft_enabled_ && FD_ISSET(simulator_second_socket_fd_, &readfds)) {
       // Receive data from sock2
       int ret = recvfrom(simulator_second_socket_fd_, buf_, sizeof(buf_), 0, (struct sockaddr *)&remote_addr, &remote_addr_len);
@@ -303,22 +593,100 @@ void MavlinkInterface::ReceiveWorker() {
  */
 
 void MavlinkInterface::PushSendMessage(std::shared_ptr<mavlink_message_t> msg) {
-  const std::lock_guard<std::mutex> guard(sender_buff_mtx_);
-  sender_buffer_.push(msg);
-  sender_cv_.notify_one();
+  if (!msg) {
+    return;
+  }
 
-  if (sender_buffer_.size() > kMaxSendBufferSize) {
-    sender_buffer_.pop();
-    // Starts reporting buffer overflows only after the connection is established to FC
-    if (received_first_actuator_) {
-      std::cerr << "PushSendMessage - Messages buffer overflow!" << std::endl;
+  const uint32_t msgid = msg->msgid;
+  const bool high_rate_hil_msg =
+      msgid == MAVLINK_MSG_ID_HIL_SENSOR ||
+      msgid == MAVLINK_MSG_ID_HIL_GPS ||
+      msgid == MAVLINK_MSG_ID_HIL_STATE_QUATERNION ||
+      msgid == MAVLINK_MSG_ID_ESC_STATUS ||
+      msgid == MAVLINK_MSG_ID_ESC_INFO;
+
+  {
+    const std::lock_guard<std::mutex> guard(sender_buff_mtx_);
+
+    // HIL_SENSOR / HIL_GPS / HIL_STATE are state samples. Old samples are
+    // worthless once a newer sample of the same type exists. Coalescing avoids
+    // queue growth during QGC parameter downloads or brief serial backpressure.
+    if (high_rate_hil_msg && !sender_buffer_.empty()) {
+      for (auto it = sender_buffer_.begin(); it != sender_buffer_.end(); ) {
+        if ((*it) && (*it)->msgid == msgid) {
+          it = sender_buffer_.erase(it);
+        } else {
+          ++it;
+        }
+      }
+    }
+
+    sender_buffer_.push_back(msg);
+
+    while (sender_buffer_.size() > kMaxSendBufferSize) {
+      bool dropped = false;
+
+      // Prefer dropping stale high-rate state messages. Keep lower-rate command
+      // or control messages when possible.
+      for (auto it = sender_buffer_.begin(); it != sender_buffer_.end(); ++it) {
+        if ((*it) && ((*it)->msgid == MAVLINK_MSG_ID_HIL_SENSOR ||
+                     (*it)->msgid == MAVLINK_MSG_ID_HIL_GPS ||
+                     (*it)->msgid == MAVLINK_MSG_ID_HIL_STATE_QUATERNION ||
+                     (*it)->msgid == MAVLINK_MSG_ID_ESC_STATUS ||
+                     (*it)->msgid == MAVLINK_MSG_ID_ESC_INFO)) {
+          sender_buffer_.erase(it);
+          dropped = true;
+          break;
+        }
+      }
+
+      if (!dropped) {
+        sender_buffer_.pop_front();
+      }
+
+      static auto last_warn = std::chrono::steady_clock::now() - std::chrono::seconds(10);
+      const auto now = std::chrono::steady_clock::now();
+      if (received_first_actuator_ && now - last_warn > std::chrono::seconds(5)) {
+        std::cerr << "PushSendMessage - sender queue under pressure, dropping stale HIL samples" << std::endl;
+        last_warn = now;
+      }
     }
   }
+
+  sender_cv_.notify_one();
 }
 
 void MavlinkInterface::PushSendMessage(mavlink_message_t *msg) {
     auto msg_shared = std::make_shared<mavlink_message_t>(*msg);
     PushSendMessage(msg_shared);
+}
+
+void MavlinkInterface::SendGcsHeartbeatToSerial()
+{
+  if (!use_serial_ || fds_[CONNECTION_FD].fd <= 0) {
+    return;
+  }
+
+  // Act as a minimal GCS heartbeat on the direct serial link. Some PX4 MAVLink
+  // instances keep telemetry quiet until they see a GCS/companion heartbeat.
+  // This also gives the real flight controller a stable peer even before QGC
+  // sends its first UDP packet through this bridge.
+  mavlink_message_t msg{};
+  mavlink_heartbeat_t heartbeat{};
+  heartbeat.type = MAV_TYPE_GCS;
+  heartbeat.autopilot = MAV_AUTOPILOT_INVALID;
+  heartbeat.base_mode = 0;
+  heartbeat.custom_mode = 0;
+  heartbeat.system_status = MAV_STATE_ACTIVE;
+  heartbeat.mavlink_version = 3;
+
+  mavlink_msg_heartbeat_encode_chan(255, 190, MAVLINK_COMM_0, &msg, &heartbeat);
+
+  uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+  const int packet_len = mavlink_msg_to_send_buffer(buffer, &msg);
+  if (packet_len > 0) {
+    WriteAll(buffer, static_cast<size_t>(packet_len));
+  }
 }
 
 void MavlinkInterface::SendWorker() {
@@ -332,22 +700,42 @@ void MavlinkInterface::SendWorker() {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
     std::cout << "[" << thrd_name << "] Client connected to PX4 TCP server" << std::endl;
-
   }
 
+  auto last_gcs_heartbeat = std::chrono::steady_clock::now() - std::chrono::seconds(2);
+
   while(!close_conn_ && !gotSigInt_) {
+    // Keep the PX4 MAVLink serial instance alive even when QGC has not yet sent
+    // anything to the bridge. A plain condition_variable::wait() sleeps forever
+    // when the send queue is empty, so use wait_for() to allow periodic link
+    // heartbeats. This is the boring little detail that makes UDP forwarding
+    // actually start instead of waiting politely until the heat death of Linux.
+    {
+      const auto now = std::chrono::steady_clock::now();
+      if (use_serial_ && qgc_udp_forward_enabled_ &&
+          now - last_gcs_heartbeat >= std::chrono::seconds(1)) {
+        SendGcsHeartbeatToSerial();
+        last_gcs_heartbeat = now;
+      }
+    }
+
     std::unique_lock<std::mutex> lock{sender_buff_mtx_};
-    sender_cv_.wait(lock, [&]()
+    sender_cv_.wait_for(lock, std::chrono::milliseconds(20), [&]()
     {
       return close_conn_ || gotSigInt_ || !sender_buffer_.empty();
     });
 
-    if (sender_buffer_.empty())
+    if (close_conn_ || gotSigInt_) {
+      break;
+    }
+
+    if (sender_buffer_.empty()) {
       continue;
+    }
 
     auto msg = sender_buffer_.front();
     if (msg) {
-      sender_buffer_.pop();
+      sender_buffer_.pop_front();
       lock.unlock();
       send_mavlink_message(msg.get());
     } else {
@@ -359,70 +747,92 @@ void MavlinkInterface::SendWorker() {
 }
 
 void MavlinkInterface::SendSensorMessages(uint64_t time_usec) {
-  mavlink_hil_sensor_t sensor_msg;
-  sensor_msg.fields_updated = 0;
-  /* Workaround for mavlinkv2 zero-suppression bug
-     Set last byte of message to non-zero to avoid zero-suppression. PX4
-     assumes that sensor_id of hil_sensors message is always 0, so there
-     is similar workaround in receiver end to reset the field back to zero.
-  */
-  sensor_msg.id = 1;
+  mavlink_hil_sensor_t sensor_msg{};
   sensor_msg.time_usec = time_usec;
-  if (imu_updated_) {
-    sensor_msg.xacc = accel_b_[0];
-    sensor_msg.yacc = accel_b_[1];
-    sensor_msg.zacc = accel_b_[2];
-    sensor_msg.xgyro = gyro_b_[0];
-    sensor_msg.ygyro = gyro_b_[1];
-    sensor_msg.zgyro = gyro_b_[2];
-    // std::cout <<gyro_b[2] << std::endl;
 
-    sensor_msg.fields_updated = (uint16_t)SensorSource::ACCEL | (uint16_t)SensorSource::GYRO;
+  /* Workaround for MAVLink v2 zero-suppression bug.
+     PX4 resets the sensor id on the receiver side. */
+  sensor_msg.id = 1;
 
+  // Always publish a complete HIL_SENSOR frame containing IMU + magnetometer +
+  // barometer. Sending only "updated" sub-fields is fragile in HITL startup: if
+  // Gazebo's mag/baro callbacks lag or the topic name is wrong, PX4 never
+  // creates valid simulated compass/baro topics and QGC blocks arming. Keeping
+  // the last known values in every frame matches the Python sanity test that
+  // successfully produced sensor_accel/sensor_gyro/sensor_mag/sensor_baro.
+  Eigen::Vector3d accel_b = accel_b_;
+  Eigen::Vector3d gyro_b = gyro_b_;
+  Eigen::Vector3d mag_b = mag_b_;
+  double temperature = temperature_;
+  double abs_pressure = abs_pressure_;
+  double pressure_alt = pressure_alt_;
+  double diff_pressure = diff_pressure_;
+  bool include_diff_pressure = false;
+
+  {
+    const std::lock_guard<std::mutex> lock(sensor_msg_mutex_);
+
+    mag_b = mag_b_;
+    temperature = temperature_;
+    abs_pressure = abs_pressure_;
+    pressure_alt = pressure_alt_;
+    diff_pressure = diff_pressure_;
+    include_diff_pressure = diff_press_updated_;
+
+    // Consume update markers, but keep the values for the next frame.
     imu_updated_ = false;
-  }
-
-  // Sensor mutes not used for imu
-  const std::lock_guard<std::mutex> lock(sensor_msg_mutex_);
-
-  // send only mag data
-  if (mag_updated_) {
-    sensor_msg.xmag = mag_b_[0];
-    sensor_msg.ymag = mag_b_[1];
-    sensor_msg.zmag = mag_b_[2];
-    sensor_msg.fields_updated = sensor_msg.fields_updated | (uint16_t)SensorSource::MAG;
-
     mag_updated_ = false;
-  }
-
-  // send only baro data
-  if (baro_updated_) {
-    sensor_msg.temperature = temperature_;
-    sensor_msg.abs_pressure = abs_pressure_;
-    sensor_msg.pressure_alt = pressure_alt_;
-    sensor_msg.fields_updated = sensor_msg.fields_updated | (uint16_t)SensorSource::BARO;
-
     baro_updated_ = false;
-  }
-
-  // send only diff pressure data
-  if (diff_press_updated_) {
-    sensor_msg.diff_pressure = diff_pressure_;
-    sensor_msg.fields_updated = sensor_msg.fields_updated | (uint16_t)SensorSource::DIFF_PRESS;
-
     diff_press_updated_ = false;
   }
-  sensor_msg_mutex_.unlock();
 
-  mavlink_message_t msg;
+  // Defensive fallbacks. A zero magnetic field or zero pressure is invalid for
+  // PX4 preflight checks. Do not let an empty Gazebo callback poison the EKF.
+  if (!std::isfinite(mag_b.x()) || !std::isfinite(mag_b.y()) || !std::isfinite(mag_b.z()) ||
+      mag_b.norm() < 1e-6) {
+    mag_b = Eigen::Vector3d(0.2, 0.0, 0.4);
+  }
+
+  if (!std::isfinite(abs_pressure) || abs_pressure < 300.0 || abs_pressure > 1200.0) {
+    abs_pressure = 1013.25;
+  }
+  if (!std::isfinite(temperature)) {
+    temperature = 25.0;
+  }
+  if (!std::isfinite(pressure_alt)) {
+    pressure_alt = 0.0;
+  }
+
+  sensor_msg.xacc = accel_b.x();
+  sensor_msg.yacc = accel_b.y();
+  sensor_msg.zacc = accel_b.z();
+  sensor_msg.xgyro = gyro_b.x();
+  sensor_msg.ygyro = gyro_b.y();
+  sensor_msg.zgyro = gyro_b.z();
+  sensor_msg.xmag = mag_b.x();
+  sensor_msg.ymag = mag_b.y();
+  sensor_msg.zmag = mag_b.z();
+  sensor_msg.abs_pressure = abs_pressure;
+  sensor_msg.diff_pressure = include_diff_pressure ? diff_pressure : 0.0;
+  sensor_msg.pressure_alt = pressure_alt;
+  sensor_msg.temperature = temperature;
+
+  sensor_msg.fields_updated = static_cast<uint16_t>(SensorSource::ACCEL) |
+                              static_cast<uint16_t>(SensorSource::GYRO) |
+                              static_cast<uint16_t>(SensorSource::MAG) |
+                              static_cast<uint16_t>(SensorSource::BARO);
+
+  if (include_diff_pressure) {
+    sensor_msg.fields_updated |= static_cast<uint16_t>(SensorSource::DIFF_PRESS);
+  }
+
+  mavlink_message_t msg{};
   mavlink_msg_hil_sensor_encode_chan(254, 25, MAVLINK_COMM_0, &msg, &sensor_msg);
-  // Override default global mavlink channel status with instance specific status
   FinalizeOutgoingMessage(&msg, 254, 25,
     MAVLINK_MSG_ID_HIL_SENSOR_MIN_LEN,
     MAVLINK_MSG_ID_HIL_SENSOR_LEN,
     MAVLINK_MSG_ID_HIL_SENSOR_CRC);
-  auto msg_shared = std::make_shared<mavlink_message_t>(msg);
-  PushSendMessage(msg_shared);
+  PushSendMessage(&msg);
 }
 
 void MavlinkInterface::SendEscStatusMessages(uint64_t time_usec, struct StatusData::EscStatus &status) {
@@ -440,7 +850,7 @@ void MavlinkInterface::SendEscStatusMessages(uint64_t time_usec, struct StatusDa
     esc_info_msg.temperature[i] = 20;
   }
 
-  mavlink_message_t msg;
+  mavlink_message_t msg{};
   mavlink_msg_esc_status_encode_chan(254, 25, MAVLINK_COMM_0, &msg, &esc_status_msg);
   auto msg_shared = std::make_shared<mavlink_message_t>(msg);
   PushSendMessage(msg_shared);
@@ -642,13 +1052,12 @@ void MavlinkInterface::handle_actuator_controls(mavlink_message_t *msg)
 {
   static int consecutive_spare_msg = 0;
   const std::lock_guard<std::mutex> lock(actuator_mutex_);
-  mavlink_hil_actuator_controls_t controls;
+  mavlink_hil_actuator_controls_t controls{};
   mavlink_msg_hil_actuator_controls_decode(msg, &controls);
 
   if (msg->compid == 2) {
     // Message from redundant FC
-    armed2_ = is_running(2, controls);
-    //armed2_ = (controls.mode & MAV_MODE_FLAG_SAFETY_ARMED || controls.mode & MAV_MODE_FLAG_TEST_ENABLED);
+    armed2_ = (controls.mode & MAV_MODE_FLAG_SAFETY_ARMED) || is_running(2, controls);
 
     //std::cout << "secondary FP2: " << (armed2_ ? "ARMED" : "DISARMED") << std::endl;
     if (consecutive_spare_msg < MAX_CONSECUTIVE_SPARE_MSG) {
@@ -668,8 +1077,7 @@ void MavlinkInterface::handle_actuator_controls(mavlink_message_t *msg)
 
   } else if (msg->compid == 1) {
     // Message from primary FC
-    armed1_ = is_running(1, controls);
-    //armed1_ = (controls.mode & MAV_MODE_FLAG_SAFETY_ARMED || controls.mode & MAV_MODE_FLAG_TEST_ENABLED);
+    armed1_ = (controls.mode & MAV_MODE_FLAG_SAFETY_ARMED) || is_running(1, controls);
     //std::cout << "Primary FC1: " << (armed1_ ? "ARMED" : "DISARMED") << std::endl;
     if (ft_enabled_) {
       if (armed1_) {
@@ -714,7 +1122,9 @@ void MavlinkInterface::send_mavlink_message(const mavlink_message_t *message)
 
   if (fds_[CONNECTION_FD].fd > 0) {
     ssize_t len;
-    if (use_tcp_) {
+    if (use_serial_) {
+      len = WriteAll(buffer, packetlen) ? static_cast<ssize_t>(packetlen) : -1;
+    } else if (use_tcp_) {
       len = send(fds_[CONNECTION_FD].fd, buffer, packetlen, 0);
     } else {
 
@@ -748,11 +1158,12 @@ void MavlinkInterface::send_mavlink_message(const mavlink_message_t *message)
 
 void MavlinkInterface::close()
 {
+  close_conn_ = true;
   // Shutdown receiver side
-  if (fds_[CONNECTION_FD].fd >= 0) {
+  if (fds_[CONNECTION_FD].fd >= 0 && !use_serial_) {
     shutdown(fds_[CONNECTION_FD].fd, SHUT_RD);
   }
-  if (simulator_second_socket_fd_ >= 0) {
+  if (simulator_second_socket_fd_ >= 0 && !use_serial_) {
     shutdown(simulator_second_socket_fd_, SHUT_RD);
   }
 
@@ -773,6 +1184,11 @@ void MavlinkInterface::close()
   if (simulator_second_socket_fd_ >= 0) {
     ::close(simulator_second_socket_fd_);
     simulator_second_socket_fd_ = -1;
+  }
+
+  if (qgc_udp_socket_fd_ >= 0) {
+    ::close(qgc_udp_socket_fd_);
+    qgc_udp_socket_fd_ = -1;
   }
 
   received_first_actuator_ = false;
