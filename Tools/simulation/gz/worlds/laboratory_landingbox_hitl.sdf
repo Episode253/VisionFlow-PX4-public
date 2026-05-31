@@ -1,6 +1,50 @@
 <?xml version='1.0' encoding='utf-8'?>
 <sdf version="1.9">
   <world name="laboratory_landingbox">
+    <!-- Core Gazebo Sim systems -->
+    <plugin
+      filename="gz-sim-physics-system"
+      name="gz::sim::systems::Physics">
+    </plugin>
+
+    <plugin
+      filename="gz-sim-user-commands-system"
+      name="gz::sim::systems::UserCommands">
+    </plugin>
+
+    <plugin
+      filename="gz-sim-scene-broadcaster-system"
+      name="gz::sim::systems::SceneBroadcaster">
+    </plugin>
+
+
+    <plugin
+      filename="gz-sim-sensors-system"
+      name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+
+<!-- Sensor systems required for IMU / GPS / magnetometer / barometer publishing -->
+    <plugin
+      filename="gz-sim-imu-system"
+      name="gz::sim::systems::Imu">
+    </plugin>
+
+    <plugin
+      filename="gz-sim-navsat-system"
+      name="gz::sim::systems::NavSat">
+    </plugin>
+
+    <plugin
+      filename="gz-sim-air-pressure-system"
+      name="gz::sim::systems::AirPressure">
+    </plugin>
+
+    <plugin
+      filename="gz-sim-magnetometer-system"
+      name="gz::sim::systems::Magnetometer">
+    </plugin>
+
     <physics type="ode">
       <ode>
         <solver>
@@ -2458,7 +2502,7 @@
 
     <!-- HITL test UAV model: q940 with MAVLink HITL plugin inside model://q940/model.sdf -->
     <include>
-      <uri>model://q940_ti</uri>
+      <uri>model://q940_ti_hitl</uri>
       <name>q940_ti_0</name>
       <pose>0 0 0.75 0 0 0</pose>
     </include>
