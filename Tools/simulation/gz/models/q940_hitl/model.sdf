@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <sdf version="1.9">
-  <model name="q940">
+  <model name="q940_hitl">
     <link name="base_link">
       <inertial>
         <pose>0 0 0.092449 0 -0 0</pose>

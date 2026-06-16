@@ -593,6 +593,23 @@ void GazeboMavlinkInterface::MagnetometerCallback(const gz::msgs::Magnetometer &
     mag_body.Z() *= -1.0;
   }
 
+  // Gazebo world frame is ENU: +X=East, +Y=North, +Z=Up.
+  // PX4 EKF/QGC yaw is interpreted in NED: +X=North, +Y=East, +Z=Down.
+  // Bench test result before this fix:
+  //   Gazebo heading East -> PX4/QGC yaw ~= 0 deg (North)
+  //   Gazebo heading North -> raw mag horizontal vector ~= [0, -M]
+  // This means the horizontal magnetic-field axes are rotated by 90 deg for
+  // PX4's FRD expectation. Remap the horizontal components so that:
+  //   East  heading -> mag ~= [0, -M, Z]
+  //   North heading -> mag ~= [M,  0, Z]
+  // Keep Z unchanged because the vertical component was already consistent.
+  const gz::math::Vector3d mag_fixed(
+      -mag_body.Y(),
+      -mag_body.X(),
+       mag_body.Z());
+
+  mag_body = mag_fixed;
+
   if (!std::isfinite(mag_body.X()) ||
       !std::isfinite(mag_body.Y()) ||
       !std::isfinite(mag_body.Z()) ||

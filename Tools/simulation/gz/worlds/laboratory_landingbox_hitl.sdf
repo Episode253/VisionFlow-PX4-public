@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <sdf version="1.9">
-  <world name="laboratory_landingbox">
+  <world name="laboratory_landingbox_hitl">
+
     <!-- Core Gazebo Sim systems -->
     <plugin
       filename="gz-sim-physics-system"
