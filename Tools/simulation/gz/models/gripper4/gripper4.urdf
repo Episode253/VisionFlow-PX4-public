@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="Assem2_rebuilt">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.023531 -0.9743 0.031805"
+        rpy="0 0 0" />
+      <mass
+        value="0.090444" />
+      <inertia
+        ixx="3.3873E-05"
+        ixy="-7.5446E-07"
+        ixz="4.9143E-07"
+        iyy="2.568E-05"
+        iyz="2.0521E-09"
+        izz="2.1853E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Assem2_rebuilt/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Assem2_rebuilt/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="jaw_left">
+    <inertial>
+      <origin
+        xyz="0.028325 0.030931 0.022724"
+        rpy="0 0 0" />
+      <mass
+        value="0.035281" />
+      <inertia
+        ixx="1.8799E-05"
+        ixy="1.8575E-07"
+        ixz="-1.3686E-05"
+        iyy="3.2532E-05"
+        iyz="1.7384E-07"
+        izz="1.5725E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Assem2_rebuilt/meshes/jaw_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Assem2_rebuilt/meshes/jaw_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="motor_left_jaw"
+    type="revolute">
+    <origin
+      xyz="-0.033807 -0.94485 0.042435"
+      rpy="0 -0.71707 3.1416" />
+    <parent
+      link="base_link" />
+    <child
+      link="jaw_left" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="1.57"
+      effort="25"
+      velocity="1" />
+  </joint>
+  <link
+    name="jaw_right">
+    <inertial>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <mass
+        value="0" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Assem2_rebuilt/meshes/jaw_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Assem2_rebuilt/meshes/jaw_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="follow_right_jaw"
+    type="revolute">
+    <origin
+      xyz="-0.0094069 -0.94234 0.0425"
+      rpy="1.5708 0.22743 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="jaw_right" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="-1.57"
+      effort="25"
+      velocity="1" />
+  </joint>
+</robot>
