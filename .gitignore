@@ -119,7 +119,8 @@ _emscripten_sdk/
 .vscode/
 .github/
 
-windshape_dev/arm_control/log/
+windshape_dev/arm_control/gamma_arm/log/
+windshape_dev/arm_control/ti5_arm/log/
 
 windshape_dev/data_stream/image_stream/log/
 
@@ -139,3 +140,5 @@ platforms/nuttx/NuttX/nuttx/defconfig
 windshape_dev/tools/px4_gzsim_bridge/build/*
 
 docker/cache/*
+
+windshape_dev/tools/gamma_arm_control/build/*

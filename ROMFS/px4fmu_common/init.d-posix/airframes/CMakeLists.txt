@@ -15,6 +15,7 @@ px4_add_romfs_files(
 	4019_gz_x500_gimbal
 	4020_gz_q940_ti
 	4021_gz_x500_flow
+	4022_gz_swan_gamma
 
 	6011_gazebo-classic_typhoon_h480
 	6011_gazebo-classic_typhoon_h480.post

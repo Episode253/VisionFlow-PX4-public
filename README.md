@@ -20,6 +20,10 @@ PX4_GZ_WORLD=laboratory_no_landingbox make px4_sitl gz_x500_gimbal_laboratory_no
 
 PX4_GZ_MODEL_POSE="0,0,0.5,0,0,0" make px4_sitl gz_differential_rover_laboratory_no_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"
 
+### 启动公司平台
+
+PX4_GZ_WORLD=laboratory_no_landingbox make px4_sitl gz_swan_gamma_laboratory_no_landingbox  EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"
+
 ## 启动数据桥接节点
 
 bash windshape_dev/data_stream/gz_bridge/bridge_gz_ros.sh
