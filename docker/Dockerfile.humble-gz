@@ -140,7 +140,6 @@ RUN curl -sSL https://packages.osrfoundation.org/gazebo.gpg \
     > /etc/apt/sources.list.d/gazebo-stable.list
 
 # PX4 simulation dependencies, aligned with official ubuntu.sh.
-# Extra GStreamer dev packages are kept to build GstCameraSystem.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bc \
     dmidecode \
@@ -176,7 +175,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # PX4 Python dependencies.
-# Prefer official PX4 requirements.txt from this source tree.
 COPY Tools/setup/requirements.txt /tmp/px4-requirements.txt
 
 RUN python3 -m pip install --no-cache-dir -r /tmp/px4-requirements.txt && \
@@ -197,6 +195,8 @@ RUN mkdir -p \
     /workspace \
     /home/${USERNAME}/.ccache \
     /home/${USERNAME}/.gz \
+    /home/${USERNAME}/.gz/sim \
+    /home/${USERNAME}/.gz/sim/8 && \
     chown -R ${USER_UID}:${USER_GID} /workspace /home/${USERNAME}
 
 RUN usermod -aG dialout ${USERNAME} || true

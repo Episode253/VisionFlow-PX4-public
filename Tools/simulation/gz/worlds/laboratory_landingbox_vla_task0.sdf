@@ -386,7 +386,7 @@
         <visual name='visual'>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/drawer_white/meshes/base.dae</uri>
+              <uri>model://drawer_white/meshes/base.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -441,7 +441,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/drawer_white/meshes/handle.dae</uri>
+              <uri>model://drawer_white/meshes/handle.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -482,7 +482,7 @@
         <visual name='visual'>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/drawer_white/meshes/base.dae</uri>
+              <uri>model://drawer_white/meshes/base.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -537,7 +537,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/drawer_white/meshes/handle.dae</uri>
+              <uri>model://drawer_white/meshes/handle.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -578,7 +578,7 @@
         <visual name='visual'>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/drawer_white/meshes/base.dae</uri>
+              <uri>model://drawer_white/meshes/base.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -633,7 +633,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/drawer_white/meshes/handle.dae</uri>
+              <uri>model://drawer_white/meshes/handle.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -674,7 +674,7 @@
         <visual name='visual'>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/drawer_white/meshes/base.dae</uri>
+              <uri>model://drawer_white/meshes/base.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -729,7 +729,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/drawer_white/meshes/handle.dae</uri>
+              <uri>model://drawer_white/meshes/handle.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1211,7 +1211,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/frame.dae</uri>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1255,7 +1255,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/glass.dae</uri>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1310,7 +1310,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/frame.dae</uri>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1354,7 +1354,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/glass.dae</uri>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1431,7 +1431,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/frame.dae</uri>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1475,7 +1475,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/glass.dae</uri>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1530,7 +1530,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/frame.dae</uri>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1574,7 +1574,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/glass.dae</uri>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1629,7 +1629,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/frame.dae</uri>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1673,7 +1673,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/glass.dae</uri>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1728,7 +1728,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/frame.dae</uri>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1772,7 +1772,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/glass.dae</uri>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1827,7 +1827,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/frame.dae</uri>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1871,7 +1871,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/glass.dae</uri>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1926,7 +1926,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/frame.dae</uri>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1970,7 +1970,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/glass.dae</uri>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -2025,7 +2025,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/frame.dae</uri>
+              <uri>model://bookshelf_large/meshes/frame.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -2069,7 +2069,7 @@
           <pose>0 0 0 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/bookshelf_large/meshes/glass.dae</uri>
+              <uri>model://bookshelf_large/meshes/glass.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -2144,7 +2144,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/landing_box/meshes/base_link.dae</uri>
+              <uri>model://landing_box/meshes/base_link.dae</uri>
             </mesh>
           </geometry>
           <material>
@@ -2185,7 +2185,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/landing_box/meshes/Link_1.dae</uri>
+              <uri>model://landing_box/meshes/Link_1.dae</uri>
             </mesh>
           </geometry>
           <material>
@@ -2239,7 +2239,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/landing_box/meshes/Link_2.dae</uri>
+              <uri>model://landing_box/meshes/Link_2.dae</uri>
             </mesh>
           </geometry>
           <material>
@@ -2293,7 +2293,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/landing_box/meshes/Link_3.dae</uri>
+              <uri>model://landing_box/meshes/Link_3.dae</uri>
             </mesh>
           </geometry>
           <material>
@@ -4322,94 +4322,16 @@
       </link>
       <self_collide>false</self_collide>
     </model>
-    <model name='fuel_distractor_coke_can_near_A'>
-      <link name='link'>
-        <inertial>
-          <pose>-0.01 -0.012 0.14999999999999999 0 0 0</pose>
-          <mass>0.39000000000000001</mass>
-          <inertia>
-            <ixx>0.00058</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.00058</iyy>
-            <iyz>0</iyz>
-            <izz>0.00019000000000000001</izz>
-          </inertia>
-        </inertial>
-        <collision name='collision'>
-          <pose>0 0 -0.46000000000000002 0 0 0</pose>
-          <geometry>
-            <mesh>
-              <uri>file:///home/renwang/.gz/fuel/fuel.gazebosim.org/openrobotics/models/coke can/3/meshes/coke_can.dae</uri>
-            </mesh>
-          </geometry>
-          <surface>
-            <friction>
-              <ode>
-                <mu>1</mu>
-                <mu2>1</mu2>
-              </ode>
-            </friction>
-            <contact>
-              <ode>
-                <kp>10000000</kp>
-                <kd>1</kd>
-                <min_depth>0.001</min_depth>
-                <max_vel>0.10000000000000001</max_vel>
-              </ode>
-            </contact>
-          </surface>
-        </collision>
-        <visual name='visual'>
-          <pose>0 0 -0.46000000000000002 0 0 0</pose>
-          <geometry>
-            <mesh>
-              <uri>file:///home/renwang/.gz/fuel/fuel.gazebosim.org/openrobotics/models/coke can/3/meshes/coke_can.dae</uri>
-            </mesh>
-          </geometry>
-        </visual>
-        <pose>0 0 0 0 0 0</pose>
-        <enable_wind>false</enable_wind>
-      </link>
+    <include>
+      <name>fuel_distractor_coke_can_near_A</name>
       <pose>4.7485324071661505 0.00088163980210062619 0.20610608908062947 -0.01121443352718818 0.00402856668010468 -0.00029026670123344378</pose>
-      <static>false</static>
-      <self_collide>false</self_collide>
-    </model>
-    <model name='fuel_corridor_construction_barrel'>
-      <link name='link'>
-        <inertial>
-          <pose>0 0 0.40000000000000002 0 0 0</pose>
-          <mass>500</mass>
-          <inertia>
-            <ixx>51.209600000000002</ixx>
-            <iyy>51.209600000000002</iyy>
-            <izz>25</izz>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyz>0</iyz>
-          </inertia>
-        </inertial>
-        <collision name='collision'>
-          <geometry>
-            <mesh>
-              <uri>file:///home/renwang/.gz/fuel/fuel.gazebosim.org/openrobotics/models/construction barrel/4/meshes/construction_barrel.dae</uri>
-            </mesh>
-          </geometry>
-        </collision>
-        <visual name='visual'>
-          <geometry>
-            <mesh>
-              <uri>file:///home/renwang/.gz/fuel/fuel.gazebosim.org/openrobotics/models/construction barrel/4/meshes/construction_barrel.dae</uri>
-            </mesh>
-          </geometry>
-        </visual>
-        <pose>0 0 0 0 0 0</pose>
-        <enable_wind>false</enable_wind>
-      </link>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Coke Can</uri>
+    </include>
+    <include>
+      <name>fuel_corridor_construction_barrel</name>
       <pose>4.7084160143026672 1.4738112645295822 0.010499739466495746 2.4096979526854403e-07 -2.1354496349948026e-07 0.0036185217143783646</pose>
-      <static>false</static>
-      <self_collide>false</self_collide>
-    </model>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Construction Barrel</uri>
+    </include>
     <model name='q940_ti_0'>
       <static>false</static>
       <self_collide>false</self_collide>
@@ -4455,7 +4377,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/q940/meshes/base_link.STL</uri>
+              <uri>model://q940/meshes/base_link.STL</uri>
             </mesh>
           </geometry>
           <material>
@@ -4642,7 +4564,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/q940/meshes/battery.STL</uri>
+              <uri>model://q940/meshes/battery.STL</uri>
             </mesh>
           </geometry>
           <material>
@@ -4678,7 +4600,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/q940/meshes/flight_board.STL</uri>
+              <uri>model://q940/meshes/flight_board.STL</uri>
             </mesh>
           </geometry>
           <material>
@@ -4731,7 +4653,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/q940/meshes/rotor_1.STL</uri>
+              <uri>model://q940/meshes/rotor_1.STL</uri>
             </mesh>
           </geometry>
           <material>
@@ -4785,7 +4707,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/q940/meshes/rotor_2.STL</uri>
+              <uri>model://q940/meshes/rotor_2.STL</uri>
             </mesh>
           </geometry>
           <material>
@@ -4839,7 +4761,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/q940/meshes/rotor_3.STL</uri>
+              <uri>model://q940/meshes/rotor_3.STL</uri>
             </mesh>
           </geometry>
           <material>
@@ -4893,7 +4815,7 @@
           <geometry>
             <mesh>
               <scale>1 1 1</scale>
-              <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/q940/meshes/rotor_4.STL</uri>
+              <uri>model://q940/meshes/rotor_4.STL</uri>
             </mesh>
           </geometry>
           <material>
@@ -4998,7 +4920,7 @@
             <geometry>
               <mesh>
                 <scale>1 1 1</scale>
-                <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/ti5_arm/meshes/arm1/base_link.STL</uri>
+                <uri>model://ti5_arm/meshes/arm1/base_link.STL</uri>
               </mesh>
             </geometry>
             <material>
@@ -5050,7 +4972,7 @@
             <geometry>
               <mesh>
                 <scale>1 1 1</scale>
-                <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/ti5_arm/meshes/arm1/A_Link.STL</uri>
+                <uri>model://ti5_arm/meshes/arm1/A_Link.STL</uri>
               </mesh>
             </geometry>
             <material>
@@ -5103,7 +5025,7 @@
             <geometry>
               <mesh>
                 <scale>1 1 1</scale>
-                <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/ti5_arm/meshes/arm1/B_Link.STL</uri>
+                <uri>model://ti5_arm/meshes/arm1/B_Link.STL</uri>
               </mesh>
             </geometry>
             <material>
@@ -5155,7 +5077,7 @@
             <geometry>
               <mesh>
                 <scale>1 1 1</scale>
-                <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/ti5_arm/meshes/arm1/C_Link.STL</uri>
+                <uri>model://ti5_arm/meshes/arm1/C_Link.STL</uri>
               </mesh>
             </geometry>
             <material>
@@ -5208,7 +5130,7 @@
             <geometry>
               <mesh>
                 <scale>1 1 1</scale>
-                <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/ti5_arm/meshes/arm1/D_Link.STL</uri>
+                <uri>model://ti5_arm/meshes/arm1/D_Link.STL</uri>
               </mesh>
             </geometry>
             <material>
@@ -5260,7 +5182,7 @@
             <geometry>
               <mesh>
                 <scale>1 1 1</scale>
-                <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/ti5_arm/meshes/arm1/E_Link.STL</uri>
+                <uri>model://ti5_arm/meshes/arm1/E_Link.STL</uri>
               </mesh>
             </geometry>
             <material>
@@ -5313,7 +5235,7 @@
             <geometry>
               <mesh>
                 <scale>1 1 1</scale>
-                <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/ti5_arm/meshes/arm1/F_Link.STL</uri>
+                <uri>model://ti5_arm/meshes/arm1/F_Link.STL</uri>
               </mesh>
             </geometry>
             <material>
@@ -5451,7 +5373,7 @@
             <geometry>
               <mesh>
                 <scale>1 1 1</scale>
-                <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/gripper3/meshes/base_link.STL</uri>
+                <uri>model://gripper3/meshes/base_link.STL</uri>
               </mesh>
             </geometry>
           </collision>
@@ -5460,7 +5382,7 @@
             <geometry>
               <mesh>
                 <scale>1 1 1</scale>
-                <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/gripper3/meshes/base_link.STL</uri>
+                <uri>model://gripper3/meshes/base_link.STL</uri>
               </mesh>
             </geometry>
           </visual>
@@ -5484,7 +5406,7 @@
             <geometry>
               <mesh>
                 <scale>1 1 1</scale>
-                <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/gripper3/meshes/Empty_Link1.STL</uri>
+                <uri>model://gripper3/meshes/Empty_Link1.STL</uri>
               </mesh>
             </geometry>
             <surface>
@@ -5501,7 +5423,7 @@
             <geometry>
               <mesh>
                 <scale>1 1 1</scale>
-                <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/gripper3/meshes/Empty_Link1.STL</uri>
+                <uri>model://gripper3/meshes/Empty_Link1.STL</uri>
               </mesh>
             </geometry>
           </visual>
@@ -5544,7 +5466,7 @@
             <geometry>
               <mesh>
                 <scale>1 1 1</scale>
-                <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/gripper3/meshes/Empty_Link2.STL</uri>
+                <uri>model://gripper3/meshes/Empty_Link2.STL</uri>
               </mesh>
             </geometry>
             <surface>
@@ -5561,7 +5483,7 @@
             <geometry>
               <mesh>
                 <scale>1 1 1</scale>
-                <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/gripper3/meshes/Empty_Link2.STL</uri>
+                <uri>model://gripper3/meshes/Empty_Link2.STL</uri>
               </mesh>
             </geometry>
           </visual>
@@ -5654,7 +5576,7 @@
             <geometry>
               <mesh>
                 <scale>1 1 1</scale>
-                <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/OakD-lite/meshes/OakDLite.dae</uri>
+                <uri>model://OakD-lite/meshes/OakDLite.dae</uri>
               </mesh>
             </geometry>
           </visual>
@@ -5741,7 +5663,7 @@
             <geometry>
               <mesh>
                 <scale>1 1 1</scale>
-                <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/OakD-lite/meshes/OakDLite.dae</uri>
+                <uri>model://OakD-lite/meshes/OakDLite.dae</uri>
               </mesh>
             </geometry>
           </visual>
@@ -5828,7 +5750,7 @@
             <geometry>
               <mesh>
                 <scale>1 1 1</scale>
-                <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/OakD-lite/meshes/OakDLite.dae</uri>
+                <uri>model://OakD-lite/meshes/OakDLite.dae</uri>
               </mesh>
             </geometry>
           </visual>
@@ -5915,7 +5837,7 @@
             <geometry>
               <mesh>
                 <scale>1 1 1</scale>
-                <uri>file:///home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/OakD-lite/meshes/OakDLite.dae</uri>
+                <uri>model://OakD-lite/meshes/OakDLite.dae</uri>
               </mesh>
             </geometry>
           </visual>
