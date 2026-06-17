@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version="1.9">
+  <model name="gamma_arm">
+    <static>false</static>
+    <self_collide>false</self_collide>
+    <enable_wind>false</enable_wind>
+
+    <link name="gamma_arm_base_link">
+      <inertial>
+        <pose>0.026 0 0 0 -0 0</pose>
+        <mass>0.361</mass>
+        <inertia>
+          <ixx>0.00014566</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00015872</iyy>
+          <iyz>0</iyz>
+          <izz>0.00015872</izz>
+        </inertia>
+      </inertial>
+      <visual name="gamma_arm_base_link_visual">
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://gamma_arm/meshes/base_link0.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.72 0.72 0.70 1</ambient>
+          <diffuse>0.82 0.82 0.78 1</diffuse>
+          <specular>0.05 0.05 0.05 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <cast_shadows>true</cast_shadows>
+      </visual>
+    </link>
+
+    <joint name="A" type="revolute">
+      <pose relative_to="gamma_arm_base_link">0.0613 0 0 -0.4972 -0 0</pose>
+      <parent>gamma_arm_base_link</parent>
+      <child>A_Link</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-3.14</lower>
+          <upper>3.14</upper>
+          <effort>180</effort>
+          <velocity>3.0</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.5</damping>
+          <friction>0.01</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="A_Link">
+      <pose relative_to="A">0 0 0 0 -0 0</pose>
+      <gravity>true</gravity>
+      <inertial>
+        <pose>0.036314 0.007409 0.053527 0 -0 0</pose>
+        <mass>0.482</mass>
+        <inertia>
+          <ixx>0.00048916</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00049299</iyy>
+          <iyz>0</iyz>
+          <izz>0.0003462</izz>
+        </inertia>
+      </inertial>
+      <visual name="A_Link_visual">
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://gamma_arm/meshes/A_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.08 0.24 0.85 0.85</ambient>
+          <diffuse>0.12 0.38 0.95 0.85</diffuse>
+          <specular>0.02 0.02 0.04 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <transparency>0.18</transparency>
+        <cast_shadows>true</cast_shadows>
+      </visual>
+    </link>
+
+    <joint name="B" type="revolute">
+      <pose relative_to="A_Link">0.042986 0.03395 0.064067 0 0.72990 0</pose>
+      <parent>A_Link</parent>
+      <child>B_Link</child>
+      <axis>
+        <xyz>0 -1 0</xyz>
+        <limit>
+          <lower>-3.14</lower>
+          <upper>3.14</upper>
+          <effort>200</effort>
+          <velocity>3.0</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.5</damping>
+          <friction>0.01</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="B_Link">
+      <pose relative_to="B">0 0 0 0 -0 0</pose>
+      <gravity>true</gravity>
+      <inertial>
+        <pose>-0.14539 -0.024762 0.16247 0 -0 0</pose>
+        <mass>0.481</mass>
+        <inertia>
+          <ixx>0.0015459</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.0025514</iyy>
+          <iyz>0</iyz>
+          <izz>0.0012874</izz>
+        </inertia>
+      </inertial>
+      <visual name="B_Link_visual">
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://gamma_arm/meshes/B_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.72 0.72 0.70 1</ambient>
+          <diffuse>0.82 0.82 0.78 1</diffuse>
+          <specular>0.05 0.05 0.05 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <cast_shadows>true</cast_shadows>
+      </visual>
+    </link>
+
+    <joint name="C" type="revolute">
+      <pose relative_to="B_Link">-0.16587 -0.057 0.18536 0 -0.87406 0</pose>
+      <parent>B_Link</parent>
+      <child>C_Link</child>
+      <axis>
+        <xyz>0 -1 0</xyz>
+        <limit>
+          <lower>-3.14</lower>
+          <upper>3.14</upper>
+          <effort>80</effort>
+          <velocity>3.0</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.01</damping>
+          <friction>0.01</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="C_Link">
+      <pose relative_to="C">0 0 0 0 -0 0</pose>
+      <gravity>true</gravity>
+      <inertial>
+        <pose>0.0017414 0.023334 0.057853 0 -0 0</pose>
+        <mass>0.239</mass>
+        <inertia>
+          <ixx>0.00014499</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.0001552</iyy>
+          <iyz>0</iyz>
+          <izz>0.00010724</izz>
+        </inertia>
+      </inertial>
+      <visual name="C_Link_visual">
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://gamma_arm/meshes/C_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.08 0.24 0.85 0.85</ambient>
+          <diffuse>0.12 0.38 0.95 0.85</diffuse>
+          <specular>0.02 0.02 0.04 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <transparency>0.18</transparency>
+        <cast_shadows>true</cast_shadows>
+      </visual>
+    </link>
+
+    <joint name="D" type="revolute">
+      <pose relative_to="C_Link">0.023891 0.025 0.060208 -1.57080 0.14406 0</pose>
+      <parent>C_Link</parent>
+      <child>D_Link</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-3.14</lower>
+          <upper>3.14</upper>
+          <effort>20</effort>
+          <velocity>3.0</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.01</damping>
+          <friction>0.01</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="D_Link">
+      <pose relative_to="D">0 0 0 0 -0 0</pose>
+      <gravity>true</gravity>
+      <inertial>
+        <pose>0.13241 -0.004409 7.6e-05 0 -0 0</pose>
+        <mass>0.262</mass>
+        <inertia>
+          <ixx>0.00010245</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00052076</iyy>
+          <iyz>0</iyz>
+          <izz>0.0005369</izz>
+        </inertia>
+      </inertial>
+      <visual name="D_Link_visual">
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://gamma_arm/meshes/D_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.72 0.72 0.70 1</ambient>
+          <diffuse>0.82 0.82 0.78 1</diffuse>
+          <specular>0.05 0.05 0.05 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <cast_shadows>true</cast_shadows>
+      </visual>
+    </link>
+
+    <joint name="E" type="revolute">
+      <pose relative_to="D_Link">0.15 -0.0335 0 0 1.57073 0</pose>
+      <parent>D_Link</parent>
+      <child>E_Link</child>
+      <axis>
+        <xyz>0 -1 0</xyz>
+        <limit>
+          <lower>-3.14</lower>
+          <upper>3.14</upper>
+          <effort>10</effort>
+          <velocity>3.0</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.001</damping>
+          <friction>0.01</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="E_Link">
+      <pose relative_to="E">0 0 0 0 -0 0</pose>
+      <gravity>true</gravity>
+      <inertial>
+        <pose>1.62e-06 0.014793 0.051607 0 -0 0</pose>
+        <mass>0.042397</mass>
+        <inertia>
+          <ixx>6.544e-05</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>5.714e-05</iyy>
+          <iyz>0</iyz>
+          <izz>2.005e-05</izz>
+        </inertia>
+      </inertial>
+      <visual name="E_Link_visual">
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://gamma_arm/meshes/E_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.08 0.24 0.85 0.85</ambient>
+          <diffuse>0.12 0.38 0.95 0.85</diffuse>
+          <specular>0.02 0.02 0.04 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <transparency>0.18</transparency>
+        <cast_shadows>true</cast_shadows>
+      </visual>
+    </link>
+
+    <joint name="F" type="revolute">
+      <pose relative_to="E_Link">0 0.035 0.084 0 0 0</pose>
+      <parent>E_Link</parent>
+      <child>F_Link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-3.14</lower>
+          <upper>3.14</upper>
+          <effort>20</effort>
+          <velocity>3.0</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.001</damping>
+          <friction>0.01</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="F_Link">
+      <pose relative_to="F">0 0 0 0 -0 0</pose>
+      <gravity>true</gravity>
+      <inertial>
+        <pose>-4.643e-05 0.00010323 -0.024394 0 -0 0</pose>
+        <mass>0.192</mass>
+        <inertia>
+          <ixx>8.297e-05</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>8.274e-05</iyy>
+          <iyz>0</iyz>
+          <izz>6.854e-05</izz>
+        </inertia>
+      </inertial>
+      <visual name="F_Link_visual">
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://gamma_arm/meshes/F_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.72 0.72 0.70 1</ambient>
+          <diffuse>0.82 0.82 0.78 1</diffuse>
+          <specular>0.05 0.05 0.05 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <cast_shadows>true</cast_shadows>
+      </visual>
+    </link>
+
+    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
+      <topic>/model/gamma_arm/joint_state</topic>
+      <joint_name>A</joint_name>
+      <joint_name>B</joint_name>
+      <joint_name>C</joint_name>
+      <joint_name>D</joint_name>
+      <joint_name>E</joint_name>
+      <joint_name>F</joint_name>
+    </plugin>
+
+    <plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher">
+      <publish_link_pose>true</publish_link_pose>
+      <publish_visual_pose>false</publish_visual_pose>
+      <publish_collision_pose>false</publish_collision_pose>
+      <publish_sensor_pose>false</publish_sensor_pose>
+      <publish_model_pose>false</publish_model_pose>
+      <publish_nested_model_pose>false</publish_nested_model_pose>
+      <use_pose_vector_msg>true</use_pose_vector_msg>
+      <update_frequency>100</update_frequency>
+    </plugin>
+
+    <plugin filename="libgamma_arm_control.so" name="gamma_arm::GammaArmControlPlugin">
+      <joint_name>A</joint_name>
+      <joint_name>B</joint_name>
+      <joint_name>C</joint_name>
+      <joint_name>D</joint_name>
+      <joint_name>E</joint_name>
+      <joint_name>F</joint_name>
+
+      <p_gain_A>8.0</p_gain_A>
+      <p_gain_B>10.0</p_gain_B>
+      <p_gain_C>12.0</p_gain_C>
+      <p_gain_D>8.0</p_gain_D>
+      <p_gain_E>5.0</p_gain_E>
+      <p_gain_F>0.2</p_gain_F>
+
+      <d_gain_A>0.10</d_gain_A>
+      <d_gain_B>0.03</d_gain_B>
+      <d_gain_C>0.0</d_gain_C>
+      <d_gain_D>0.0</d_gain_D>
+      <d_gain_E>0.0</d_gain_E>
+      <d_gain_F>0.0</d_gain_F>
+
+      <max_effort_A>27.0</max_effort_A>
+      <max_effort_B>27.0</max_effort_B>
+      <max_effort_C>27.0</max_effort_C>
+      <max_effort_D>5.5</max_effort_D>
+      <max_effort_E>5.5</max_effort_E>
+      <max_effort_F>5.5</max_effort_F>
+
+      <cmd_topic_prefix>/joint/gamma</cmd_topic_prefix>
+      <kdl_root>dummy_root_link</kdl_root>
+      <kdl_tip>F_Link</kdl_tip>
+      <gravity_x>0.0</gravity_x>
+      <gravity_y>0.0</gravity_y>
+      <gravity_z>9.81</gravity_z>
+    </plugin>
+
+  </model>
+</sdf>
