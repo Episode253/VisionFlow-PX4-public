@@ -1,0 +1,940 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GAMMA Arm Web Slider Control</title>
+  <script src="https://cdn.jsdelivr.net/npm/roslib/build/roslib.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --line: #374151;
+      --accent: #38bdf8;
+      --danger: #f97316;
+      --ok: #22c55e;
+      --warn: #fbbf24;
+      --plot-bg: #0b1220;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: radial-gradient(circle at top, #1e293b, var(--bg));
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+      font-weight: 750;
+      letter-spacing: 0.2px;
+    }
+
+    .subtitle {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(300px, 1fr) auto auto auto;
+      gap: 12px;
+      align-items: center;
+      padding: 16px;
+      background: rgba(17, 24, 39, 0.88);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.25);
+      margin-bottom: 18px;
+    }
+
+    .urlbox {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    input[type="text"], input[type="number"] {
+      background: #0b1220;
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      outline: none;
+      width: 100%;
+      font-size: 14px;
+    }
+
+    button {
+      border: 0;
+      padding: 10px 14px;
+      border-radius: 12px;
+      color: #08111f;
+      background: var(--accent);
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform .08s ease, filter .12s ease;
+      white-space: nowrap;
+    }
+
+    button:hover { filter: brightness(1.06); }
+    button:active { transform: translateY(1px); }
+
+    button.secondary {
+      background: #94a3b8;
+    }
+
+    button.danger {
+      background: var(--danger);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 99px;
+      background: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
+    }
+
+    .dot.ok {
+      background: var(--ok);
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.7);
+    }
+
+    .global {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .mini {
+      background: rgba(17, 24, 39, 0.82);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .mini .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .mini strong {
+      font-size: 14px;
+    }
+
+    .mini span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .feedback-bar {
+      display: grid;
+      grid-template-columns: minmax(260px, 1.1fr) minmax(210px, 0.9fr) minmax(160px, 0.55fr) auto auto;
+      gap: 12px;
+      align-items: center;
+      padding: 14px;
+      background: rgba(17, 24, 39, 0.72);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      margin-bottom: 18px;
+    }
+
+    .feedback-item {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .feedback-status {
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .legend {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-color {
+      display: inline-block;
+      width: 18px;
+      height: 3px;
+      border-radius: 99px;
+      background: var(--accent);
+    }
+
+    .legend-color.actual { background: var(--ok); }
+    .legend-color.command { background: var(--warn); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(360px, 1fr));
+      gap: 16px;
+    }
+
+    .joint {
+      background: rgba(31, 41, 55, 0.86);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 14px 40px rgba(0,0,0,.20);
+    }
+
+    .joint-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .joint-title {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .joint-topic {
+      color: var(--muted);
+      font-size: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .values {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .value {
+      background: #0b1220;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px;
+      min-width: 0;
+    }
+
+    .value .k {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+      white-space: nowrap;
+    }
+
+    .value .v {
+      font-size: 16px;
+      font-variant-numeric: tabular-nums;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      margin: 12px 0 14px;
+    }
+
+    .chart-wrap {
+      background: var(--plot-bg);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 8px;
+      margin: 8px 0 14px;
+    }
+
+    canvas.joint-chart {
+      display: block;
+      width: 100%;
+      height: 150px;
+      border-radius: 10px;
+    }
+
+    .joint-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .hint {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+      background: rgba(17, 24, 39, 0.65);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px 16px;
+    }
+
+    code {
+      color: #c4b5fd;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .warn {
+      color: #fbbf24;
+      font-weight: 700;
+    }
+
+    @media (max-width: 980px) {
+      .toolbar { grid-template-columns: 1fr; }
+      .global { grid-template-columns: 1fr 1fr; }
+      .feedback-bar { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr; }
+      .values { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>GAMMA Arm Web Slider Control</h1>
+    <!-- <p class="subtitle">
+      网页端滑块控制 6 个关节，并实时绘制目标角 Desired、当前发布命令 Command、实际反馈 Actual 曲线，方便观察超调、滞后和振荡，用于调节关节 PID。
+    </p> -->
+
+    <div class="toolbar">
+      <div class="urlbox">
+        <label for="rosUrl">rosbridge</label>
+        <input id="rosUrl" type="text" value="ws://127.0.0.1:9090" />
+      </div>
+      <button id="connectBtn">连接 ROS</button>
+      <button id="homeBtn" class="secondary">回到初始位</button>
+      <button id="stopBtn" class="danger">软停止</button>
+      <div class="status"><span id="dot" class="dot"></span><span id="statusText">未连接</span></div>
+    </div>
+
+    <div class="global">
+      <div class="mini">
+        <div class="row"><strong>发布频率</strong><span id="rateText">50 Hz</span></div>
+        <input id="publishHz" type="range" min="10" max="100" step="5" value="50" />
+      </div>
+      <div class="mini">
+        <div class="row"><strong>速度倍率</strong><span id="speedText">1.00×</span></div>
+        <input id="speedScale" type="range" min="0.1" max="3.0" step="0.05" value="1.0" />
+      </div>
+      <div class="mini">
+        <div class="row"><strong>平滑系数</strong><span id="smoothText">0.20</span></div>
+        <input id="smoothAlpha" type="range" min="0.05" max="0.60" step="0.01" value="0.20" />
+      </div>
+      <div class="mini">
+        <div class="row"><strong>命令消息类型</strong><span>Float64</span></div>
+        <input id="msgType" type="text" value="std_msgs/msg/Float64" />
+      </div>
+    </div>
+
+    <div class="feedback-bar">
+      <div class="feedback-item">
+        <label for="jointStateTopic">实际反馈话题</label>
+        <input id="jointStateTopic" type="text" value="/gamma_arm/joint_states" />
+      </div>
+      <div class="feedback-item">
+        <label for="jointStateMsgType">反馈消息类型</label>
+        <input id="jointStateMsgType" type="text" value="sensor_msgs/msg/JointState" />
+      </div>
+      <div class="feedback-item">
+        <label for="chartWindow">曲线窗口</label>
+        <input id="chartWindow" type="number" min="2" max="60" step="1" value="10" />
+      </div>
+      <button id="clearChartsBtn" class="secondary">清空曲线</button>
+      <div class="feedback-status" id="feedbackStatus">Actual: no data</div>
+    </div>
+
+    <div class="legend">
+      <span class="legend-item"><span class="legend-color"></span>Desired target</span>
+      <span class="legend-item"><span class="legend-color command"></span>Command published</span>
+      <span class="legend-item"><span class="legend-color actual"></span>Actual feedback</span>
+    </div>
+
+    <div id="jointGrid" class="grid"></div>
+
+    <!-- <div class="hint">
+      <div><span class="warn">使用方式：</span>先启动 rosbridge：<code>ros2 launch rosbridge_server rosbridge_websocket_launch.xml</code>，再打开本页面并点击“连接 ROS”。</div>
+      <div>本页面会发布 <code>/gamma_arm/joint1/command</code> ~ <code>/gamma_arm/joint6/command</code>，并订阅 <code>/gamma_arm/joint_states</code> 作为实际关节角反馈。</div>
+      <div>如果连接成功但没有 Actual 曲线，请先检查：<code>ros2 topic echo /gamma_arm/joint_states</code> 是否有 <code>position</code> 数据。</div>
+      <div>调 PID 时重点看：Actual 是否超调、是否长期滞后、是否在 Desired 附近来回振荡。若 Command 很平滑但 Actual 振荡，通常优先降低 P 或 Damping、检查关节惯量和 PID 参数。</div>
+    </div> -->
+  </div>
+
+<script>
+const joints = [
+  { label: "A / joint1", topic: "/gamma_arm/joint1/command", min: -3.14, max: 3.14, home: 0.0, maxSpeed: 1.20, nameHints: ["joint1", "joint_1", "1"] },
+  { label: "B / joint2", topic: "/gamma_arm/joint2/command", min: -1.90, max: 1.90, home: 0.0, maxSpeed: 0.55, nameHints: ["joint2", "joint_2", "2"] },
+  { label: "C / joint3", topic: "/gamma_arm/joint3/command", min: -2.86, max: 2.86, home: 0.0, maxSpeed: 0.75, nameHints: ["joint3", "joint_3", "3"] },
+  { label: "D / joint4", topic: "/gamma_arm/joint4/command", min: -3.14, max: 3.14, home: 0.0, maxSpeed: 1.00, nameHints: ["joint4", "joint_4", "4"] },
+  { label: "E / joint5", topic: "/gamma_arm/joint5/command", min: -2.90, max: 2.90, home: -0.7854, maxSpeed: 0.90, nameHints: ["joint5", "joint_5", "5"] },
+  { label: "F / joint6", topic: "/gamma_arm/joint6/command", min: -3.14, max: 3.14, home: -1.5708, maxSpeed: 1.20, nameHints: ["joint6", "joint_6", "6"] },
+];
+
+let ros = null;
+let pubs = [];
+let jointStateSub = null;
+let connected = false;
+let loopTimer = null;
+let lastTick = performance.now();
+let lastFeedbackTime = 0;
+let lastChartDrawTime = 0;
+
+const CHART_DRAW_INTERVAL_MS = 100;
+
+const state = joints.map(j => ({
+  current: j.home,       // smoothed command actually published by the web page
+  target: j.home,        // desired angle from slider/input
+  actual: null,          // feedback angle from /gamma_arm/joint_states
+  history: [],
+  slider: null,
+  targetInput: null,
+  currentEl: null,
+  targetEl: null,
+  actualEl: null,
+  errorEl: null,
+  speedEl: null,
+  chart: null,
+  ctx: null
+}));
+
+const grid = document.getElementById("jointGrid");
+
+function fmt(x) {
+  if (x === null || x === undefined || Number.isNaN(Number(x))) return "--";
+  return Number(x).toFixed(4);
+}
+
+function clamp(x, lo, hi) {
+  return Math.max(lo, Math.min(hi, x));
+}
+
+function buildUI() {
+  grid.innerHTML = "";
+
+  joints.forEach((j, i) => {
+    const card = document.createElement("div");
+    card.className = "joint";
+
+    card.innerHTML = `
+      <div class="joint-head">
+        <div class="joint-title">${j.label}</div>
+        <div class="joint-topic">${j.topic}</div>
+      </div>
+
+      <div class="values">
+        <div class="value"><div class="k">当前发布</div><div class="v" id="cur-${i}">${fmt(j.home)}</div></div>
+        <div class="value"><div class="k">目标角</div><div class="v" id="tar-${i}">${fmt(j.home)}</div></div>
+        <div class="value"><div class="k">实际值</div><div class="v" id="act-${i}">--</div></div>
+        <div class="value"><div class="k">误差</div><div class="v" id="err-${i}">--</div></div>
+        <div class="value"><div class="k">最大速度</div><div class="v" id="spd-${i}">${fmt(j.maxSpeed)}</div></div>
+      </div>
+
+      <input id="slider-${i}" type="range" min="${j.min}" max="${j.max}" step="0.001" value="${j.home}" />
+
+      <div class="chart-wrap">
+        <canvas class="joint-chart" id="chart-${i}"></canvas>
+      </div>
+
+      <div class="joint-controls">
+        <input id="input-${i}" type="number" step="0.001" min="${j.min}" max="${j.max}" value="${j.home}" />
+        <button class="secondary" id="zero-${i}">置零</button>
+        <button class="secondary" id="home-${i}">初始位</button>
+      </div>
+    `;
+
+    grid.appendChild(card);
+
+    const s = state[i];
+    s.slider = document.getElementById(`slider-${i}`);
+    s.targetInput = document.getElementById(`input-${i}`);
+    s.currentEl = document.getElementById(`cur-${i}`);
+    s.targetEl = document.getElementById(`tar-${i}`);
+    s.actualEl = document.getElementById(`act-${i}`);
+    s.errorEl = document.getElementById(`err-${i}`);
+    s.speedEl = document.getElementById(`spd-${i}`);
+    s.chart = document.getElementById(`chart-${i}`);
+    s.ctx = s.chart.getContext("2d");
+
+    function setTarget(v) {
+      v = clamp(Number(v), j.min, j.max);
+      s.target = v;
+      s.slider.value = v;
+      s.targetInput.value = v;
+      s.targetEl.textContent = fmt(v);
+      updateErrorDisplay(i);
+    }
+
+    s.slider.addEventListener("input", e => setTarget(e.target.value));
+    s.targetInput.addEventListener("change", e => setTarget(e.target.value));
+
+    document.getElementById(`zero-${i}`).addEventListener("click", () => setTarget(0.0));
+    document.getElementById(`home-${i}`).addEventListener("click", () => setTarget(j.home));
+
+    drawChart(i);
+  });
+}
+
+function setStatus(ok, text) {
+  connected = ok;
+  document.getElementById("dot").classList.toggle("ok", ok);
+  document.getElementById("statusText").textContent = text;
+}
+
+function connectROS() {
+  disconnectROS();
+
+  const url = document.getElementById("rosUrl").value.trim();
+  const commandMessageType = document.getElementById("msgType").value.trim() || "std_msgs/msg/Float64";
+  const jointStateTopic = document.getElementById("jointStateTopic").value.trim() || "/gamma_arm/joint_states";
+  const jointStateMsgType = document.getElementById("jointStateMsgType").value.trim() || "sensor_msgs/msg/JointState";
+
+  ros = new ROSLIB.Ros({ url });
+
+  ros.on("connection", () => {
+    pubs = joints.map(j => new ROSLIB.Topic({
+      ros,
+      name: j.topic,
+      messageType: commandMessageType
+    }));
+
+    jointStateSub = new ROSLIB.Topic({
+      ros,
+      name: jointStateTopic,
+      messageType: jointStateMsgType
+    });
+
+    jointStateSub.subscribe(handleJointState);
+
+    setStatus(true, "已连接");
+    startLoop();
+  });
+
+  ros.on("error", err => {
+    console.error(err);
+    setStatus(false, "连接错误");
+  });
+
+  ros.on("close", () => {
+    setStatus(false, "连接已断开");
+    stopLoop();
+  });
+}
+
+function disconnectROS() {
+  stopLoop();
+
+  if (jointStateSub) {
+    try { jointStateSub.unsubscribe(); } catch (e) {}
+  }
+  jointStateSub = null;
+
+  if (ros) {
+    try { ros.close(); } catch (e) {}
+  }
+
+  ros = null;
+  pubs = [];
+  setStatus(false, "未连接");
+}
+
+function startLoop() {
+  stopLoop();
+  lastTick = performance.now();
+
+  const hz = Number(document.getElementById("publishHz").value);
+  const periodMs = 1000 / hz;
+
+  loopTimer = setInterval(publishSmooth, periodMs);
+}
+
+function stopLoop() {
+  if (loopTimer) clearInterval(loopTimer);
+  loopTimer = null;
+}
+
+function findJointIndexByName(name) {
+  if (!name) return -1;
+
+  const n = String(name).toLowerCase();
+
+  for (let i = 0; i < joints.length; i++) {
+    const hints = joints[i].nameHints || [];
+    for (const hint of hints) {
+      const h = String(hint).toLowerCase();
+
+      if (h.length === 1 && /^[1-6]$/.test(h)) {
+        const re = new RegExp(`(^|[^0-9])${h}([^0-9]|$)`);
+        if (re.test(n)) return i;
+      } else if (n.includes(h)) {
+        return i;
+      }
+    }
+  }
+
+  return -1;
+}
+
+function handleJointState(msg) {
+  if (!msg || !Array.isArray(msg.position)) return;
+
+  lastFeedbackTime = performance.now();
+
+  for (let k = 0; k < msg.position.length; k++) {
+    const pos = Number(msg.position[k]);
+    if (!Number.isFinite(pos)) continue;
+
+    let jointIndex = -1;
+
+    if (Array.isArray(msg.name) && msg.name[k]) {
+      jointIndex = findJointIndexByName(msg.name[k]);
+    }
+
+    // 如果 JointState 中没有 name，或 name 匹配失败，则默认按 position 顺序映射 joint1~joint6
+    if (jointIndex < 0 && k < joints.length) {
+      jointIndex = k;
+    }
+
+    if (jointIndex >= 0 && jointIndex < state.length) {
+      state[jointIndex].actual = pos;
+      state[jointIndex].actualEl.textContent = fmt(pos);
+      updateErrorDisplay(jointIndex);
+    }
+  }
+
+  const topic = document.getElementById("jointStateTopic").value.trim() || "/gamma_arm/joint_states";
+  document.getElementById("feedbackStatus").textContent = `Actual: receiving ${topic}`;
+}
+
+function updateErrorDisplay(i) {
+  const s = state[i];
+
+  if (s.actual === null || s.actual === undefined || !Number.isFinite(Number(s.actual))) {
+    s.errorEl.textContent = "--";
+    return;
+  }
+
+  // 误差定义：目标角 Desired - 实际反馈 Actual
+  const error = s.target - s.actual;
+  s.errorEl.textContent = fmt(error);
+}
+
+function publishSmooth() {
+  if (!connected || pubs.length !== joints.length) return;
+
+  const now = performance.now();
+  const nowSec = now / 1000.0;
+  const dt = Math.max(0.001, (now - lastTick) / 1000.0);
+  lastTick = now;
+
+  const speedScale = Number(document.getElementById("speedScale").value);
+  const alpha = Number(document.getElementById("smoothAlpha").value);
+  const chartWindow = clamp(Number(document.getElementById("chartWindow").value) || 10, 2, 60);
+
+  joints.forEach((j, i) => {
+    const s = state[i];
+
+    const error = s.target - s.current;
+
+    // 速度限制：B 关节默认更慢，避免激发整臂抖动
+    const maxStep = j.maxSpeed * speedScale * dt;
+    const limitedStep = clamp(error, -maxStep, maxStep);
+
+    // 低通平滑：避免滑块输入高频跳动
+    const smoothStep = limitedStep * alpha + limitedStep * (1 - alpha) * 0.55;
+
+    if (Math.abs(error) < 0.0005) {
+      s.current = s.target;
+    } else {
+      s.current += smoothStep;
+    }
+
+    s.current = clamp(s.current, j.min, j.max);
+
+    const msg = new ROSLIB.Message({ data: s.current });
+    pubs[i].publish(msg);
+
+    s.currentEl.textContent = fmt(s.current);
+    s.targetEl.textContent = fmt(s.target);
+    s.speedEl.textContent = fmt(j.maxSpeed * speedScale);
+    updateErrorDisplay(i);
+
+    s.history.push({
+      t: nowSec,
+      desired: s.target,
+      command: s.current,
+      actual: Number.isFinite(Number(s.actual)) ? Number(s.actual) : null
+    });
+
+    const minT = nowSec - chartWindow;
+    while (s.history.length > 0 && s.history[0].t < minT) {
+      s.history.shift();
+    }
+  });
+
+  if (now - lastChartDrawTime >= CHART_DRAW_INTERVAL_MS) {
+    drawAllCharts();
+    lastChartDrawTime = now;
+    updateFeedbackAge(now);
+  }
+}
+
+function updateFeedbackAge(now) {
+  if (!lastFeedbackTime) {
+    document.getElementById("feedbackStatus").textContent = "Actual: no data";
+    return;
+  }
+
+  const age = (now - lastFeedbackTime) / 1000.0;
+
+  if (age > 1.5) {
+    document.getElementById("feedbackStatus").textContent = `Actual: stale ${age.toFixed(1)} s`;
+  }
+}
+
+function resizeCanvas(canvas, ctx) {
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const width = Math.max(320, Math.floor(rect.width));
+  const height = Math.max(120, Math.floor(rect.height));
+
+  if (canvas.width !== Math.floor(width * dpr) || canvas.height !== Math.floor(height * dpr)) {
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+  }
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  return { width, height };
+}
+
+function drawAllCharts() {
+  for (let i = 0; i < joints.length; i++) {
+    drawChart(i);
+  }
+}
+
+function drawChart(i) {
+  const s = state[i];
+  const j = joints[i];
+  if (!s.chart || !s.ctx) return;
+
+  const ctx = s.ctx;
+  const { width, height } = resizeCanvas(s.chart, ctx);
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#0b1220";
+  ctx.fillRect(0, 0, width, height);
+
+  const padL = 44;
+  const padR = 10;
+  const padT = 16;
+  const padB = 24;
+  const plotW = width - padL - padR;
+  const plotH = height - padT - padB;
+
+  const yMin = j.min;
+  const yMax = j.max;
+  const chartWindow = clamp(Number(document.getElementById("chartWindow").value) || 10, 2, 60);
+
+  const nowSec = performance.now() / 1000.0;
+  const xMin = nowSec - chartWindow;
+  const xMax = nowSec;
+
+  function xScale(t) {
+    return padL + ((t - xMin) / (xMax - xMin)) * plotW;
+  }
+
+  function yScale(v) {
+    const vv = clamp(Number(v), yMin, yMax);
+    return padT + (1 - (vv - yMin) / (yMax - yMin)) * plotH;
+  }
+
+  // Grid
+  ctx.strokeStyle = "rgba(148, 163, 184, 0.16)";
+  ctx.lineWidth = 1;
+
+  for (let k = 0; k <= 4; k++) {
+    const y = padT + (plotH * k / 4);
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(width - padR, y);
+    ctx.stroke();
+  }
+
+  for (let k = 0; k <= 5; k++) {
+    const x = padL + (plotW * k / 5);
+    ctx.beginPath();
+    ctx.moveTo(x, padT);
+    ctx.lineTo(x, height - padB);
+    ctx.stroke();
+  }
+
+  // Axis labels
+  ctx.fillStyle = "rgba(229, 231, 235, 0.78)";
+  ctx.font = "11px ui-monospace, Menlo, Consolas, monospace";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  ctx.fillText(fmt(yMax), padL - 6, padT + 2);
+  ctx.fillText("0.0000", padL - 6, yScale(0));
+  ctx.fillText(fmt(yMin), padL - 6, height - padB - 2);
+
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.fillStyle = "rgba(156, 163, 175, 0.9)";
+  ctx.fillText(`${chartWindow}s window`, padL, height - padB + 7);
+
+  function drawLine(key, color, widthLine = 2) {
+    const data = s.history.filter(p => p.t >= xMin && p.t <= xMax && Number.isFinite(Number(p[key])));
+    if (data.length < 2) return;
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = widthLine;
+    ctx.beginPath();
+
+    let moved = false;
+
+    for (const p of data) {
+      const x = xScale(p.t);
+      const y = yScale(p[key]);
+
+      if (!moved) {
+        ctx.moveTo(x, y);
+        moved = true;
+      } else {
+        ctx.lineTo(x, y);
+      }
+    }
+
+    ctx.stroke();
+  }
+
+  drawLine("desired", "#38bdf8", 2.2);
+  drawLine("command", "#fbbf24", 1.6);
+  drawLine("actual", "#22c55e", 2.2);
+
+  // Current numeric overlay
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.font = "12px ui-monospace, Menlo, Consolas, monospace";
+  ctx.fillStyle = "#38bdf8";
+  ctx.fillText(`D ${fmt(s.target)}`, padL + 6, padT + 6);
+  ctx.fillStyle = "#fbbf24";
+  ctx.fillText(`C ${fmt(s.current)}`, padL + 88, padT + 6);
+  ctx.fillStyle = "#22c55e";
+  ctx.fillText(`A ${fmt(s.actual)}`, padL + 170, padT + 6);
+}
+
+function softStop() {
+  // 软停止：把目标设为当前发布值，不再继续追远处目标
+  state.forEach((s, i) => {
+    s.target = s.current;
+    s.slider.value = s.current;
+    s.targetInput.value = s.current;
+    s.targetEl.textContent = fmt(s.current);
+    updateErrorDisplay(i);
+  });
+}
+
+function goHome() {
+  joints.forEach((j, i) => {
+    const s = state[i];
+    s.target = j.home;
+    s.slider.value = j.home;
+    s.targetInput.value = j.home;
+    s.targetEl.textContent = fmt(j.home);
+    updateErrorDisplay(i);
+  });
+}
+
+function clearCharts() {
+  state.forEach(s => {
+    s.history = [];
+  });
+  drawAllCharts();
+}
+
+document.getElementById("connectBtn").addEventListener("click", () => {
+  if (connected) {
+    disconnectROS();
+    document.getElementById("connectBtn").textContent = "连接 ROS";
+  } else {
+    connectROS();
+    document.getElementById("connectBtn").textContent = "断开连接";
+  }
+});
+
+document.getElementById("stopBtn").addEventListener("click", softStop);
+document.getElementById("homeBtn").addEventListener("click", goHome);
+document.getElementById("clearChartsBtn").addEventListener("click", clearCharts);
+
+document.getElementById("publishHz").addEventListener("input", e => {
+  document.getElementById("rateText").textContent = `${e.target.value} Hz`;
+  if (connected) startLoop();
+});
+
+document.getElementById("speedScale").addEventListener("input", e => {
+  document.getElementById("speedText").textContent = `${Number(e.target.value).toFixed(2)}×`;
+});
+
+document.getElementById("smoothAlpha").addEventListener("input", e => {
+  document.getElementById("smoothText").textContent = Number(e.target.value).toFixed(2);
+});
+
+document.getElementById("chartWindow").addEventListener("change", () => {
+  clearCharts();
+});
+
+window.addEventListener("resize", () => {
+  drawAllCharts();
+});
+
+buildUI();
+</script>
+</body>
+</html>
