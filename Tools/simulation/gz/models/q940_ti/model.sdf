@@ -29,7 +29,7 @@
 
     <joint name="ti5_gripper_joint" type="fixed">
       <parent>ti5_arm::F_Link</parent>
-      <child>gripper3::gripper3_base_link</child>
+      <child>gripper3::base_link</child>
     </joint>
 
     <!-- OakD-Lite camera One mounted on UAV body -->
@@ -76,7 +76,7 @@
     </include>
 
     <joint name="base_oakd_lite_four_joint" type="fixed">
-      <parent>gripper3::gripper3_base_link</parent>
+      <parent>gripper3::base_link</parent>
       <child>oakd_lite_four::camera_link</child>
     </joint>
 

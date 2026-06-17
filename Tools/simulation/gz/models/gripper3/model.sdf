@@ -4,22 +4,21 @@
     <static>false</static>
     <self_collide>false</self_collide>
 
-    <!-- <link name="base_link"> -->
-    <link name="gripper3_base_link">
+    <!-- Generated from gripper3.urdf. Keep the model folder name as "gripper3". -->
+    <link name="base_link">
       <pose>0 0 0 0 0 0</pose>
       <inertial>
         <pose>0.022563 0.018368 -0.0176 0 0 0</pose>
-        <mass>0.085138</mass>
+        <mass>0.047774</mass>
         <inertia>
-          <ixx>1.5815e-05</ixx>
-          <ixy>5.4955e-07</ixy>
-          <ixz>-7.279e-07</ixz>
-          <iyy>2.219e-05</iyy>
-          <iyz>2.9639e-06</iyz>
-          <izz>2.4841e-05</izz>
+          <ixx>6.7162e-06</ixx>
+          <ixy>-1.004e-07</ixy>
+          <ixz>-7.4045e-08</ixz>
+          <iyy>1.0991e-05</iyy>
+          <iyz>-4.0881e-07</iyz>
+          <izz>7.9121e-06</izz>
         </inertia>
       </inertial>
-
       <collision name="base_link_collision">
         <pose>0 0 0 0 0 0</pose>
         <geometry>
@@ -29,7 +28,6 @@
           </mesh>
         </geometry>
       </collision>
-
       <visual name="base_link_visual">
         <pose>0 0 0 0 0 0</pose>
         <geometry>
@@ -38,25 +36,27 @@
             <uri>model://gripper3/meshes/base_link.STL</uri>
           </mesh>
         </geometry>
+        <material>
+          <diffuse>1 1 1 1</diffuse>
+          <ambient>1 1 1 1</ambient>
+        </material>
       </visual>
     </link>
 
     <link name="Empty_Link1">
-      <!-- High-symmetry reference side. Empty_Link2 is mirrored from this link. -->
       <pose>0.04 0 0.02 1.5708 0.90665 0</pose>
       <inertial>
-        <pose>-0.021122 0.028354 -0.005583 0 0 0</pose>
-        <mass>0.1</mass>
+        <pose>-0.021122 0.028354 -0.0055832 0 0 0</pose>
+        <mass>0.015801</mass>
         <inertia>
-          <ixx>1.1931e-05</ixx>
-          <ixy>8.7376e-06</ixy>
+          <ixx>1.6647e-06</ixx>
+          <ixy>1.223e-06</ixy>
           <ixz>-1.3248e-16</ixz>
-          <iyy>8.789e-06</iyy>
-          <iyz>-2.1751e-17</iyz>
-          <izz>2.0324e-05</izz>
+          <iyy>1.5435e-06</iyy>
+          <iyz>-2.1754e-17</iyz>
+          <izz>2.8346e-06</izz>
         </inertia>
       </inertial>
-
       <collision name="Empty_Link1_collision">
         <pose>0 0 0 0 0 0</pose>
         <geometry>
@@ -68,13 +68,12 @@
         <surface>
           <friction>
             <ode>
-              <mu>1</mu>
-              <mu2>1</mu2>
+              <mu>1.0</mu>
+              <mu2>1.0</mu2>
             </ode>
           </friction>
         </surface>
       </collision>
-
       <visual name="Empty_Link1_visual">
         <pose>0 0 0 0 0 0</pose>
         <geometry>
@@ -83,15 +82,19 @@
             <uri>model://gripper3/meshes/Empty_Link1.STL</uri>
           </mesh>
         </geometry>
+        <material>
+          <diffuse>1 1 1 1</diffuse>
+          <ambient>1 1 1 1</ambient>
+        </material>
       </visual>
     </link>
 
     <joint name="joint1" type="revolute">
-      <!-- <parent>base_link</parent> -->
-      <parent>gripper3_base_link</parent>
+      <parent>base_link</parent>
       <child>Empty_Link1</child>
       <axis>
         <xyz>0 0 1</xyz>
+        <!-- URDF joint1 is continuous. For a gripper in Gazebo, a finite revolute limit is usually safer. Modify lower/upper according to the real opening range. -->
         <limit>
           <lower>-0.5</lower>
           <upper>2.0</upper>
@@ -99,32 +102,26 @@
           <velocity>1.0</velocity>
         </limit>
         <dynamics>
-          <!-- <damping>0.01</damping>
-          <friction>0</friction> -->
           <damping>0.05</damping>
           <friction>0.02</friction>
-          <spring_reference>0</spring_reference>
-          <spring_stiffness>0</spring_stiffness>
         </dynamics>
       </axis>
     </joint>
 
     <link name="Empty_Link2">
-      <!-- High-symmetry version: mirrored from Empty_Link1 around x = 0.026, with matching z and pitch. -->
-      <pose>0.012 0 0.02 -1.5708 0.90665 3.14159</pose>
+      <pose>0.012 0 0.0195 -1.5708 0.96069 -3.1416</pose>
       <inertial>
-        <pose>-0.021122 -0.028354 -0.005583 0 0 0</pose>
-        <mass>0.1</mass>
+        <pose>-0.019265 -0.025888 -0.004777 0 0 0</pose>
+        <mass>0.017262</mass>
         <inertia>
-          <ixx>1.1931e-05</ixx>
-          <ixy>-8.7376e-06</ixy>
-          <ixz>-1.3248e-16</ixz>
-          <iyy>8.789e-06</iyy>
-          <iyz>2.1751e-17</iyz>
-          <izz>2.0324e-05</izz>
+          <ixx>1.6519e-06</ixx>
+          <ixy>-1.216e-06</ixy>
+          <ixz>-7.2546e-17</ixz>
+          <iyy>1.5595e-06</iyy>
+          <iyz>-3.2073e-16</iyz>
+          <izz>2.886e-06</izz>
         </inertia>
       </inertial>
-
       <collision name="Empty_Link2_collision">
         <pose>0 0 0 0 0 0</pose>
         <geometry>
@@ -136,13 +133,12 @@
         <surface>
           <friction>
             <ode>
-              <mu>1</mu>
-              <mu2>1</mu2>
+              <mu>1.0</mu>
+              <mu2>1.0</mu2>
             </ode>
           </friction>
         </surface>
       </collision>
-
       <visual name="Empty_Link2_visual">
         <pose>0 0 0 0 0 0</pose>
         <geometry>
@@ -151,15 +147,19 @@
             <uri>model://gripper3/meshes/Empty_Link2.STL</uri>
           </mesh>
         </geometry>
+        <material>
+          <diffuse>1 1 1 1</diffuse>
+          <ambient>1 1 1 1</ambient>
+        </material>
       </visual>
     </link>
 
     <joint name="joint2" type="revolute">
-      <!-- <parent>base_link</parent> -->
-      <parent>gripper3_base_link</parent>
+      <parent>base_link</parent>
       <child>Empty_Link2</child>
       <axis>
         <xyz>0 0 -1</xyz>
+        <!-- URDF joint2 is continuous. For a gripper in Gazebo, a finite revolute limit is usually safer. Modify lower/upper according to the real opening range. -->
         <limit>
           <lower>-0.5</lower>
           <upper>2.0</upper>
@@ -167,20 +167,15 @@
           <velocity>1.0</velocity>
         </limit>
         <dynamics>
-          <!-- <damping>0.01</damping>
-          <friction>0</friction> -->
           <damping>0.05</damping>
           <friction>0.02</friction>
-          <spring_reference>0</spring_reference>
-          <spring_stiffness>0</spring_stiffness>
         </dynamics>
       </axis>
     </joint>
 
-    <!-- Gazebo Sim / ROS 2 Humble: joint position control for finger 1 -->
-    <plugin
-      filename="gz-sim-joint-position-controller-system"
-      name="gz::sim::systems::JointPositionController">
+    <!-- Gazebo Sim joint position controller for finger 1 -->
+    <plugin filename="gz-sim-joint-position-controller-system"
+            name="gz::sim::systems::JointPositionController">
       <joint_name>joint1</joint_name>
       <joint_index>0</joint_index>
       <topic>/joint/gripper3/position_cmd</topic>
@@ -194,12 +189,9 @@
       <initial_position>0.0</initial_position>
     </plugin>
 
-    <!-- Gazebo Sim / ROS 2 Humble: joint position control for finger 2.
-         joint2 axis is 0 0 -1, so using the same target angle as joint1 produces symmetric motion.
-         Important: keep PID and command limits identical to joint1, otherwise the two fingers will not track symmetrically. -->
-    <plugin
-      filename="gz-sim-joint-position-controller-system"
-      name="gz::sim::systems::JointPositionController">
+    <!-- Gazebo Sim joint position controller for finger 2. joint2 axis is 0 0 -1, so the same target can produce symmetric motion. -->
+    <plugin filename="gz-sim-joint-position-controller-system"
+            name="gz::sim::systems::JointPositionController">
       <joint_name>joint2</joint_name>
       <joint_index>0</joint_index>
       <topic>/joint/gripper3/position_cmd</topic>
@@ -213,26 +205,11 @@
       <initial_position>0.0</initial_position>
     </plugin>
 
-    <!-- Publish only gripper3 joint states -->
-    <plugin
-      filename="gz-sim-joint-state-publisher-system"
-      name="gz::sim::systems::JointStatePublisher">
+    <plugin filename="gz-sim-joint-state-publisher-system"
+            name="gz::sim::systems::JointStatePublisher">
       <topic>/gripper3/joint_state</topic>
       <joint_name>joint1</joint_name>
       <joint_name>joint2</joint_name>
-    </plugin>
-
-    <!-- Ground-truth odometry publisher for gripper3 base link -->
-    <plugin
-      filename="gz-sim-odometry-publisher-system"
-      name="gz::sim::systems::OdometryPublisher">
-      <dimensions>3</dimensions>
-      <odom_frame>world</odom_frame>
-      <robot_base_frame>gripper3_base_link</robot_base_frame>
-      <odom_publish_frequency>200</odom_publish_frequency>
-      <odom_topic>/model/q940_ti_0/model/gripper3/odometry</odom_topic>
-      <odom_covariance_topic>/model/q940_ti_0/model/gripper3/odometry_with_covariance</odom_covariance_topic>
-      <tf_topic>/model/q940_ti_0/model/gripper3/pose_gt</tf_topic>
     </plugin>
 
   </model>
