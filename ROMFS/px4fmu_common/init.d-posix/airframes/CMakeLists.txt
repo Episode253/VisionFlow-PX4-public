@@ -13,9 +13,10 @@ px4_add_romfs_files(
 	4017_gz_x500_lidar_front
 	4018_gz_quadtailsitter
 	4019_gz_x500_gimbal
-	4020_gz_q940_ti
+	4020_gz_q940_ti_gripper3
 	4021_gz_x500_flow
 	4022_gz_swan_gamma
+	4023_gz_q940_ti_gripper4
 
 	6011_gazebo-classic_typhoon_h480
 	6011_gazebo-classic_typhoon_h480.post

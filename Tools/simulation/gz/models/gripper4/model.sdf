@@ -4,18 +4,11 @@
     <static>false</static>
     <self_collide>false</self_collide>
 
-    <!--
-      gripper4 is written in the same style as gripper3:
-      1. base_link stays at the model origin.
-      2. Each moving jaw link pose is set to the corresponding URDF joint origin.
-      3. The revolute joints only define parent / child / axis / limits, without an extra joint pose.
-      4. The two jaws are driven by the same position command topic, with opposite joint axes for symmetric opening / closing.
-    -->
-
     <link name="base_link">
       <pose>0 0 0 0 0 0</pose>
+
       <inertial>
-        <pose>-0.023531 -0.9743 0.031805 0 0 0</pose>
+        <pose>0 0 0 0 0 0</pose>
         <mass>0.090444</mass>
         <inertia>
           <ixx>3.3873e-05</ixx>
@@ -28,17 +21,25 @@
       </inertial>
 
       <collision name="base_link_collision">
-        <pose>0 0 0 0 0 0</pose>
+        <pose>0.023531 0.9743 -0.031805 0 0 0</pose>
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
             <uri>model://gripper4/meshes/base_link.STL</uri>
           </mesh>
         </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1.0</mu>
+              <mu2>1.0</mu2>
+            </ode>
+          </friction>
+        </surface>
       </collision>
 
       <visual name="base_link_visual">
-        <pose>0 0 0 0 0 0</pose>
+        <pose>0.023531 0.9743 -0.031805 0 0 0</pose>
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
@@ -46,14 +47,15 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>0.79216 0.81961 0.93333 1</diffuse>
           <ambient>0.79216 0.81961 0.93333 1</ambient>
+          <diffuse>0.79216 0.81961 0.93333 1</diffuse>
         </material>
       </visual>
     </link>
 
     <link name="jaw_left">
-      <pose>-0.033807 -0.94485 0.042435 0 -0.71707 3.1416</pose>
+      <pose>-0.010276 0.02945 0.01063 0 -0.71707 3.1416</pose>
+
       <inertial>
         <pose>0.028325 0.030931 0.022724 0 0 0</pose>
         <mass>0.035281</mass>
@@ -94,8 +96,8 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>0.79216 0.81961 0.93333 1</diffuse>
           <ambient>0.79216 0.81961 0.93333 1</ambient>
+          <diffuse>0.79216 0.81961 0.93333 1</diffuse>
         </material>
       </visual>
     </link>
@@ -103,26 +105,29 @@
     <joint name="motor_left_jaw" type="revolute">
       <parent>base_link</parent>
       <child>jaw_left</child>
+
       <axis>
-        <xyz>0 0 1</xyz>
+        <xyz>0 1 0</xyz>
+
         <limit>
-          <lower>0</lower>
-          <upper>1.57</upper>
-          <effort>25</effort>
-          <velocity>1</velocity>
+          <lower>-0.3</lower>
+          <upper>1.5</upper>
+          <effort>5.0</effort>
+          <velocity>0.8</velocity>
         </limit>
+
         <dynamics>
-          <damping>0.05</damping>
-          <friction>0.02</friction>
+          <damping>0.08</damping>
+          <friction>0.003</friction>
         </dynamics>
       </axis>
     </joint>
 
     <link name="jaw_right">
-      <pose>-0.0094069 -0.94234 0.0425 1.5708 0.22743 0</pose>
+      <pose>0.0141241 0.03196 0.010695 1.5708 0.22743 0</pose>
+
       <inertial>
-        <!-- The URDF exported jaw_right with zero mass and zero inertia. Gazebo needs non-zero values. -->
-        <pose>0 0 0 0 0 0</pose>
+        <pose>-0.028325 0.030931 0.022724 0 0 0</pose>
         <mass>0.035281</mass>
         <inertia>
           <ixx>1.8799e-05</ixx>
@@ -161,8 +166,8 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>1 1 1 1</diffuse>
           <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
         </material>
       </visual>
     </link>
@@ -170,57 +175,61 @@
     <joint name="follow_right_jaw" type="revolute">
       <parent>base_link</parent>
       <child>jaw_right</child>
+
       <axis>
-        <!-- Use the opposite axis so the same positive command opens/closes both jaws symmetrically. -->
         <xyz>0 0 -1</xyz>
+
         <limit>
-          <lower>0</lower>
-          <upper>1.57</upper>
-          <effort>25</effort>
-          <velocity>1</velocity>
+          <lower>-0.3</lower>
+          <upper>1.5</upper>
+          <effort>5.0</effort>
+          <velocity>0.8</velocity>
         </limit>
+
         <dynamics>
-          <damping>0.05</damping>
-          <friction>0.02</friction>
+          <damping>0.08</damping>
+          <friction>0.003</friction>
         </dynamics>
       </axis>
     </joint>
 
-    <!-- Gazebo Sim joint position controller for the left jaw -->
-    <plugin filename="gz-sim-joint-position-controller-system"
-            name="gz::sim::systems::JointPositionController">
+    <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
       <joint_name>motor_left_jaw</joint_name>
       <joint_index>0</joint_index>
       <topic>/joint/gripper4/position_cmd</topic>
-      <p_gain>2.0</p_gain>
+
+      <p_gain>1.2</p_gain>
       <i_gain>0.0</i_gain>
-      <d_gain>0.05</d_gain>
+      <d_gain>0.15</d_gain>
+
       <i_max>0.0</i_max>
       <i_min>0.0</i_min>
-      <cmd_max>25.0</cmd_max>
-      <cmd_min>-25.0</cmd_min>
+
+      <cmd_max>4.0</cmd_max>
+      <cmd_min>-4.0</cmd_min>
+
       <initial_position>0.0</initial_position>
     </plugin>
 
-    <!-- Gazebo Sim joint position controller for the right jaw.
-         follow_right_jaw uses axis 0 0 -1, so the same command topic produces mirrored motion. -->
-    <plugin filename="gz-sim-joint-position-controller-system"
-            name="gz::sim::systems::JointPositionController">
+    <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
       <joint_name>follow_right_jaw</joint_name>
       <joint_index>0</joint_index>
       <topic>/joint/gripper4/position_cmd</topic>
-      <p_gain>2.0</p_gain>
+
+      <p_gain>1.2</p_gain>
       <i_gain>0.0</i_gain>
-      <d_gain>0.05</d_gain>
+      <d_gain>0.15</d_gain>
+
       <i_max>0.0</i_max>
       <i_min>0.0</i_min>
-      <cmd_max>25.0</cmd_max>
-      <cmd_min>-25.0</cmd_min>
+
+      <cmd_max>4.0</cmd_max>
+      <cmd_min>-4.0</cmd_min>
+
       <initial_position>0.0</initial_position>
     </plugin>
 
-    <plugin filename="gz-sim-joint-state-publisher-system"
-            name="gz::sim::systems::JointStatePublisher">
+    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
       <topic>/gripper4/joint_state</topic>
       <joint_name>motor_left_jaw</joint_name>
       <joint_name>follow_right_jaw</joint_name>

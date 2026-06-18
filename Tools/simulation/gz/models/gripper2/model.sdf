@@ -1,5 +1,6 @@
 <sdf version='1.6'>
   <model name='gripper2'>
+  <!-- 该模型文件仍然没有迁移到gaz sim，同时使用的是自定义插件 -->
     <link name='base_link'>
       <pose frame=''>0 0 0 0 -0 0</pose>
       <inertial>

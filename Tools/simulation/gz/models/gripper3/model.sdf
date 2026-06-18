@@ -4,7 +4,6 @@
     <static>false</static>
     <self_collide>false</self_collide>
 
-    <!-- Generated from gripper3.urdf. Keep the model folder name as "gripper3". -->
     <link name="base_link">
       <pose>0 0 0 0 0 0</pose>
       <inertial>
@@ -94,7 +93,6 @@
       <child>Empty_Link1</child>
       <axis>
         <xyz>0 0 1</xyz>
-        <!-- URDF joint1 is continuous. For a gripper in Gazebo, a finite revolute limit is usually safer. Modify lower/upper according to the real opening range. -->
         <limit>
           <lower>-0.5</lower>
           <upper>2.0</upper>
@@ -159,7 +157,6 @@
       <child>Empty_Link2</child>
       <axis>
         <xyz>0 0 -1</xyz>
-        <!-- URDF joint2 is continuous. For a gripper in Gazebo, a finite revolute limit is usually safer. Modify lower/upper according to the real opening range. -->
         <limit>
           <lower>-0.5</lower>
           <upper>2.0</upper>
@@ -173,40 +170,43 @@
       </axis>
     </joint>
 
-    <!-- Gazebo Sim joint position controller for finger 1 -->
-    <plugin filename="gz-sim-joint-position-controller-system"
-            name="gz::sim::systems::JointPositionController">
+    <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
       <joint_name>joint1</joint_name>
       <joint_index>0</joint_index>
       <topic>/joint/gripper3/position_cmd</topic>
+
       <p_gain>2.0</p_gain>
       <i_gain>0.0</i_gain>
       <d_gain>0.05</d_gain>
+
       <i_max>0.0</i_max>
       <i_min>0.0</i_min>
+
       <cmd_max>2.0</cmd_max>
       <cmd_min>-2.0</cmd_min>
+
       <initial_position>0.0</initial_position>
     </plugin>
 
-    <!-- Gazebo Sim joint position controller for finger 2. joint2 axis is 0 0 -1, so the same target can produce symmetric motion. -->
-    <plugin filename="gz-sim-joint-position-controller-system"
-            name="gz::sim::systems::JointPositionController">
+    <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
       <joint_name>joint2</joint_name>
       <joint_index>0</joint_index>
       <topic>/joint/gripper3/position_cmd</topic>
+
       <p_gain>2.0</p_gain>
       <i_gain>0.0</i_gain>
       <d_gain>0.05</d_gain>
+
       <i_max>0.0</i_max>
       <i_min>0.0</i_min>
+
       <cmd_max>2.0</cmd_max>
       <cmd_min>-2.0</cmd_min>
+
       <initial_position>0.0</initial_position>
     </plugin>
 
-    <plugin filename="gz-sim-joint-state-publisher-system"
-            name="gz::sim::systems::JointStatePublisher">
+    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
       <topic>/gripper3/joint_state</topic>
       <joint_name>joint1</joint_name>
       <joint_name>joint2</joint_name>

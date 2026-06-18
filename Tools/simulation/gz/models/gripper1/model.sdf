@@ -160,14 +160,12 @@
       </visual>
     </link>
 
-    <!-- Gazebo Sim / ROS 2 Humble: publish joint states on Gazebo Transport. Bridge this topic to ROS 2 sensor_msgs/msg/JointState. -->
     <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
       <topic>/gripper1/joint_state</topic>
       <joint_name>left_joint</joint_name>
       <joint_name>right_joint</joint_name>
     </plugin>
 
-    <!-- Left finger position controller. Command type: gz.msgs.Double, unit: meter. -->
     <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
       <joint_name>left_joint</joint_name>
       <joint_index>0</joint_index>
@@ -180,7 +178,6 @@
       <initial_position>0</initial_position>
     </plugin>
 
-    <!-- Right finger position controller. Command type: gz.msgs.Double, unit: meter. -->
     <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
       <joint_name>right_joint</joint_name>
       <joint_index>0</joint_index>
@@ -193,7 +190,6 @@
       <initial_position>0</initial_position>
     </plugin>
 
-    <!-- Optional ground-truth pose publisher replacing libgazebo_ros_p3d.so from Gazebo Classic. -->
     <plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher">
       <publish_link_pose>true</publish_link_pose>
       <publish_visual_pose>false</publish_visual_pose>
