@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>GAMMA Arm Web Slider Control</title>
+  <title>Gamma Arm Web Slider Control</title>
   <script src="https://cdn.jsdelivr.net/npm/roslib/build/roslib.min.js"></script>
   <style>
     :root {
@@ -338,10 +338,10 @@
 
 <body>
   <div class="wrap">
-    <h1>GAMMA Arm Web Slider Control</h1>
-    <!-- <p class="subtitle">
-      网页端滑块控制 6 个关节，并实时绘制目标角 Desired、当前发布命令 Command、实际反馈 Actual 曲线，方便观察超调、滞后和振荡，用于调节关节 PID。
-    </p> -->
+    <h1>Gamma Arm Web Slider Control</h1>
+    <p class="subtitle">
+      网页端发布 ROS2 Float64 指令，经 ros_gz_bridge 转发为 Gazebo <code>gz.msgs.Double</code>，最终控制 Gamma 机械臂的 Gazebo 话题 <code>/joint/gamma/1~6/position_cmd</code>。网页端 ROS2 话题使用合法命名 <code>/gamma_arm/joint1~6/position_cmd</code>。
+    </p>
 
     <div class="toolbar">
       <div class="urlbox">
@@ -356,16 +356,16 @@
 
     <div class="global">
       <div class="mini">
-        <div class="row"><strong>发布频率</strong><span id="rateText">50 Hz</span></div>
-        <input id="publishHz" type="range" min="10" max="100" step="5" value="50" />
+        <div class="row"><strong>发布频率</strong><span id="rateText">30 Hz</span></div>
+        <input id="publishHz" type="range" min="5" max="80" step="5" value="30" />
       </div>
       <div class="mini">
         <div class="row"><strong>速度倍率</strong><span id="speedText">1.00×</span></div>
         <input id="speedScale" type="range" min="0.1" max="3.0" step="0.05" value="1.0" />
       </div>
       <div class="mini">
-        <div class="row"><strong>平滑系数</strong><span id="smoothText">0.20</span></div>
-        <input id="smoothAlpha" type="range" min="0.05" max="0.60" step="0.01" value="0.20" />
+        <div class="row"><strong>平滑系数</strong><span id="smoothText">0.18</span></div>
+        <input id="smoothAlpha" type="range" min="0.05" max="0.60" step="0.01" value="0.18" />
       </div>
       <div class="mini">
         <div class="row"><strong>命令消息类型</strong><span>Float64</span></div>
@@ -393,27 +393,30 @@
     <div class="legend">
       <span class="legend-item"><span class="legend-color"></span>Desired target</span>
       <span class="legend-item"><span class="legend-color command"></span>Command published</span>
-      <span class="legend-item"><span class="legend-color actual"></span>Actual feedback</span>
+      <span class="legend-item"><span class="legend-color actual"></span>Actual feedback / JointState</span>
     </div>
 
     <div id="jointGrid" class="grid"></div>
 
-    <!-- <div class="hint">
-      <div><span class="warn">使用方式：</span>先启动 rosbridge：<code>ros2 launch rosbridge_server rosbridge_websocket_launch.xml</code>，再打开本页面并点击“连接 ROS”。</div>
-      <div>本页面会发布 <code>/gamma_arm/joint1/command</code> ~ <code>/gamma_arm/joint6/command</code>，并订阅 <code>/gamma_arm/joint_states</code> 作为实际关节角反馈。</div>
-      <div>如果连接成功但没有 Actual 曲线，请先检查：<code>ros2 topic echo /gamma_arm/joint_states</code> 是否有 <code>position</code> 数据。</div>
-      <div>调 PID 时重点看：Actual 是否超调、是否长期滞后、是否在 Desired 附近来回振荡。若 Command 很平滑但 Actual 振荡，通常优先降低 P 或 Damping、检查关节惯量和 PID 参数。</div>
-    </div> -->
+    <div class="hint">
+      <div><span class="warn">使用方式：</span>在第二个 docker 终端进入容器后运行：<code>bash windshape_dev/arm_control/gamma_arm/gamma_arm_web_control.sh</code>，打开页面并点击“连接 ROS”。</div>
+      <div>本页面发布 ROS2 合法话题 <code>/gamma_arm/joint1/position_cmd</code> ~ <code>/gamma_arm/joint6/position_cmd</code>，脚本会启动 <code>ros_gz_bridge</code> 映射到 Gazebo 话题 <code>/joint/gamma/1/position_cmd</code> ~ <code>/joint/gamma/6/position_cmd</code>。</div>
+      <div>反馈默认订阅 ROS2 话题 <code>/gamma_arm/joint_states</code>。若 Actual 没有曲线，先检查 <code>ros2 topic echo /gamma_arm/joint_states</code> 或查看 <code>log/gamma_arm_bridge.log</code>。</div>
+      <div>建议先单关节小角度测试，例如 A 关节 0.3 rad。B、C 关节承载大臂，速度默认更保守，避免突然抖动。</div>
+    </div>
   </div>
 
 <script>
 const joints = [
-  { label: "A / joint1", topic: "/gamma_arm/joint1/command", min: -3.14, max: 3.14, home: 0.0, maxSpeed: 1.20, nameHints: ["joint1", "joint_1", "1"] },
-  { label: "B / joint2", topic: "/gamma_arm/joint2/command", min: -1.90, max: 1.90, home: 0.0, maxSpeed: 0.55, nameHints: ["joint2", "joint_2", "2"] },
-  { label: "C / joint3", topic: "/gamma_arm/joint3/command", min: -2.86, max: 2.86, home: 0.0, maxSpeed: 0.75, nameHints: ["joint3", "joint_3", "3"] },
-  { label: "D / joint4", topic: "/gamma_arm/joint4/command", min: -3.14, max: 3.14, home: 0.0, maxSpeed: 1.00, nameHints: ["joint4", "joint_4", "4"] },
-  { label: "E / joint5", topic: "/gamma_arm/joint5/command", min: -2.90, max: 2.90, home: -0.7854, maxSpeed: 0.90, nameHints: ["joint5", "joint_5", "5"] },
-  { label: "F / joint6", topic: "/gamma_arm/joint6/command", min: -3.14, max: 3.14, home: -1.5708, maxSpeed: 1.20, nameHints: ["joint6", "joint_6", "6"] },
+  // Web / ROS2 side topics must be legal ROS2 topic names.
+  // ros_gz_bridge maps these ROS2 topics to the original Gazebo Transport topics:
+  //   /joint/gamma/1/position_cmd ... /joint/gamma/6/position_cmd
+  { label: "A / gamma joint 1", topic: "/gamma_arm/joint1/position_cmd", min: -3.14, max: 3.14, home: 0.0, maxSpeed: 0.70, nameHints: ["A", "a", "joint1", "joint_1", "1"] },
+  { label: "B / gamma joint 2", topic: "/gamma_arm/joint2/position_cmd", min: -3.14, max: 3.14, home: 0.0, maxSpeed: 0.35, nameHints: ["B", "b", "joint2", "joint_2", "2"] },
+  { label: "C / gamma joint 3", topic: "/gamma_arm/joint3/position_cmd", min: -3.14, max: 3.14, home: 0.0, maxSpeed: 0.40, nameHints: ["C", "c", "joint3", "joint_3", "3"] },
+  { label: "D / gamma joint 4", topic: "/gamma_arm/joint4/position_cmd", min: -3.14, max: 3.14, home: 0.0, maxSpeed: 0.65, nameHints: ["D", "d", "joint4", "joint_4", "4"] },
+  { label: "E / gamma joint 5", topic: "/gamma_arm/joint5/position_cmd", min: -3.14, max: 3.14, home: 0.0, maxSpeed: 0.65, nameHints: ["E", "e", "joint5", "joint_5", "5"] },
+  { label: "F / gamma joint 6", topic: "/gamma_arm/joint6/position_cmd", min: -3.14, max: 3.14, home: 0.0, maxSpeed: 0.80, nameHints: ["F", "f", "joint6", "joint_6", "6"] },
 ];
 
 let ros = null;
