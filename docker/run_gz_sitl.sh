@@ -218,6 +218,9 @@ docker compose -f docker/compose.yaml run \
     -e PX4_SELECTED_EXTRA_CMAKE_ARGS="${SELECTED_EXTRA}" \
     px4-humble-gz \
     bash -lc '
+        set -e
+        set -o pipefail
+
         source /opt/ros/humble/setup.bash
         cd /workspace/VisionFlow-PX4
 
@@ -225,7 +228,50 @@ docker compose -f docker/compose.yaml run \
         echo "[container] PX4 target=${PX4_SELECTED_TARGET}"
         echo "[container] EXTRA_CMAKE_ARGS=${PX4_SELECTED_EXTRA_CMAKE_ARGS}"
 
-        PX4_GZ_WORLD="${PX4_SELECTED_WORLD}" \
-        make px4_sitl "${PX4_SELECTED_TARGET}" \
-        EXTRA_CMAKE_ARGS="${PX4_SELECTED_EXTRA_CMAKE_ARGS}"
+        build_gamma_arm_control_plugin() {
+            local plugin_dir="/workspace/VisionFlow-PX4/windshape_dev/tools/gamma_arm_control"
+            local build_dir="${plugin_dir}/build"
+            local cache_file="${build_dir}/CMakeCache.txt"
+
+            if [ ! -f "${plugin_dir}/CMakeLists.txt" ]; then
+                echo "[container] Gamma arm control plugin source not found: ${plugin_dir}"
+                return 0
+            fi
+
+            if [ -f "${cache_file}" ] && ! grep -q "^CMAKE_HOME_DIRECTORY:INTERNAL=${plugin_dir}$" "${cache_file}"; then
+                echo "[container] Detected stale Gamma arm plugin CMake cache. Remove build/ and reconfigure..."
+                rm -rf "${build_dir}"
+            fi
+
+            echo "[container] Build and install Gamma arm control Gazebo plugin..."
+            cmake -S "${plugin_dir}" -B "${build_dir}"
+            cmake --build "${build_dir}"
+            sudo cmake --install "${build_dir}"
+        }
+
+        run_px4_make() {
+            PX4_GZ_WORLD="${PX4_SELECTED_WORLD}" \
+            make px4_sitl "${PX4_SELECTED_TARGET}" \
+            EXTRA_CMAKE_ARGS="${PX4_SELECTED_EXTRA_CMAKE_ARGS}"
+        }
+
+        build_gamma_arm_control_plugin
+
+        sudo ldconfig
+        export GZ_SIM_SYSTEM_PLUGIN_PATH="/usr/local/lib:${GZ_SIM_SYSTEM_PLUGIN_PATH:-}"
+        export IGN_GAZEBO_SYSTEM_PLUGIN_PATH="/usr/local/lib:${IGN_GAZEBO_SYSTEM_PLUGIN_PATH:-}"
+        export LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH:-}"
+        export GAMMA_URDF_PATH="/workspace/VisionFlow-PX4/Tools/simulation/gz/models/gamma_arm/gamma_arm.urdf"
+
+        BUILD_LOG="$(mktemp)"
+        if ! run_px4_make 2>&1 | tee "${BUILD_LOG}"; then
+            if grep -Eq "CMakeCache.txt.*is different than the directory|needed by .* missing and no known rule to make it" "${BUILD_LOG}"; then
+                echo ""
+                echo "[container] Detected stale PX4 SITL build cache. Remove build/px4_sitl_default and retry..."
+                rm -rf /workspace/VisionFlow-PX4/build/px4_sitl_default
+                run_px4_make
+            else
+                exit 1
+            fi
+        fi
     '
