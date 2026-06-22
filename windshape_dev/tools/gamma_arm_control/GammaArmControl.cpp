@@ -165,6 +165,7 @@ bool GammaArmControlPlugin::InitKDL()
         gzwarn << "GAMMA_URDF_PATH env not set, trying defaults..." << std::endl;
         const std::vector<std::string> candidates = {
             "/tmp/gamma_arm.urdf",
+            "/workspace/VisionFlow-PX4/Tools/simulation/gz/models/gamma_arm/gamma_arm.urdf",
             "/home/renwang/data_storage/VisionFlow-PX4/Tools/simulation/gz/models/gamma_arm/gamma_arm.urdf"
         };
         for (const auto &p : candidates) {
