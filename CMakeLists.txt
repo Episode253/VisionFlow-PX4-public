@@ -453,26 +453,13 @@ endif()
 add_subdirectory(platforms/${PX4_PLATFORM})
 
 #=============================================================================
-# uORB graph generation: add a custom target 'uorb_graph'
+# uORB graph generation disabled.
 #
-set(uorb_graph_config ${PX4_BOARD})
-
-set(graph_module_list "")
-foreach(module ${config_module_list})
-	set(graph_module_list "${graph_module_list}" "--src-path" "src/${module}")
-endforeach()
-
-add_custom_command(OUTPUT ${uorb_graph_config}
-	COMMAND ${PYTHON_EXECUTABLE} ${PX4_SOURCE_DIR}/Tools/uorb_graph/create.py
-		${graph_module_list} --src-path src/lib
-		--merge-depends
-		--exclude-path src/examples
-		--exclude-path src/lib/parameters # FIXME: enable & fix
-		--file ${PX4_SOURCE_DIR}/Tools/uorb_graph/graph_${uorb_graph_config}
-	WORKING_DIRECTORY ${PX4_SOURCE_DIR}
-	COMMENT "Generating uORB graph"
-)
-add_custom_target(uorb_graph DEPENDS ${uorb_graph_config})
+# This project does not need to generate the uORB publication/subscription graph.
+# Keep an empty custom target named 'uorb_graph' so any existing dependency on
+# this target remains valid, but do not call Tools/uorb_graph/create.py.
+#
+add_custom_target(uorb_graph)
 
 
 include(bloaty)
