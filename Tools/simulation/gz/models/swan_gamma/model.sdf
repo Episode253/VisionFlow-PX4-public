@@ -10,7 +10,6 @@
       <pose>0 0 0 0 0 0</pose>
     </include>
 
-    <!-- Pose: from original GAMMA.sdf uav_gamma_joint: xyz=0.39811,-2.1e-05,-0.000287 rpy=-2.6443,0,0 -->
     <include>
       <name>gamma_arm</name>
       <uri>model://gamma_arm</uri>
@@ -26,7 +25,6 @@
     <include>
       <name>gripper4</name>
       <uri>model://gripper4</uri>
-      <!-- <pose relative_to="gamma_arm::F_Link">-0.025 0.025 0 -3.14159 0 0</pose> -->
       <pose relative_to="gamma_arm::F_Link">-0.003 0 0.025 0 0 0</pose>
     </include>
 
