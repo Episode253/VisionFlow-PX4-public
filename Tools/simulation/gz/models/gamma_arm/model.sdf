@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <sdf version="1.9">
   <model name="gamma_arm">
     <static>false</static>
-    <self_collide>false</self_collide>
+    <self_collide>true</self_collide>
     <enable_wind>false</enable_wind>
 
     <link name="gamma_arm_base_link">
@@ -34,19 +34,49 @@
         </material>
         <cast_shadows>true</cast_shadows>
       </visual>
+      <collision name="gamma_arm_base_link_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://gamma_arm/meshes/base_link0.STL</uri>
+          </mesh>
+        </geometry>
+        <max_contacts>20</max_contacts>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0.0</restitution_coefficient>
+            <threshold>100000.0</threshold>
+          </bounce>
+          <contact>
+            <ode>
+              <kp>100000</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
     </link>
 
     <joint name="A" type="revolute">
-      <pose relative_to="gamma_arm_base_link">0.0613 0 0 -0.4972 -0 0</pose>
+      <pose relative_to="gamma_arm_base_link">0.0613 0 0 -0.50 0 0</pose>
       <parent>gamma_arm_base_link</parent>
       <child>A_Link</child>
       <axis>
         <xyz>1 0 0</xyz>
         <limit>
-          <lower>-3.14</lower>
-          <upper>3.14</upper>
+          <lower>-5.0</lower>
+          <upper>5.0</upper>
           <effort>180</effort>
-          <velocity>3.0</velocity>
+          <velocity>3.75</velocity>
         </limit>
         <dynamics>
           <damping>0.5</damping>
@@ -88,6 +118,36 @@
         <transparency>0.18</transparency>
         <cast_shadows>true</cast_shadows>
       </visual>
+      <collision name="A_Link_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://gamma_arm/meshes/A_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <max_contacts>20</max_contacts>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0.0</restitution_coefficient>
+            <threshold>100000.0</threshold>
+          </bounce>
+          <contact>
+            <ode>
+              <kp>100000</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
     </link>
 
     <joint name="B" type="revolute">
@@ -97,10 +157,10 @@
       <axis>
         <xyz>0 -1 0</xyz>
         <limit>
-          <lower>-3.14</lower>
-          <upper>3.14</upper>
+          <lower>-3.2</lower>
+          <upper>3.2</upper>
           <effort>200</effort>
-          <velocity>3.0</velocity>
+          <velocity>3.75</velocity>
         </limit>
         <dynamics>
           <damping>0.5</damping>
@@ -141,8 +201,37 @@
         </material>
         <cast_shadows>true</cast_shadows>
       </visual>
+      <collision name="B_Link_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://gamma_arm/meshes/B_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <max_contacts>20</max_contacts>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0.0</restitution_coefficient>
+            <threshold>100000.0</threshold>
+          </bounce>
+          <contact>
+            <ode>
+              <kp>100000</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
     </link>
-
     <joint name="C" type="revolute">
       <pose relative_to="B_Link">-0.16587 -0.057 0.18536 0 -0.87406 0</pose>
       <parent>B_Link</parent>
@@ -150,10 +239,10 @@
       <axis>
         <xyz>0 -1 0</xyz>
         <limit>
-          <lower>-3.14</lower>
-          <upper>3.14</upper>
+          <lower>-3.2</lower>
+          <upper>3.2</upper>
           <effort>80</effort>
-          <velocity>3.0</velocity>
+          <velocity>3.75</velocity>
         </limit>
         <dynamics>
           <damping>0.01</damping>
@@ -195,8 +284,37 @@
         <transparency>0.18</transparency>
         <cast_shadows>true</cast_shadows>
       </visual>
+      <collision name="C_Link_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://gamma_arm/meshes/C_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <max_contacts>20</max_contacts>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0.0</restitution_coefficient>
+            <threshold>100000.0</threshold>
+          </bounce>
+          <contact>
+            <ode>
+              <kp>100000</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
     </link>
-
     <joint name="D" type="revolute">
       <pose relative_to="C_Link">0.023891 0.025 0.060208 -1.57080 0.14406 0</pose>
       <parent>C_Link</parent>
@@ -204,10 +322,10 @@
       <axis>
         <xyz>1 0 0</xyz>
         <limit>
-          <lower>-3.14</lower>
-          <upper>3.14</upper>
+          <lower>-3.2</lower>
+          <upper>3.2</upper>
           <effort>20</effort>
-          <velocity>3.0</velocity>
+          <velocity>3.75</velocity>
         </limit>
         <dynamics>
           <damping>0.01</damping>
@@ -248,8 +366,37 @@
         </material>
         <cast_shadows>true</cast_shadows>
       </visual>
+      <collision name="D_Link_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://gamma_arm/meshes/D_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <max_contacts>20</max_contacts>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0.0</restitution_coefficient>
+            <threshold>100000.0</threshold>
+          </bounce>
+          <contact>
+            <ode>
+              <kp>100000</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
     </link>
-
     <joint name="E" type="revolute">
       <pose relative_to="D_Link">0.15 -0.0335 0 0 1.57073 0</pose>
       <parent>D_Link</parent>
@@ -257,10 +404,10 @@
       <axis>
         <xyz>0 -1 0</xyz>
         <limit>
-          <lower>-3.14</lower>
-          <upper>3.14</upper>
+          <lower>-3.2</lower>
+          <upper>3.2</upper>
           <effort>10</effort>
-          <velocity>3.0</velocity>
+          <velocity>3.75</velocity>
         </limit>
         <dynamics>
           <damping>0.001</damping>
@@ -302,8 +449,37 @@
         <transparency>0.18</transparency>
         <cast_shadows>true</cast_shadows>
       </visual>
+      <collision name="E_Link_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://gamma_arm/meshes/E_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <max_contacts>20</max_contacts>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0.0</restitution_coefficient>
+            <threshold>100000.0</threshold>
+          </bounce>
+          <contact>
+            <ode>
+              <kp>100000</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
     </link>
-
     <joint name="F" type="revolute">
       <pose relative_to="E_Link">0 0.035 0.084 0 0 0</pose>
       <parent>E_Link</parent>
@@ -311,10 +487,10 @@
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
-          <lower>-3.14</lower>
-          <upper>3.14</upper>
+          <lower>-3.2</lower>
+          <upper>3.2</upper>
           <effort>20</effort>
-          <velocity>3.0</velocity>
+          <velocity>3.75</velocity>
         </limit>
         <dynamics>
           <damping>0.001</damping>
@@ -355,6 +531,36 @@
         </material>
         <cast_shadows>true</cast_shadows>
       </visual>
+      <collision name="F_Link_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://gamma_arm/meshes/F_Link.STL</uri>
+          </mesh>
+        </geometry>
+        <max_contacts>20</max_contacts>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0.0</restitution_coefficient>
+            <threshold>100000.0</threshold>
+          </bounce>
+          <contact>
+            <ode>
+              <kp>100000</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
     </link>
 
     <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
@@ -370,7 +576,7 @@
     <plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher">
       <publish_link_pose>true</publish_link_pose>
       <publish_visual_pose>false</publish_visual_pose>
-      <publish_collision_pose>false</publish_collision_pose>
+      <publish_collision_pose>true</publish_collision_pose>
       <publish_sensor_pose>false</publish_sensor_pose>
       <publish_model_pose>false</publish_model_pose>
       <publish_nested_model_pose>false</publish_nested_model_pose>
@@ -386,26 +592,33 @@
       <joint_name>E</joint_name>
       <joint_name>F</joint_name>
 
-      <p_gain_A>8.0</p_gain_A>
-      <p_gain_B>10.0</p_gain_B>
-      <p_gain_C>12.0</p_gain_C>
+      <p_gain_A>24.0</p_gain_A>
+      <p_gain_B>34.0</p_gain_B>
+      <p_gain_C>26.0</p_gain_C>
       <p_gain_D>8.0</p_gain_D>
-      <p_gain_E>5.0</p_gain_E>
-      <p_gain_F>0.2</p_gain_F>
+      <p_gain_E>2.4</p_gain_E>
+      <p_gain_F>6.0</p_gain_F>
 
-      <d_gain_A>0.10</d_gain_A>
-      <d_gain_B>0.03</d_gain_B>
-      <d_gain_C>0.0</d_gain_C>
+      <d_gain_A>2.3</d_gain_A>
+      <d_gain_B>3.2</d_gain_B>
+      <d_gain_C>2.6</d_gain_C>
       <d_gain_D>0.0</d_gain_D>
-      <d_gain_E>0.0</d_gain_E>
+      <d_gain_E>0.32</d_gain_E>
       <d_gain_F>0.0</d_gain_F>
 
-      <max_effort_A>27.0</max_effort_A>
-      <max_effort_B>27.0</max_effort_B>
-      <max_effort_C>27.0</max_effort_C>
-      <max_effort_D>5.5</max_effort_D>
-      <max_effort_E>5.5</max_effort_E>
-      <max_effort_F>5.5</max_effort_F>
+      <max_effort_A>42.0</max_effort_A>
+      <max_effort_B>54.0</max_effort_B>
+      <max_effort_C>46.0</max_effort_C>
+      <max_effort_D>8.0</max_effort_D>
+      <max_effort_E>18.0</max_effort_E>
+      <max_effort_F>8.0</max_effort_F>
+
+      <initial_position_A>-3.14159</initial_position_A>
+      <initial_position_B>1.57080</initial_position_B>
+      <initial_position_C>-1.52080</initial_position_C>
+      <initial_position_D>-1.57080</initial_position_D>
+      <initial_position_E>-0.05</initial_position_E>
+      <initial_position_F>0.0</initial_position_F>
 
       <cmd_topic_prefix>/joint/gamma</cmd_topic_prefix>
       <kdl_root>dummy_root_link</kdl_root>
@@ -414,6 +627,5 @@
       <gravity_y>0.0</gravity_y>
       <gravity_z>9.81</gravity_z>
     </plugin>
-
   </model>
 </sdf>
