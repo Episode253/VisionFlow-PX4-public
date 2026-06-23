@@ -112,13 +112,13 @@
         <limit>
           <lower>-0.3</lower>
           <upper>1.5</upper>
-          <effort>5.0</effort>
+          <effort>18.0</effort>
           <velocity>0.8</velocity>
         </limit>
 
         <dynamics>
-          <damping>0.08</damping>
-          <friction>0.003</friction>
+          <damping>0.35</damping>
+          <friction>0.02</friction>
         </dynamics>
       </axis>
     </joint>
@@ -182,13 +182,13 @@
         <limit>
           <lower>-0.3</lower>
           <upper>1.5</upper>
-          <effort>5.0</effort>
+          <effort>18.0</effort>
           <velocity>0.8</velocity>
         </limit>
 
         <dynamics>
-          <damping>0.08</damping>
-          <friction>0.003</friction>
+          <damping>0.35</damping>
+          <friction>0.02</friction>
         </dynamics>
       </axis>
     </joint>
@@ -198,15 +198,15 @@
       <joint_index>0</joint_index>
       <topic>/joint/gripper4/position_cmd</topic>
 
-      <p_gain>1.2</p_gain>
+      <p_gain>4.0</p_gain>
       <i_gain>0.0</i_gain>
-      <d_gain>0.15</d_gain>
+      <d_gain>0.8</d_gain>
 
       <i_max>0.0</i_max>
       <i_min>0.0</i_min>
 
-      <cmd_max>4.0</cmd_max>
-      <cmd_min>-4.0</cmd_min>
+      <cmd_max>10.0</cmd_max>
+      <cmd_min>-10.0</cmd_min>
 
       <initial_position>0.0</initial_position>
     </plugin>
@@ -216,15 +216,15 @@
       <joint_index>0</joint_index>
       <topic>/joint/gripper4/position_cmd</topic>
 
-      <p_gain>1.2</p_gain>
+      <p_gain>4.0</p_gain>
       <i_gain>0.0</i_gain>
-      <d_gain>0.15</d_gain>
+      <d_gain>0.8</d_gain>
 
       <i_max>0.0</i_max>
       <i_min>0.0</i_min>
 
-      <cmd_max>4.0</cmd_max>
-      <cmd_min>-4.0</cmd_min>
+      <cmd_max>10.0</cmd_max>
+      <cmd_min>-10.0</cmd_min>
 
       <initial_position>0.0</initial_position>
     </plugin>
