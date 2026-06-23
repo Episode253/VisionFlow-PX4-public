@@ -9,15 +9,28 @@ LIST_ONLY="false"
 
 CONTAINER_NAME="visionflow-px4-sitl"
 CONFIG_FILE="docker/gz_sitl_profiles.conf"
+CLEANED_UP="false"
 
 cleanup() {
+    if [ "${CLEANED_UP}" = "true" ]; then
+        return 0
+    fi
+    CLEANED_UP="true"
+
     echo ""
     echo "[cleanup] Stop PX4/Gazebo container..."
     docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
     docker compose -f docker/compose.yaml down --remove-orphans >/dev/null 2>&1 || true
 }
 
-trap cleanup EXIT INT TERM
+handle_interrupt() {
+    trap - EXIT INT TERM
+    cleanup
+    exit 130
+}
+
+trap cleanup EXIT
+trap handle_interrupt INT TERM
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -153,7 +166,10 @@ else
     if [ -t 0 ]; then
         echo "Select SITL profile."
         echo "Input number or profile id. Press Enter to use default: ${DEFAULT_PROFILE}"
-        read -r -p "> " USER_SELECTION
+        if ! read -r -p "> " USER_SELECTION; then
+            echo ""
+            exit 130
+        fi
     else
         USER_SELECTION=""
     fi
