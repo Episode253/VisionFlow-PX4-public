@@ -3,244 +3,415 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Gamma Arm Web Slider Control</title>
-  <script src="https://cdn.jsdelivr.net/npm/roslib/build/roslib.min.js"></script>
+  <title>Gamma Arm Web Control</title>
+  <script>
+  (function () {
+    "use strict";
+
+    class MiniRos {
+      constructor(options) {
+        this.url = options && options.url;
+        this.socket = null;
+        this.handlers = { connection: [], error: [], close: [] };
+        this.subscribers = new Map();
+        this.connected = false;
+        this._connect();
+      }
+
+      on(event, callback) {
+        if (!this.handlers[event]) this.handlers[event] = [];
+        this.handlers[event].push(callback);
+      }
+
+      _emit(event, payload) {
+        const list = this.handlers[event] || [];
+        for (const cb of list) {
+          try { cb(payload); } catch (e) { console.error(e); }
+        }
+      }
+
+      _connect() {
+        try {
+          this.socket = new WebSocket(this.url);
+        } catch (e) {
+          setTimeout(() => this._emit("error", e), 0);
+          return;
+        }
+
+        this.socket.onopen = () => {
+          this.connected = true;
+          this._emit("connection");
+        };
+
+        this.socket.onerror = event => {
+          this._emit("error", event);
+        };
+
+        this.socket.onclose = event => {
+          this.connected = false;
+          this._emit("close", event);
+        };
+
+        this.socket.onmessage = event => {
+          let data;
+          try { data = JSON.parse(event.data); } catch (_) { return; }
+          if (data.op !== "publish" || !data.topic) return;
+          const callbacks = this.subscribers.get(data.topic);
+          if (!callbacks) return;
+          for (const cb of callbacks) {
+            try { cb(data.msg); } catch (e) { console.error(e); }
+          }
+        };
+      }
+
+      sendEncodedMessage(message) {
+        if (!this.socket || this.socket.readyState !== WebSocket.OPEN) return false;
+        this.socket.send(JSON.stringify(message));
+        return true;
+      }
+
+      close() {
+        if (this.socket) {
+          try { this.socket.close(); } catch (_) {}
+        }
+      }
+
+      _addSubscriber(topic, callback) {
+        if (!this.subscribers.has(topic)) this.subscribers.set(topic, new Set());
+        this.subscribers.get(topic).add(callback);
+      }
+
+      _removeSubscriber(topic, callback) {
+        const callbacks = this.subscribers.get(topic);
+        if (!callbacks) return;
+        callbacks.delete(callback);
+        if (callbacks.size === 0) this.subscribers.delete(topic);
+      }
+    }
+
+    class MiniTopic {
+      constructor(options) {
+        this.ros = options.ros;
+        this.name = options.name;
+        this.messageType = options.messageType;
+        this._advertised = false;
+        this._callback = null;
+      }
+
+      advertise() {
+        if (this._advertised) return;
+        this.ros.sendEncodedMessage({
+          op: "advertise",
+          topic: this.name,
+          type: this.messageType
+        });
+        this._advertised = true;
+      }
+
+      unadvertise() {
+        if (!this._advertised) return;
+        this.ros.sendEncodedMessage({ op: "unadvertise", topic: this.name });
+        this._advertised = false;
+      }
+
+      publish(message) {
+        if (!this._advertised) this.advertise();
+        this.ros.sendEncodedMessage({
+          op: "publish",
+          topic: this.name,
+          msg: message
+        });
+      }
+
+      subscribe(callback) {
+        this._callback = callback;
+        this.ros._addSubscriber(this.name, callback);
+        this.ros.sendEncodedMessage({
+          op: "subscribe",
+          topic: this.name,
+          type: this.messageType
+        });
+      }
+
+      unsubscribe() {
+        if (this._callback) {
+          this.ros._removeSubscriber(this.name, this._callback);
+        }
+        this.ros.sendEncodedMessage({ op: "unsubscribe", topic: this.name });
+        this._callback = null;
+      }
+    }
+
+    window.ROSLIB = {
+      Ros: MiniRos,
+      Topic: MiniTopic,
+      Message: function Message(obj) { return obj || {}; }
+    };
+  })();
+  </script>
   <style>
     :root {
-      --bg: #0f172a;
-      --panel: #111827;
-      --card: #1f2937;
-      --text: #e5e7eb;
-      --muted: #9ca3af;
-      --line: #374151;
-      --accent: #38bdf8;
+      --bg: #0a0f1a;
+      --panel: #0e1525;
+      --card: #131c2e;
+      --card-border: #1e2d47;
+      --text: #dde3ef;
+      --muted: #7a8aa8;
+      --line: #1e2d47;
+      --accent: #3b9eff;
+      --accent-dim: rgba(59,158,255,0.13);
       --danger: #f97316;
       --ok: #22c55e;
       --warn: #fbbf24;
-      --plot-bg: #0b1220;
+      --plot-bg: #080e1a;
+      --desired-color: #3b9eff;
+      --command-color: #fbbf24;
+      --actual-color: #22c55e;
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
-      background: radial-gradient(circle at top, #1e293b, var(--bg));
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── top bar ── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,15,26,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .topbar-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
       color: var(--text);
     }
 
-    .wrap {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 24px;
-    }
-
-    h1 {
-      margin: 0 0 6px;
-      font-size: 28px;
-      font-weight: 750;
-      letter-spacing: 0.2px;
-    }
-
-    .subtitle {
-      margin: 0 0 18px;
-      color: var(--muted);
-      line-height: 1.55;
-    }
-
-    .toolbar {
-      display: grid;
-      grid-template-columns: minmax(300px, 1fr) auto auto auto;
-      gap: 12px;
-      align-items: center;
-      padding: 16px;
-      background: rgba(17, 24, 39, 0.88);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      box-shadow: 0 18px 50px rgba(0,0,0,.25);
-      margin-bottom: 18px;
-    }
-
-    .urlbox {
+    .topbar-url {
       display: flex;
-      gap: 10px;
       align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
     }
 
-    label {
+    .topbar-url label {
+      font-size: 12px;
       color: var(--muted);
-      font-size: 13px;
       white-space: nowrap;
     }
 
     input[type="text"], input[type="number"] {
-      background: #0b1220;
+      background: var(--panel);
       border: 1px solid var(--line);
       color: var(--text);
-      padding: 10px 12px;
-      border-radius: 12px;
+      padding: 7px 11px;
+      border-radius: 8px;
       outline: none;
-      width: 100%;
-      font-size: 14px;
+      font-size: 13px;
+      transition: border-color 0.15s;
     }
 
-    button {
-      border: 0;
-      padding: 10px 14px;
-      border-radius: 12px;
-      color: #08111f;
-      background: var(--accent);
-      cursor: pointer;
-      font-weight: 700;
-      transition: transform .08s ease, filter .12s ease;
-      white-space: nowrap;
+    input[type="text"]:focus, input[type="number"]:focus {
+      border-color: var(--accent);
     }
 
-    button:hover { filter: brightness(1.06); }
-    button:active { transform: translateY(1px); }
-
-    button.secondary {
-      background: #94a3b8;
+    input[type="text"].error {
+      border-color: var(--danger);
     }
 
-    button.danger {
-      background: var(--danger);
-    }
+    #rosUrl { width: 240px; font-family: ui-monospace, Menlo, Consolas, monospace; }
 
-    .status {
+    .status-pill {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
+      font-size: 13px;
       color: var(--muted);
-      font-size: 14px;
       white-space: nowrap;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      padding: 5px 12px;
     }
 
     .dot {
-      width: 10px;
-      height: 10px;
+      width: 8px;
+      height: 8px;
       border-radius: 99px;
       background: #ef4444;
-      box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
+      box-shadow: 0 0 8px rgba(239,68,68,0.7);
+      flex-shrink: 0;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .dot.ok { background: var(--ok); box-shadow: 0 0 8px rgba(34,197,94,0.7); }
+
+    .spacer { flex: 1; }
+
+    button {
+      border: 0;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.12s, transform 0.08s;
+    }
+    button:hover { opacity: 0.88; }
+    button:active { transform: translateY(1px); }
+
+    .btn-primary  { background: var(--accent); color: #050d1a; }
+    .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--card-border); }
+    .btn-danger   { background: var(--danger); color: #fff; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    .wrap {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 20px 24px 48px;
     }
 
-    .dot.ok {
-      background: var(--ok);
-      box-shadow: 0 0 12px rgba(34, 197, 94, 0.7);
-    }
-
-    .global {
+    .controls-row {
       display: grid;
-      grid-template-columns: repeat(4, minmax(160px, 1fr));
-      gap: 12px;
-      margin-bottom: 12px;
+      grid-template-columns: repeat(4, 1fr) auto auto auto;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 16px;
     }
 
-    .mini {
-      background: rgba(17, 24, 39, 0.82);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 14px;
+    .ctrl-block {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px 14px;
     }
 
-    .mini .row {
+    .ctrl-block .ctrl-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 6px;
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 8px;
+      align-items: center;
     }
 
-    .mini strong {
-      font-size: 14px;
+    .ctrl-block .ctrl-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
     }
 
-    .mini span {
-      color: var(--muted);
-      font-size: 12px;
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+      margin-top: 4px;
     }
 
     .feedback-bar {
-      display: grid;
-      grid-template-columns: minmax(260px, 1.1fr) minmax(210px, 0.9fr) minmax(160px, 0.55fr) auto auto;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      flex-wrap: wrap;
       gap: 12px;
       align-items: center;
-      padding: 14px;
-      background: rgba(17, 24, 39, 0.72);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
 
-    .feedback-item {
+    .feedback-field {
       display: flex;
-      gap: 10px;
       align-items: center;
-      min-width: 0;
+      gap: 8px;
     }
 
-    .feedback-status {
+    .feedback-field label {
+      font-size: 12px;
       color: var(--muted);
-      font-size: 13px;
       white-space: nowrap;
+    }
+
+    .feedback-field input[type="text"] { width: 260px; }
+    .feedback-field input[type="number"] { width: 68px; }
+
+    .feedback-note {
+      font-size: 11px;
+      color: var(--muted);
+      font-style: italic;
     }
 
     .legend {
       display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--muted);
-      font-size: 12px;
-      white-space: nowrap;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
     }
 
     .legend-item {
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
     }
 
-    .legend-color {
-      display: inline-block;
-      width: 18px;
+    .legend-line {
+      width: 20px;
       height: 3px;
-      border-radius: 99px;
-      background: var(--accent);
+      border-radius: 2px;
     }
 
-    .legend-color.actual { background: var(--ok); }
-    .legend-color.command { background: var(--warn); }
-
-    .grid {
+    .joint-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(360px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
     }
 
-    .joint {
-      background: rgba(31, 41, 55, 0.86);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      padding: 18px;
-      box-shadow: 0 14px 40px rgba(0,0,0,.20);
+    .joint-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      transition: border-color 0.2s;
+    }
+
+    .joint-card:focus-within {
+      border-color: rgba(59,158,255,0.4);
     }
 
     .joint-head {
       display: flex;
       align-items: baseline;
       justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 14px;
+      gap: 10px;
+      margin-bottom: 12px;
     }
 
-    .joint-title {
-      font-size: 20px;
-      font-weight: 800;
+    .joint-label {
+      font-size: 17px;
+      font-weight: 700;
     }
 
     .joint-topic {
+      font-size: 11px;
       color: var(--muted);
-      font-size: 12px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -249,374 +420,403 @@
     .values {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-      margin-bottom: 14px;
+      gap: 8px;
+      margin-bottom: 12px;
     }
 
     .value {
-      background: #0b1220;
+      background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 10px;
+      border-radius: 10px;
+      padding: 8px 10px;
       min-width: 0;
     }
 
     .value .k {
-      font-size: 12px;
+      font-size: 10px;
       color: var(--muted);
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       white-space: nowrap;
     }
 
     .value .v {
-      font-size: 16px;
+      font-size: 14px;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
       font-variant-numeric: tabular-nums;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    input[type="range"] {
-      width: 100%;
-      accent-color: var(--accent);
-      margin: 12px 0 14px;
+    .slider-wrap {
+      margin: 8px 0 4px;
+    }
+
+    .slider-hints {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+
+    .joint-hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
     }
 
     .chart-wrap {
       background: var(--plot-bg);
       border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 8px;
-      margin: 8px 0 14px;
+      border-radius: 10px;
+      padding: 6px;
+      margin-bottom: 10px;
     }
 
-    canvas.joint-chart {
+    canvas.jchart {
       display: block;
       width: 100%;
-      height: 150px;
-      border-radius: 10px;
+      height: 130px;
+      border-radius: 7px;
     }
 
-    .joint-controls {
+    .joint-btns {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 10px;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
       align-items: center;
     }
 
-    .hint {
-      margin-top: 18px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.65;
-      background: rgba(17, 24, 39, 0.65);
-      border: 1px solid var(--line);
-      border-radius: 16px;
+    .joint-btns input[type="number"] {
+      width: 100%;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+    }
+
+    .hint-box {
+      margin-top: 16px;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
       padding: 14px 16px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.7;
     }
 
-    code {
-      color: #c4b5fd;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    .hint-box code {
+      color: #a78bfa;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      background: rgba(167,139,250,0.1);
+      padding: 1px 4px;
+      border-radius: 4px;
     }
 
-    .warn {
-      color: #fbbf24;
-      font-weight: 700;
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 11px 16px;
+      font-size: 13px;
+      color: var(--text);
+      box-shadow: 0 8px 32px rgba(0,0,0,.4);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+      z-index: 999;
+      max-width: 320px;
     }
+    #toast.show { opacity: 1; transform: translateY(0); }
 
-    @media (max-width: 980px) {
-      .toolbar { grid-template-columns: 1fr; }
-      .global { grid-template-columns: 1fr 1fr; }
-      .feedback-bar { grid-template-columns: 1fr; }
-      .grid { grid-template-columns: 1fr; }
-      .values { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 1100px) {
+      .controls-row { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 760px) {
+      .topbar { flex-wrap: wrap; height: auto; padding: 10px 16px; gap: 8px; }
+      #rosUrl { width: 100%; }
+      .controls-row { grid-template-columns: 1fr 1fr; }
+      .joint-grid { grid-template-columns: 1fr; }
+      .values { grid-template-columns: repeat(3, 1fr); }
+      .wrap { padding: 12px 14px 48px; }
     }
   </style>
 </head>
-
 <body>
-  <div class="wrap">
-    <h1>Gamma Arm Web Slider Control</h1>
 
-    <div class="toolbar">
-      <div class="urlbox">
-        <label for="rosUrl">rosbridge</label>
-        <input id="rosUrl" type="text" value="ws://127.0.0.1:9090" />
-      </div>
-      <button id="connectBtn">连接 ROS</button>
-      <button id="homeBtn" class="secondary">回到初始位</button>
-      <button id="stopBtn" class="danger">软停止</button>
-      <div class="status"><span id="dot" class="dot"></span><span id="statusText">未连接</span></div>
-    </div>
+<div class="topbar">
+  <span class="topbar-title">Gamma Arm</span>
 
-    <div class="global">
-      <div class="mini">
-        <div class="row"><strong>发布频率</strong><span id="rateText">50 Hz</span></div>
-        <input id="publishHz" type="range" min="10" max="100" step="5" value="50" />
-      </div>
-      <div class="mini">
-        <div class="row"><strong>速度倍率</strong><span id="speedText">1.00×</span></div>
-        <input id="speedScale" type="range" min="0.1" max="8.0" step="0.05" value="1.0" />
-      </div>
-      <div class="mini">
-        <div class="row"><strong>平滑系数</strong><span id="smoothText">1.00</span></div>
-        <input id="smoothAlpha" type="range" min="0.05" max="1.00" step="0.01" value="1.00" />
-      </div>
-      <div class="mini">
-        <div class="row"><strong>命令消息类型</strong><span>Float64</span></div>
-        <input id="msgType" type="text" value="std_msgs/msg/Float64" />
-      </div>
-    </div>
-
-    <div class="feedback-bar">
-      <div class="feedback-item">
-        <label for="jointStateTopic">实际反馈话题</label>
-        <input id="jointStateTopic" type="text" value="/gamma_arm/joint_states" />
-      </div>
-      <div class="feedback-item">
-        <label for="jointStateMsgType">反馈消息类型</label>
-        <input id="jointStateMsgType" type="text" value="sensor_msgs/msg/JointState" />
-      </div>
-      <div class="feedback-item">
-        <label for="chartWindow">曲线窗口</label>
-        <input id="chartWindow" type="number" min="2" max="60" step="1" value="10" />
-      </div>
-      <button id="clearChartsBtn" class="secondary">清空曲线</button>
-      <div class="feedback-status" id="feedbackStatus">Actual: no data</div>
-    </div>
-
-    <div class="legend">
-      <span class="legend-item"><span class="legend-color"></span>Desired target</span>
-      <span class="legend-item"><span class="legend-color command"></span>Command published</span>
-      <span class="legend-item"><span class="legend-color actual"></span>Actual feedback / JointState</span>
-    </div>
-
-    <div id="jointGrid" class="grid"></div>
-
+  <div class="topbar-url">
+    <label for="rosUrl">rosbridge</label>
+    <input id="rosUrl" type="text" value="ws://127.0.0.1:9090"
+           placeholder="ws://host:9090"
+           title="WebSocket URL — 修改后需重新连接" />
   </div>
 
+  <div class="status-pill">
+    <span id="dot" class="dot"></span>
+    <span id="statusText">未连接</span>
+  </div>
+
+  <button class="btn-primary" id="connectBtn">连接</button>
+  <button class="btn-secondary" id="homeBtn">回初始位</button>
+  <button class="btn-danger"   id="stopBtn">软停止</button>
+</div>
+
+<div class="wrap">
+
+  <div class="controls-row" id="globalControls">
+    <div class="ctrl-block">
+      <div class="ctrl-label">发布频率<span class="ctrl-value" id="rateText">50 Hz</span></div>
+      <input id="publishHz" type="range" min="10" max="100" step="5" value="50" />
+    </div>
+    <div class="ctrl-block">
+      <div class="ctrl-label">速度倍率<span class="ctrl-value" id="speedText">1.00×</span></div>
+      <input id="speedScale" type="range" min="0.1" max="8.0" step="0.05" value="1.0" />
+    </div>
+    <div class="ctrl-block">
+      <div class="ctrl-label">
+        平滑系数 α
+        <span class="ctrl-value" id="smoothText">1.00</span>
+      </div>
+      <input id="smoothAlpha" type="range" min="0.05" max="1.00" step="0.01" value="1.00" />
+    </div>
+    <div class="ctrl-block">
+      <div class="ctrl-label">命令消息类型</div>
+      <input id="msgType" type="text" value="std_msgs/msg/Float64"
+             title="修改后需重新连接生效" style="width:100%;margin-top:4px" />
+      <div class="feedback-note" style="margin-top:4px">修改后需重新连接</div>
+    </div>
+    <button class="btn-secondary btn-sm" id="clearChartsBtn" style="align-self:end">清空曲线</button>
+  </div>
+
+  <!-- feedback bar -->
+  <div class="feedback-bar">
+    <div class="feedback-field">
+      <label for="jointStateTopic">实际反馈话题</label>
+      <input id="jointStateTopic" type="text" value="/gamma_arm/joint_states"
+             title="修改后需重新连接生效" />
+      <span class="feedback-note">修改后需重新连接</span>
+    </div>
+    <div class="feedback-field">
+      <label for="jointStateMsgType">消息类型</label>
+      <input id="jointStateMsgType" type="text" value="sensor_msgs/msg/JointState"
+             style="width:220px" title="修改后需重新连接生效" />
+    </div>
+    <div class="feedback-field">
+      <label for="chartWindow">曲线窗口 (s)</label>
+      <input id="chartWindow" type="number" min="2" max="60" step="1" value="10" />
+    </div>
+    <span id="feedbackStatus" style="font-size:12px;color:var(--muted);margin-left:auto">Actual: no data</span>
+  </div>
+
+  <!-- legend -->
+  <div class="legend">
+    <div class="legend-item">
+      <span class="legend-line" style="background:var(--desired-color)"></span>
+      Desired — 目标角
+    </div>
+    <div class="legend-item">
+      <span class="legend-line" style="background:var(--command-color)"></span>
+      Command — 实际发布
+    </div>
+    <div class="legend-item">
+      <span class="legend-line" style="background:var(--actual-color)"></span>
+      Actual — JointState 反馈
+    </div>
+  </div>
+
+  <!-- joint cards (built by JS) -->
+  <div class="joint-grid" id="jointGrid"></div>
+
+</div>
+
+<div id="toast"></div>
+
 <script>
+"use strict";
+
 const joints = [
   {
-    label: "A / gamma joint 1",
+    label: "A — Joint 1",
     topic: "/gamma_arm/joint1/position_cmd",
-    min: -5.0,
-    max: 5.0,
-    home: -3.14159,
+    min: -5.0, max: 5.0, home: -3.14159,
     maxSpeed: 3.75,
-    uiMode: "centered",
-    uiMin: -1.0,
-    uiMax: 1.0,
-    uiDirection: 1,
-    uiLeftText: "左：逆时针",
-    uiRightText: "右：顺时针",
-    nameHints: ["A", "a", "joint1", "joint_1", "1"]
+    uiMode: "centered", uiMin: -1.0, uiMax: 1.0, uiDirection: 1,
+    uiLeftText: "逆时针", uiRightText: "顺时针",
+    nameHints: ["joint1", "joint_1", "1", "a"]
   },
   {
-    label: "B / gamma joint 2",
+    label: "B — Joint 2",
     topic: "/gamma_arm/joint2/position_cmd",
-
-    min: -3.14159,
-    max: 1.5708,
-    home: 1.5708,
+    // safe uiMax: home(1.5708) + uiMax*|dir(-1)| must not exceed |min|(-3.14159)
+    // 1.5708 + 4.71239 = 6.28... but dir=-1 => target = home - uiMax = 1.5708 - 4.71239 = -3.1416 ≈ min ✓
+    min: -3.14159, max: 1.5708, home: 1.5708,
     maxSpeed: 3.75,
-    uiMode: "centered",
-    uiMin: 0.0,
-    uiMax: 4.71239,
-    uiDirection: -1,
-    uiLeftText: "左端：初始位",
-    uiRightText: "右：负向最多270°",
-    uiHint: "左端=初始位 1.5708 · 向右=负向转动 · 最大270°",
-    nameHints: ["B", "b", "joint2", "joint_2", "2"]
+    uiMode: "centered", uiMin: 0.0, uiMax: 4.71239, uiDirection: -1,
+    uiLeftText: "初始位", uiRightText: "负向 270°",
+    uiHint: "左端 = 初始位 (1.5708) · 右移 = 负向, 最大 270°",
+    nameHints: ["joint2", "joint_2", "2", "b"]
   },
   {
-    label: "C / gamma joint 3",
+    label: "C — Joint 3",
     topic: "/gamma_arm/joint3/position_cmd",
-    min: -1.5208,
-    max: 1.62079,
-    home: -1.5208,
+    min: -1.5208, max: 1.62079, home: -1.5208,
     maxSpeed: 3.75,
-    uiMode: "centered",
-    uiMin: 0.0,
-    uiMax: 3.14159,
-    uiDirection: 1,
-    uiLeftText: "左端：初始位",
-    uiRightText: "右：正向最多180°",
-    uiHint: "左端=初始位 -1.5208 · 向右=正向转动 · 最大180°",
-    nameHints: ["C", "c", "joint3", "joint_3", "3"]
+    uiMode: "centered", uiMin: 0.0, uiMax: 3.14159, uiDirection: 1,
+    uiLeftText: "初始位", uiRightText: "正向 180°",
+    uiHint: "左端 = 初始位 (-1.5208) · 右移 = 正向, 最大 180°",
+    nameHints: ["joint3", "joint_3", "3", "c"]
   },
   {
-    label: "D / gamma joint 4",
+    label: "D — Joint 4",
     topic: "/gamma_arm/joint4/position_cmd",
-    min: -3.2,
-    max: 3.2,
-    home: -1.5708,
+    min: -3.2, max: 3.2, home: -1.5708,
     maxSpeed: 3.75,
-    uiMode: "centered",
-    uiMin: -2.0,
-    uiMax: 2.0,
-    uiDirection: 1,
-    uiLeftText: "左：负向转动",
-    uiRightText: "右：正向转动",
-    nameHints: ["D", "d", "joint4", "joint_4", "4"]
+    uiMode: "centered", uiMin: -2.0, uiMax: 2.0, uiDirection: 1,
+    uiLeftText: "负向", uiRightText: "正向",
+    nameHints: ["joint4", "joint_4", "4", "d"]
   },
   {
-    label: "E / gamma joint 5",
+    label: "E — Joint 5",
     topic: "/gamma_arm/joint5/position_cmd",
-    min: -3.2,
-    max: 3.2,
-    home: 0.0,
+    min: -3.2, max: 3.2, home: 0.0,
     maxSpeed: 3.75,
-    uiMode: "centered",
-    uiMin: -2.0,
-    uiMax: 2.0,
-    uiDirection: 1,
-    uiLeftText: "左：负向转动",
-    uiRightText: "右：正向转动",
-    nameHints: ["E", "e", "joint5", "joint_5", "5"]
+    uiMode: "centered", uiMin: -2.0, uiMax: 2.0, uiDirection: 1,
+    uiLeftText: "负向", uiRightText: "正向",
+    nameHints: ["joint5", "joint_5", "5", "e"]
   },
   {
-    label: "F / gamma joint 6",
+    label: "F — Joint 6",
     topic: "/gamma_arm/joint6/position_cmd",
-    min: -3.2,
-    max: 3.2,
-    home: -0.05,
+    min: -3.2, max: 3.2, home: -0.05,
     maxSpeed: 3.75,
-    uiMode: "centered",
-    uiMin: -2.0,
-    uiMax: 2.0,
-    uiDirection: 1,
-    uiLeftText: "左：负向转动",
-    uiRightText: "右：正向转动",
-    nameHints: ["F", "f", "joint6", "joint_6", "6"]
-  },
+    uiMode: "centered", uiMin: -2.0, uiMax: 2.0, uiDirection: 1,
+    uiLeftText: "负向", uiRightText: "正向",
+    nameHints: ["joint6", "joint_6", "6", "f"]
+  }
 ];
 
-let ros = null;
-let pubs = [];
-let jointStateSub = null;
-let connected = false;
-let loopTimer = null;
+let ros = null, pubs = [], jointStateSub = null;
+let connected = false, loopTimer = null;
 let lastTick = performance.now();
-let lastFeedbackTime = 0;
-let lastChartDrawTime = 0;
+let lastFeedbackTime = 0, lastChartDrawTime = 0;
 
-const CHART_DRAW_INTERVAL_MS = 100;
+const CHART_INTERVAL_MS = 100;
 
+// Per-joint runtime state
 const state = joints.map(j => ({
-  current: j.home,
-  target: j.home,
+  current: j.home,   // rad/s-limited interpolated position being published
+  target: j.home,    // what the slider/input set
+  smoothed: j.home,  // exponentially-smoothed target (alpha filter applied here, not on step)
   actual: null,
   history: [],
-  slider: null,
-  targetInput: null,
-  currentEl: null,
-  targetEl: null,
-  actualEl: null,
-  errorEl: null,
-  speedEl: null,
-  chart: null,
-  ctx: null
+  // DOM refs — filled by buildUI()
+  slider: null, targetInput: null,
+  currentEl: null, targetEl: null, actualEl: null, errorEl: null, speedEl: null,
+  chart: null, ctx: null
 }));
 
-const grid = document.getElementById("jointGrid");
+const fmt  = x => (x === null || x === undefined || !Number.isFinite(Number(x))) ? "—" : Number(x).toFixed(4);
+const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
 
-function fmt(x) {
-  if (x === null || x === undefined || Number.isNaN(Number(x))) return "--";
-  return Number(x).toFixed(4);
+function toast(msg, ms = 2800) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove("show"), ms);
 }
 
-function clamp(x, lo, hi) {
-  return Math.max(lo, Math.min(hi, x));
+function validateUrl(url) {
+  return /^wss?:\/\/.+:\d{1,5}$/.test(url.trim());
 }
 
-function isCenteredSlider(j) {
-  return j.uiMode === "centered";
-}
+/* ── slider / angle conversion ── */
+const isCentered = j => j.uiMode === "centered";
+const sliderMin  = j => isCentered(j) ? j.uiMin : j.min;
+const sliderMax  = j => isCentered(j) ? j.uiMax : j.max;
+const sliderHome = j => isCentered(j) ? 0.0 : j.home;
 
-function sliderMin(j) {
-  return isCenteredSlider(j) ? j.uiMin : j.min;
-}
-
-function sliderMax(j) {
-  return isCenteredSlider(j) ? j.uiMax : j.max;
-}
-
-function sliderHomeValue(j) {
-  return isCenteredSlider(j) ? 0.0 : j.home;
-}
-
-function sliderToAngle(j, sliderValue) {
-  const v = Number(sliderValue);
-  if (isCenteredSlider(j)) {
-    return clamp(j.home + (j.uiDirection || 1) * v, j.min, j.max);
-  }
-  return clamp(v, j.min, j.max);
+function sliderToAngle(j, sv) {
+  const v = Number(sv);
+  return isCentered(j)
+    ? clamp(j.home + (j.uiDirection || 1) * v, j.min, j.max)
+    : clamp(v, j.min, j.max);
 }
 
 function angleToSlider(j, angle) {
   const a = Number(angle);
-  if (isCenteredSlider(j)) {
-    return clamp((a - j.home) / (j.uiDirection || 1), sliderMin(j), sliderMax(j));
-  }
-  return clamp(a, j.min, j.max);
+  return isCentered(j)
+    ? clamp((a - j.home) / (j.uiDirection || 1), sliderMin(j), sliderMax(j))
+    : clamp(a, j.min, j.max);
 }
 
 function buildUI() {
+  const grid = document.getElementById("jointGrid");
   grid.innerHTML = "";
 
   joints.forEach((j, i) => {
-    const card = document.createElement("div");
-    card.className = "joint";
-
-    const rangeMin = sliderMin(j);
-    const rangeMax = sliderMax(j);
-    const rangeHome = sliderHomeValue(j);
-    const sliderHint = isCenteredSlider(j)
-      ? `<div class="joint-topic">${j.uiHint || `${j.uiLeftText || "左"} · 中心=初始位 ${fmt(j.home)} · ${j.uiRightText || "右"}`}</div>`
+    const s = state[i];
+    const rMin = sliderMin(j), rMax = sliderMax(j), rHome = sliderHome(j);
+    const hintHtml = isCentered(j)
+      ? `<div class="joint-hint">${j.uiHint || `${j.uiLeftText || "左"} ← 中心=初始位 ${fmt(j.home)} → ${j.uiRightText || "右"}`}</div>`
       : "";
 
+    const card = document.createElement("div");
+    card.className = "joint-card";
     card.innerHTML = `
       <div class="joint-head">
-        <div class="joint-title">${j.label}</div>
-        <div class="joint-topic">${j.topic}</div>
+        <span class="joint-label">${j.label}</span>
+        <span class="joint-topic">${j.topic}</span>
       </div>
 
       <div class="values">
         <div class="value"><div class="k">当前发布</div><div class="v" id="cur-${i}">${fmt(j.home)}</div></div>
         <div class="value"><div class="k">目标角</div><div class="v" id="tar-${i}">${fmt(j.home)}</div></div>
-        <div class="value"><div class="k">实际值</div><div class="v" id="act-${i}">--</div></div>
-        <div class="value"><div class="k">误差</div><div class="v" id="err-${i}">--</div></div>
-        <div class="value"><div class="k">最大速度</div><div class="v" id="spd-${i}">${fmt(j.maxSpeed)}</div></div>
+        <div class="value"><div class="k">实际值</div><div class="v" id="act-${i}">—</div></div>
+        <div class="value"><div class="k">误差</div><div class="v" id="err-${i}">—</div></div>
+        <div class="value"><div class="k">有效速度</div><div class="v" id="spd-${i}">${fmt(j.maxSpeed)}</div></div>
       </div>
 
-      <input id="slider-${i}" type="range" min="${rangeMin}" max="${rangeMax}" step="0.001" value="${rangeHome}" />\n      ${sliderHint}
+      <div class="slider-wrap">
+        <input id="slider-${i}" type="range"
+               min="${rMin}" max="${rMax}" step="0.001" value="${rHome}" />
+        <div class="slider-hints">
+          <span>${j.uiLeftText || ""}</span>
+          <span>${j.uiRightText || ""}</span>
+        </div>
+      </div>
+      ${hintHtml}
 
       <div class="chart-wrap">
-        <canvas class="joint-chart" id="chart-${i}"></canvas>
+        <canvas class="jchart" id="chart-${i}"></canvas>
       </div>
 
-      <div class="joint-controls">
-        <input id="input-${i}" type="number" step="0.001" min="${j.min}" max="${j.max}" value="${j.home}" />
-        <button class="secondary" id="zero-${i}">置零</button>
-        <button class="secondary" id="home-${i}">初始位</button>
+      <div class="joint-btns">
+        <input id="input-${i}" type="number" step="0.001"
+               min="${j.min}" max="${j.max}" value="${j.home}" />
+        <button class="btn-secondary btn-sm" id="zero-${i}">置零</button>
+        <button class="btn-secondary btn-sm" id="home-${i}">初始位</button>
       </div>
     `;
-
     grid.appendChild(card);
 
-    const s = state[i];
-    s.slider = document.getElementById(`slider-${i}`);
-    s.targetInput = document.getElementById(`input-${i}`);
-    s.currentEl = document.getElementById(`cur-${i}`);
-    s.targetEl = document.getElementById(`tar-${i}`);
-    s.actualEl = document.getElementById(`act-${i}`);
-    s.errorEl = document.getElementById(`err-${i}`);
-    s.speedEl = document.getElementById(`spd-${i}`);
-    s.chart = document.getElementById(`chart-${i}`);
-    s.ctx = s.chart.getContext("2d");
+    s.slider     = document.getElementById(`slider-${i}`);
+    s.targetInput= document.getElementById(`input-${i}`);
+    s.currentEl  = document.getElementById(`cur-${i}`);
+    s.targetEl   = document.getElementById(`tar-${i}`);
+    s.actualEl   = document.getElementById(`act-${i}`);
+    s.errorEl    = document.getElementById(`err-${i}`);
+    s.speedEl    = document.getElementById(`spd-${i}`);
+    s.chart      = document.getElementById(`chart-${i}`);
+    s.ctx        = s.chart.getContext("2d");
 
     function setTargetAngle(v) {
       v = clamp(Number(v), j.min, j.max);
@@ -624,26 +824,88 @@ function buildUI() {
       s.slider.value = angleToSlider(j, v);
       s.targetInput.value = v;
       s.targetEl.textContent = fmt(v);
-      updateErrorDisplay(i);
+      refreshError(i);
     }
 
-    function setTargetFromSlider(sliderValue) {
-      const v = sliderToAngle(j, sliderValue);
+    s.slider.addEventListener("input", e => {
+      const v = sliderToAngle(j, e.target.value);
       s.target = v;
-      s.slider.value = sliderValue;
       s.targetInput.value = v;
       s.targetEl.textContent = fmt(v);
-      updateErrorDisplay(i);
-    }
+      refreshError(i);
+    });
 
-    s.slider.addEventListener("input", e => setTargetFromSlider(e.target.value));
     s.targetInput.addEventListener("change", e => setTargetAngle(e.target.value));
 
-    document.getElementById(`zero-${i}`).addEventListener("click", () => setTargetAngle(0.0));
+    document.getElementById(`zero-${i}`).addEventListener("click", () => setTargetAngle(0));
     document.getElementById(`home-${i}`).addEventListener("click", () => setTargetAngle(j.home));
 
     drawChart(i);
   });
+}
+
+function refreshError(i) {
+  const s = state[i];
+  if (!Number.isFinite(Number(s.actual))) {
+    s.errorEl.textContent = "—";
+    return;
+  }
+  const err = s.target - s.actual;
+  s.errorEl.textContent = fmt(err);
+}
+
+function connectROS() {
+  disconnectROS();
+
+  const url = document.getElementById("rosUrl").value.trim();
+  const urlInput = document.getElementById("rosUrl");
+
+  if (!validateUrl(url)) {
+    urlInput.classList.add("error");
+    toast("⚠ URL 格式错误，应为 ws://host:port");
+    return;
+  }
+  urlInput.classList.remove("error");
+
+  const cmdType       = document.getElementById("msgType").value.trim() || "std_msgs/msg/Float64";
+  const fbTopic       = document.getElementById("jointStateTopic").value.trim() || "/gamma_arm/joint_states";
+  const fbType        = document.getElementById("jointStateMsgType").value.trim() || "sensor_msgs/msg/JointState";
+
+  ros = new ROSLIB.Ros({ url });
+
+  ros.on("connection", () => {
+    pubs = joints.map(j => new ROSLIB.Topic({ ros, name: j.topic, messageType: cmdType }));
+
+    jointStateSub = new ROSLIB.Topic({ ros, name: fbTopic, messageType: fbType });
+    jointStateSub.subscribe(handleJointState);
+
+    setStatus(true, "已连接");
+    document.getElementById("connectBtn").textContent = "断开";
+    startLoop();
+    toast("✓ 已连接 " + url);
+  });
+
+  ros.on("error", err => {
+    console.error("[rosbridge]", err);
+    setStatus(false, "连接错误");
+    toast("✗ 连接错误，请检查 rosbridge 和 URL");
+  });
+
+  ros.on("close", () => {
+    setStatus(false, "已断开");
+    document.getElementById("connectBtn").textContent = "连接";
+    stopLoop();
+  });
+}
+
+function disconnectROS() {
+  stopLoop();
+  if (jointStateSub) { try { jointStateSub.unsubscribe(); } catch (_) {} }
+  jointStateSub = null;
+  if (ros) { try { ros.close(); } catch (_) {} }
+  ros = null; pubs = [];
+  setStatus(false, "未连接");
+  document.getElementById("connectBtn").textContent = "连接";
 }
 
 function setStatus(ok, text) {
@@ -652,71 +914,11 @@ function setStatus(ok, text) {
   document.getElementById("statusText").textContent = text;
 }
 
-function connectROS() {
-  disconnectROS();
-
-  const url = document.getElementById("rosUrl").value.trim();
-  const commandMessageType = document.getElementById("msgType").value.trim() || "std_msgs/msg/Float64";
-  const jointStateTopic = document.getElementById("jointStateTopic").value.trim() || "/gamma_arm/joint_states";
-  const jointStateMsgType = document.getElementById("jointStateMsgType").value.trim() || "sensor_msgs/msg/JointState";
-
-  ros = new ROSLIB.Ros({ url });
-
-  ros.on("connection", () => {
-    pubs = joints.map(j => new ROSLIB.Topic({
-      ros,
-      name: j.topic,
-      messageType: commandMessageType
-    }));
-
-    jointStateSub = new ROSLIB.Topic({
-      ros,
-      name: jointStateTopic,
-      messageType: jointStateMsgType
-    });
-
-    jointStateSub.subscribe(handleJointState);
-
-    setStatus(true, "已连接");
-    startLoop();
-  });
-
-  ros.on("error", err => {
-    console.error(err);
-    setStatus(false, "连接错误");
-  });
-
-  ros.on("close", () => {
-    setStatus(false, "连接已断开");
-    stopLoop();
-  });
-}
-
-function disconnectROS() {
-  stopLoop();
-
-  if (jointStateSub) {
-    try { jointStateSub.unsubscribe(); } catch (e) {}
-  }
-  jointStateSub = null;
-
-  if (ros) {
-    try { ros.close(); } catch (e) {}
-  }
-
-  ros = null;
-  pubs = [];
-  setStatus(false, "未连接");
-}
-
 function startLoop() {
   stopLoop();
   lastTick = performance.now();
-
   const hz = Number(document.getElementById("publishHz").value);
-  const periodMs = 1000 / hz;
-
-  loopTimer = setInterval(publishSmooth, periodMs);
+  loopTimer = setInterval(publishTick, 1000 / hz);
 }
 
 function stopLoop() {
@@ -724,108 +926,48 @@ function stopLoop() {
   loopTimer = null;
 }
 
-function findJointIndexByName(name) {
-  if (!name) return -1;
-
-  const n = String(name).toLowerCase();
-
-  for (let i = 0; i < joints.length; i++) {
-    const hints = joints[i].nameHints || [];
-    for (const hint of hints) {
-      const h = String(hint).toLowerCase();
-
-      if (h.length === 1 && /^[1-6]$/.test(h)) {
-        const re = new RegExp(`(^|[^0-9])${h}([^0-9]|$)`);
-        if (re.test(n)) return i;
-      } else if (n.includes(h)) {
-        return i;
-      }
-    }
-  }
-
-  return -1;
-}
-
-function handleJointState(msg) {
-  if (!msg || !Array.isArray(msg.position)) return;
-
-  lastFeedbackTime = performance.now();
-
-  for (let k = 0; k < msg.position.length; k++) {
-    const pos = Number(msg.position[k]);
-    if (!Number.isFinite(pos)) continue;
-
-    let jointIndex = -1;
-
-    if (Array.isArray(msg.name) && msg.name[k]) {
-      jointIndex = findJointIndexByName(msg.name[k]);
-    }
-
-    if (jointIndex < 0 && k < joints.length) {
-      jointIndex = k;
-    }
-
-    if (jointIndex >= 0 && jointIndex < state.length) {
-      state[jointIndex].actual = pos;
-      state[jointIndex].actualEl.textContent = fmt(pos);
-      updateErrorDisplay(jointIndex);
-    }
-  }
-
-  const topic = document.getElementById("jointStateTopic").value.trim() || "/gamma_arm/joint_states";
-  document.getElementById("feedbackStatus").textContent = `Actual: receiving ${topic}`;
-}
-
-function updateErrorDisplay(i) {
-  const s = state[i];
-
-  if (s.actual === null || s.actual === undefined || !Number.isFinite(Number(s.actual))) {
-    s.errorEl.textContent = "--";
-    return;
-  }
-
-  const error = s.target - s.actual;
-  s.errorEl.textContent = fmt(error);
-}
-
-function publishSmooth() {
+function publishTick() {
   if (!connected || pubs.length !== joints.length) return;
 
-  const now = performance.now();
-  const nowSec = now / 1000.0;
-  const dt = Math.max(0.001, (now - lastTick) / 1000.0);
-  lastTick = now;
+  const now       = performance.now();
+  const dt        = Math.min(Math.max((now - lastTick) / 1000, 0.001), 0.5); // clamp: avoid startup spike
+  lastTick        = now;
+  const nowSec    = now / 1000;
 
-  const speedScale = Number(document.getElementById("speedScale").value);
-  const alpha = Number(document.getElementById("smoothAlpha").value);
+  const speedScale  = Number(document.getElementById("speedScale").value);
+  const alpha       = Number(document.getElementById("smoothAlpha").value);
   const chartWindow = clamp(Number(document.getElementById("chartWindow").value) || 10, 2, 60);
 
   joints.forEach((j, i) => {
     const s = state[i];
 
-    const error = s.target - s.current;
+    // 1. Apply alpha smoothing to the *target* (exponential filter on the setpoint).
+    //    This means the speed limit below acts on a smooth trajectory, not a noisy step.
+    s.smoothed += (s.target - s.smoothed) * alpha;
 
+    // 2. Move `current` toward `smoothed` at most maxSpeed × speedScale rad/s.
+    const error   = s.smoothed - s.current;
     const maxStep = j.maxSpeed * speedScale * dt;
-    const limitedStep = clamp(error, -maxStep, maxStep);
+    const step    = clamp(error, -maxStep, maxStep);
 
-    const smoothStep = limitedStep * alpha;
-
-    if (Math.abs(error) < 0.0005) {
-      s.current = s.target;
+    if (Math.abs(error) < 5e-4) {
+      s.current = s.smoothed;
     } else {
-      s.current += smoothStep;
+      s.current += step;
     }
-
     s.current = clamp(s.current, j.min, j.max);
 
-    const msg = new ROSLIB.Message({ data: s.current });
-    pubs[i].publish(msg);
+    // 3. Publish
+    pubs[i].publish(new ROSLIB.Message({ data: s.current }));
 
+    // 4. Update DOM
+    const effectiveSpeed = j.maxSpeed * speedScale;
     s.currentEl.textContent = fmt(s.current);
-    s.targetEl.textContent = fmt(s.target);
-    s.speedEl.textContent = fmt(j.maxSpeed * speedScale);
-    updateErrorDisplay(i);
+    s.targetEl.textContent  = fmt(s.target);
+    s.speedEl.textContent   = fmt(effectiveSpeed);
+    refreshError(i);
 
+    // 5. Record history
     s.history.push({
       t: nowSec,
       desired: s.target,
@@ -833,17 +975,55 @@ function publishSmooth() {
       actual: Number.isFinite(Number(s.actual)) ? Number(s.actual) : null
     });
 
-    const minT = nowSec - chartWindow;
-    while (s.history.length > 0 && s.history[0].t < minT) {
-      s.history.shift();
+    // Trim old history
+    const cutoff = nowSec - chartWindow;
+    let trim = 0;
+    while (trim < s.history.length && s.history[trim].t < cutoff) trim++;
+    if (trim > 0) s.history.splice(0, trim);
+  });
+
+  const nowMs = performance.now();
+  if (nowMs - lastChartDrawTime >= CHART_INTERVAL_MS) {
+    drawAllCharts();
+    lastChartDrawTime = nowMs;
+    updateFeedbackAge(nowMs);
+  }
+}
+
+function findJointByName(name) {
+  if (!name) return -1;
+  const n = String(name).toLowerCase();
+  for (let i = 0; i < joints.length; i++) {
+    for (const hint of (joints[i].nameHints || [])) {
+      const h = hint.toLowerCase();
+      if (h.length === 1 && /^\d$/.test(h)) {
+        if (new RegExp(`(^|\\D)${h}(\\D|$)`).test(n)) return i;
+      } else if (n.includes(h)) {
+        return i;
+      }
+    }
+  }
+  return -1;
+}
+
+function handleJointState(msg) {
+  if (!msg || !Array.isArray(msg.position)) return;
+  lastFeedbackTime = performance.now();
+
+  msg.position.forEach((pos, k) => {
+    if (!Number.isFinite(Number(pos))) return;
+    let idx = -1;
+    if (Array.isArray(msg.name) && msg.name[k]) idx = findJointByName(msg.name[k]);
+    if (idx < 0 && k < joints.length) idx = k;
+    if (idx >= 0 && idx < state.length) {
+      state[idx].actual = Number(pos);
+      state[idx].actualEl.textContent = fmt(pos);
+      refreshError(idx);
     }
   });
 
-  if (now - lastChartDrawTime >= CHART_DRAW_INTERVAL_MS) {
-    drawAllCharts();
-    lastChartDrawTime = now;
-    updateFeedbackAge(now);
-  }
+  const topic = document.getElementById("jointStateTopic").value.trim() || "/gamma_arm/joint_states";
+  document.getElementById("feedbackStatus").textContent = `Actual ✓  ${topic}`;
 }
 
 function updateFeedbackAge(now) {
@@ -851,9 +1031,7 @@ function updateFeedbackAge(now) {
     document.getElementById("feedbackStatus").textContent = "Actual: no data";
     return;
   }
-
-  const age = (now - lastFeedbackTime) / 1000.0;
-
+  const age = (now - lastFeedbackTime) / 1000;
   if (age > 1.5) {
     document.getElementById("feedbackStatus").textContent = `Actual: stale ${age.toFixed(1)} s`;
   }
@@ -861,142 +1039,111 @@ function updateFeedbackAge(now) {
 
 function resizeCanvas(canvas, ctx) {
   const rect = canvas.getBoundingClientRect();
-  const dpr = window.devicePixelRatio || 1;
-  const width = Math.max(320, Math.floor(rect.width));
-  const height = Math.max(120, Math.floor(rect.height));
-
-  if (canvas.width !== Math.floor(width * dpr) || canvas.height !== Math.floor(height * dpr)) {
-    canvas.width = Math.floor(width * dpr);
-    canvas.height = Math.floor(height * dpr);
+  const dpr  = window.devicePixelRatio || 1;
+  const w = Math.max(200, Math.floor(rect.width));
+  const h = Math.max(100, Math.floor(rect.height));
+  if (canvas.width !== Math.floor(w * dpr) || canvas.height !== Math.floor(h * dpr)) {
+    canvas.width  = Math.floor(w * dpr);
+    canvas.height = Math.floor(h * dpr);
   }
-
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-  return { width, height };
+  return { width: w, height: h };
 }
 
 function drawAllCharts() {
-  for (let i = 0; i < joints.length; i++) {
-    drawChart(i);
-  }
+  for (let i = 0; i < joints.length; i++) drawChart(i);
 }
 
 function drawChart(i) {
-  const s = state[i];
-  const j = joints[i];
-  if (!s.chart || !s.ctx) return;
+  const s = state[i], j = joints[i];
+  if (!s.ctx) return;
 
   const ctx = s.ctx;
   const { width, height } = resizeCanvas(s.chart, ctx);
 
-  ctx.clearRect(0, 0, width, height);
-  ctx.fillStyle = "#0b1220";
-  ctx.fillRect(0, 0, width, height);
-
-  const padL = 44;
-  const padR = 10;
-  const padT = 16;
-  const padB = 24;
+  const padL = 46, padR = 10, padT = 22, padB = 22;
   const plotW = width - padL - padR;
   const plotH = height - padT - padB;
 
-  const yMin = j.min;
-  const yMax = j.max;
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#080e1a";
+  ctx.fillRect(0, 0, width, height);
+
+  const yMin = j.min, yMax = j.max;
   const chartWindow = clamp(Number(document.getElementById("chartWindow").value) || 10, 2, 60);
+  const nowSec = performance.now() / 1000;
+  const xMin = nowSec - chartWindow, xMax = nowSec;
 
-  const nowSec = performance.now() / 1000.0;
-  const xMin = nowSec - chartWindow;
-  const xMax = nowSec;
+  const xS = t => padL + ((t - xMin) / (xMax - xMin)) * plotW;
+  const yS = v => padT + (1 - (clamp(Number(v), yMin, yMax) - yMin) / (yMax - yMin)) * plotH;
 
-  function xScale(t) {
-    return padL + ((t - xMin) / (xMax - xMin)) * plotW;
-  }
-
-  function yScale(v) {
-    const vv = clamp(Number(v), yMin, yMax);
-    return padT + (1 - (vv - yMin) / (yMax - yMin)) * plotH;
-  }
-
-  ctx.strokeStyle = "rgba(148, 163, 184, 0.16)";
+  // grid
+  ctx.strokeStyle = "rgba(148,163,184,0.10)";
   ctx.lineWidth = 1;
-
   for (let k = 0; k <= 4; k++) {
-    const y = padT + (plotH * k / 4);
-    ctx.beginPath();
-    ctx.moveTo(padL, y);
-    ctx.lineTo(width - padR, y);
-    ctx.stroke();
+    const y = padT + plotH * k / 4;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(width - padR, y); ctx.stroke();
   }
-
   for (let k = 0; k <= 5; k++) {
-    const x = padL + (plotW * k / 5);
-    ctx.beginPath();
-    ctx.moveTo(x, padT);
-    ctx.lineTo(x, height - padB);
-    ctx.stroke();
+    const x = padL + plotW * k / 5;
+    ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, height - padB); ctx.stroke();
   }
 
-  ctx.fillStyle = "rgba(229, 231, 235, 0.78)";
-  ctx.font = "11px ui-monospace, Menlo, Consolas, monospace";
+  // y-axis labels
+  ctx.font = "10px ui-monospace, Menlo, Consolas, monospace";
+  ctx.fillStyle = "rgba(122,138,168,0.85)";
   ctx.textAlign = "right";
   ctx.textBaseline = "middle";
-  ctx.fillText(fmt(yMax), padL - 6, padT + 2);
-  ctx.fillText("0.0000", padL - 6, yScale(0));
-  ctx.fillText(fmt(yMin), padL - 6, height - padB - 2);
+  ctx.fillText(fmt(yMax), padL - 4, padT + 2);
+  ctx.fillText(fmt(0),    padL - 4, yS(0));
+  ctx.fillText(fmt(yMin), padL - 4, height - padB - 2);
 
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
-  ctx.fillStyle = "rgba(156, 163, 175, 0.9)";
-  ctx.fillText(`${chartWindow}s window`, padL, height - padB + 7);
+  // x label
+  ctx.textAlign = "left"; ctx.textBaseline = "bottom";
+  ctx.fillStyle = "rgba(122,138,168,0.6)";
+  ctx.fillText(`${chartWindow}s`, padL, height);
 
-  function drawLine(key, color, widthLine = 2) {
-    const data = s.history.filter(p => p.t >= xMin && p.t <= xMax && Number.isFinite(Number(p[key])));
-    if (data.length < 2) return;
-
-    ctx.strokeStyle = color;
-    ctx.lineWidth = widthLine;
+  // draw series
+  function polyline(key, color, lw) {
+    const pts = s.history.filter(p => p.t >= xMin && Number.isFinite(Number(p[key])));
+    if (pts.length < 2) return;
+    ctx.strokeStyle = color; ctx.lineWidth = lw;
     ctx.beginPath();
-
-    let moved = false;
-
-    for (const p of data) {
-      const x = xScale(p.t);
-      const y = yScale(p[key]);
-
-      if (!moved) {
-        ctx.moveTo(x, y);
-        moved = true;
-      } else {
-        ctx.lineTo(x, y);
-      }
-    }
-
+    pts.forEach((p, k) => {
+      const x = xS(p.t), y = yS(p[key]);
+      k === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
     ctx.stroke();
   }
 
-  drawLine("desired", "#38bdf8", 2.2);
-  drawLine("command", "#fbbf24", 1.6);
-  drawLine("actual", "#22c55e", 2.2);
+  polyline("desired", "#3b9eff", 2.0);
+  polyline("command", "#fbbf24", 1.5);
+  polyline("actual",  "#22c55e", 2.0);
 
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
-  ctx.font = "12px ui-monospace, Menlo, Consolas, monospace";
-  ctx.fillStyle = "#38bdf8";
-  ctx.fillText(`D ${fmt(s.target)}`, padL + 6, padT + 6);
+  // proportionally spaced inline labels at top of plot
+  const lblY = padT + 5;
+  const third = plotW / 3;
+  ctx.font = "11px ui-monospace, Menlo, Consolas, monospace";
+  ctx.textAlign = "left"; ctx.textBaseline = "top";
+
+  ctx.fillStyle = "#3b9eff";
+  ctx.fillText(`D ${fmt(s.target)}`,  padL + 4,          lblY);
   ctx.fillStyle = "#fbbf24";
-  ctx.fillText(`C ${fmt(s.current)}`, padL + 88, padT + 6);
+  ctx.fillText(`C ${fmt(s.current)}`, padL + 4 + third,  lblY);
   ctx.fillStyle = "#22c55e";
-  ctx.fillText(`A ${fmt(s.actual)}`, padL + 170, padT + 6);
+  ctx.fillText(`A ${fmt(s.actual)}`,  padL + 4 + third * 2, lblY);
 }
 
 function softStop() {
   state.forEach((s, i) => {
     s.target = s.current;
+    s.smoothed = s.current;
     s.slider.value = angleToSlider(joints[i], s.current);
     s.targetInput.value = s.current;
     s.targetEl.textContent = fmt(s.current);
-    updateErrorDisplay(i);
+    refreshError(i);
   });
+  toast("软停止 — 目标已锁定在当前位置");
 }
 
 function goHome() {
@@ -1006,25 +1153,18 @@ function goHome() {
     s.slider.value = angleToSlider(j, j.home);
     s.targetInput.value = j.home;
     s.targetEl.textContent = fmt(j.home);
-    updateErrorDisplay(i);
+    refreshError(i);
   });
+  toast("回到初始位");
 }
 
 function clearCharts() {
-  state.forEach(s => {
-    s.history = [];
-  });
+  state.forEach(s => { s.history = []; });
   drawAllCharts();
 }
 
 document.getElementById("connectBtn").addEventListener("click", () => {
-  if (connected) {
-    disconnectROS();
-    document.getElementById("connectBtn").textContent = "连接 ROS";
-  } else {
-    connectROS();
-    document.getElementById("connectBtn").textContent = "断开连接";
-  }
+  connected ? disconnectROS() : connectROS();
 });
 
 document.getElementById("stopBtn").addEventListener("click", softStop);
@@ -1044,14 +1184,17 @@ document.getElementById("smoothAlpha").addEventListener("input", e => {
   document.getElementById("smoothText").textContent = Number(e.target.value).toFixed(2);
 });
 
-document.getElementById("chartWindow").addEventListener("change", () => {
-  clearCharts();
-});
+document.getElementById("chartWindow").addEventListener("change", clearCharts);
 
-window.addEventListener("resize", () => {
-  drawAllCharts();
-});
+window.addEventListener("resize", drawAllCharts);
 
+function applyQueryDefaults() {
+  const params = new URLSearchParams(window.location.search);
+  const rb = params.get("rosbridge");
+  if (rb) document.getElementById("rosUrl").value = rb;
+}
+
+applyQueryDefaults();
 buildUI();
 </script>
 </body>
