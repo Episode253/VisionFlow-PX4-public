@@ -57,6 +57,8 @@ void GammaArmControlPlugin::Configure(
     // Resize vectors
     _jointEntities.resize(_nJoints, gz::sim::kNullEntity);
     _targetPositions.resize(_nJoints, 0.0);
+    _initialPositions.resize(_nJoints, 0.0);
+    _hasInitialPosition.resize(_nJoints, false);
     _pGains.resize(_nJoints, 10.0);
     _dGains.resize(_nJoints, 0.1);
     _maxEfforts.resize(_nJoints, 100.0);
@@ -97,6 +99,8 @@ void GammaArmControlPlugin::Configure(
             _maxEfforts[i] = _sdf->Get<double>(effortKey, _maxEfforts[i]).first;
         }
     }
+
+    ReadInitialPositionsFromSDF(_sdf);
 
     // Read cmd topic prefix
     _cmdTopicPrefix = "/joint/gamma";
@@ -153,6 +157,85 @@ void GammaArmControlPlugin::Configure(
           << "KDL initialized: " << (_kdlInitialized ? "yes" : "no") << std::endl;
 }
 
+
+void GammaArmControlPlugin::ReadInitialPositionsFromSDF(
+    const std::shared_ptr<const sdf::Element> &_sdf)
+{
+    _hasAnyInitialPosition = false;
+
+    for (int i = 0; i < _nJoints; ++i) {
+        const std::string &jointName = _jointNames[i];
+
+        const std::string nameKey = "initial_position_" + jointName;
+
+        const std::string indexKey = "initial_position_" + std::to_string(i + 1);
+
+        double value = 0.0;
+        bool found = false;
+
+        if (_sdf->HasElement(nameKey)) {
+            value = _sdf->Get<double>(nameKey, value).first;
+            found = true;
+        } else if (_sdf->HasElement(indexKey)) {
+            value = _sdf->Get<double>(indexKey, value).first;
+            found = true;
+        }
+
+        if (found) {
+            _initialPositions[i] = value;
+            _hasInitialPosition[i] = true;
+            _hasAnyInitialPosition = true;
+
+            gzmsg << "GammaArmControlPlugin: Initial position for joint "
+                  << jointName << " = " << value << " rad" << std::endl;
+        }
+    }
+
+    if (!_hasAnyInitialPosition) {
+        gzmsg << "GammaArmControlPlugin: No initial_position_* parameters found. "
+              << "Will keep current startup joint positions." << std::endl;
+    }
+}
+
+void GammaArmControlPlugin::ApplyInitialPositions(
+    gz::sim::EntityComponentManager &_ecm)
+{
+    if (_initialPositionsApplied || !_hasAnyInitialPosition) {
+        return;
+    }
+
+    for (int i = 0; i < _nJoints; ++i) {
+        if (!_hasInitialPosition[i]) {
+            continue;
+        }
+
+        const double initPos = _initialPositions[i];
+        const auto jointEnt = _jointEntities[i];
+
+        auto resetComp =
+            _ecm.Component<gz::sim::components::JointPositionReset>(jointEnt);
+
+        if (resetComp) {
+            resetComp->Data().clear();
+            resetComp->Data().push_back(initPos);
+        } else {
+            _ecm.CreateComponent(
+                jointEnt,
+                gz::sim::components::JointPositionReset({initPos}));
+        }
+
+        _q(static_cast<unsigned int>(i)) = initPos;
+        _qDot(static_cast<unsigned int>(i)) = 0.0;
+        _targetPositions[i] = initPos;
+
+        gzmsg << "GammaArmControlPlugin: Applied initial position for joint "
+              << _jointNames[i] << " = " << initPos << " rad" << std::endl;
+    }
+
+    _initialPositionsApplied = true;
+}
+
+
 bool GammaArmControlPlugin::InitKDL()
 {
     // Read URDF from file (path from env var or default)
@@ -198,10 +281,6 @@ bool GammaArmControlPlugin::InitKDL()
         return false;
     }
 
-    // Strip <visual>, <collision>, and <material> blocks to avoid kdl_parser
-    // trying to resolve mesh paths (e.g. package://GAMMA0/meshes/...) which
-    // can cause hangs when no ROS package resolution is available.
-    // KDL only needs <link>/<inertial> and <joint>.
     try {
         // Remove <visual>...</visual>
         robotDescStr = std::regex_replace(robotDescStr,
@@ -290,15 +369,20 @@ void GammaArmControlPlugin::PreUpdate(
                 _qDot(static_cast<unsigned int>(i)) = velComp->Data().at(0);
             }
 
-            // On first update, initialize target to current position
             if (_firstUpdate) {
-                _targetPositions[i] = _q(static_cast<unsigned int>(i));
+                if (_hasInitialPosition[i]) {
+                    // The actual reset is applied once for all joints below.
+                    _targetPositions[i] = _initialPositions[i];
+                } else {
+                    _targetPositions[i] = _q(static_cast<unsigned int>(i));
+                }
             }
         }
 
         if (_firstUpdate) {
+            ApplyInitialPositions(_ecm);
             _firstUpdate = false;
-            return; // skip first control cycle
+            return; // skip first control cycle after optional reset
         }
     }
 

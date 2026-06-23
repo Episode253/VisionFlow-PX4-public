@@ -55,8 +55,14 @@ private:
     /// Callback for receiving joint position commands via Gazebo transport
     void OnJointCmd(int joint_index, const gz::msgs::Double &_msg);
 
-    /// Initialize KDL chain from ROS parameter server
+    /// Initialize KDL chain from URDF
     bool InitKDL();
+
+    /// Read per-joint initial positions from SDF plugin parameters.
+    void ReadInitialPositionsFromSDF(const std::shared_ptr<const sdf::Element> &_sdf);
+
+    /// Apply configured initial positions to Gazebo joints.
+    void ApplyInitialPositions(gz::sim::EntityComponentManager &_ecm);
 
     gz::sim::Model _model{gz::sim::kNullEntity};
     gz::transport::Node _node;
@@ -67,8 +73,12 @@ private:
     /// Joint names
     std::vector<std::string> _jointNames;
 
-    /// Target positions for each joint (from cmd topic)
+    /// Target positions for each joint (from cmd topic or initial SDF config)
     std::vector<double> _targetPositions;
+
+    std::vector<double> _initialPositions;
+    std::vector<bool> _hasInitialPosition;
+    bool _hasAnyInitialPosition{false};
 
     /// PD gains
     std::vector<double> _pGains;
@@ -105,6 +115,9 @@ private:
 
     /// Whether this is the first update (for initialization)
     bool _firstUpdate{true};
+
+    /// Whether configured initial positions have been sent to Gazebo.
+    bool _initialPositionsApplied{false};
 };
 
 } // namespace gamma_arm
