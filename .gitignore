@@ -142,3 +142,6 @@ windshape_dev/tools/px4_gzsim_bridge/build/*
 docker/cache/*
 
 windshape_dev/tools/gamma_arm_control/build/*
+
+.codex/*
+.agents/*
