@@ -1,21 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-# Gamma Arm Web Control launcher
-# Run this INSIDE the running PX4/Gazebo Docker container.
-#
-# Fixed architecture:
-#   Browser / rosbridge publishes ROS2 legal topics:
-#     /gamma_arm/joint1/position_cmd ... /gamma_arm/joint6/position_cmd
-#
-#   ros_gz_bridge maps them to the original Gazebo Transport topics used by
-#   GammaArmControlPlugin:
-#     /joint/gamma/1/position_cmd ... /joint/gamma/6/position_cmd
-#
-# Why this is necessary:
-#   ROS2 topic tokens cannot start with a number, so /joint/gamma/1/position_cmd
-#   is illegal on the ROS2 side, although it is valid on the Gazebo side.
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 WEB_PORT="${WEB_PORT:-9000}"
@@ -35,6 +20,7 @@ ROSBRIDGE_PID=""
 HTTP_PID=""
 BRIDGE_PID=""
 ROSBRIDGE_STARTED_BY_SCRIPT="false"
+GZ_KEEPALIVE_PIDS=()
 
 mkdir -p "${LOG_DIR}"
 
@@ -52,6 +38,14 @@ cleanup() {
 
   if [[ "${ROSBRIDGE_STARTED_BY_SCRIPT}" == "true" ]] && [[ -n "${ROSBRIDGE_PID}" ]] && kill -0 "${ROSBRIDGE_PID}" 2>/dev/null; then
     kill "${ROSBRIDGE_PID}" 2>/dev/null || true
+  fi
+
+  if [[ ${#GZ_KEEPALIVE_PIDS[@]} -gt 0 ]]; then
+    for pid in "${GZ_KEEPALIVE_PIDS[@]}"; do
+      if [[ -n "${pid}" ]] && kill -0 "${pid}" 2>/dev/null; then
+        kill "${pid}" 2>/dev/null || true
+      fi
+    done
   fi
 
   echo "[INFO] Stopped."
@@ -206,7 +200,34 @@ start_yaml_bridge() {
   fi
 }
 
+
+start_gz_keepalive_subscribers() {
+  if ! command -v gz >/dev/null 2>&1; then
+    echo "[WARN] gz command not found; skip Gazebo topic keepalive subscribers."
+    return 0
+  fi
+
+  echo "[INFO] Starting Gazebo command topic keepalive subscribers..."
+
+  for i in 1 2 3 4 5 6; do
+    local topic="/joint/gamma/${i}/position_cmd"
+
+    if pgrep -f "gz topic -e -t ${topic}" >/dev/null 2>&1; then
+      echo "       ${topic} already has a keepalive subscriber."
+      continue
+    fi
+
+    gz topic -e -t "${topic}" > /dev/null 2>&1 &
+    GZ_KEEPALIVE_PIDS+=("$!")
+
+    echo "       keepalive: ${topic}"
+  done
+
+  sleep 0.5
+}
+
 start_yaml_bridge
+start_gz_keepalive_subscribers
 
 if port_in_use "${WEB_PORT}"; then
   echo "[ERROR] Web port ${WEB_PORT} is already in use."
@@ -256,6 +277,9 @@ echo "  ros2 topic pub --once /gamma_arm/joint1/position_cmd std_msgs/msg/Float6
 echo ""
 echo "Check Gazebo receiving:"
 echo "  gz topic -e -t /joint/gamma/1/position_cmd"
+echo ""
+echo "Gazebo topic keepalive:"
+echo "  Started automatically for /joint/gamma/1~6/position_cmd"
 echo ""
 echo "Press Ctrl+C to stop only the web/bridge layer. PX4/Gazebo keeps running in the first terminal."
 

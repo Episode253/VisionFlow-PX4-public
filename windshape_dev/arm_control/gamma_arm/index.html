@@ -339,9 +339,6 @@
 <body>
   <div class="wrap">
     <h1>Gamma Arm Web Slider Control</h1>
-    <p class="subtitle">
-      网页端发布 ROS2 Float64 指令，经 ros_gz_bridge 转发为 Gazebo <code>gz.msgs.Double</code>，最终控制 Gamma 机械臂的 Gazebo 话题 <code>/joint/gamma/1~6/position_cmd</code>。网页端 ROS2 话题使用合法命名 <code>/gamma_arm/joint1~6/position_cmd</code>。
-    </p>
 
     <div class="toolbar">
       <div class="urlbox">
@@ -356,16 +353,16 @@
 
     <div class="global">
       <div class="mini">
-        <div class="row"><strong>发布频率</strong><span id="rateText">30 Hz</span></div>
-        <input id="publishHz" type="range" min="5" max="80" step="5" value="30" />
+        <div class="row"><strong>发布频率</strong><span id="rateText">50 Hz</span></div>
+        <input id="publishHz" type="range" min="10" max="100" step="5" value="50" />
       </div>
       <div class="mini">
         <div class="row"><strong>速度倍率</strong><span id="speedText">1.00×</span></div>
-        <input id="speedScale" type="range" min="0.1" max="3.0" step="0.05" value="1.0" />
+        <input id="speedScale" type="range" min="0.1" max="8.0" step="0.05" value="1.0" />
       </div>
       <div class="mini">
-        <div class="row"><strong>平滑系数</strong><span id="smoothText">0.18</span></div>
-        <input id="smoothAlpha" type="range" min="0.05" max="0.60" step="0.01" value="0.18" />
+        <div class="row"><strong>平滑系数</strong><span id="smoothText">1.00</span></div>
+        <input id="smoothAlpha" type="range" min="0.05" max="1.00" step="0.01" value="1.00" />
       </div>
       <div class="mini">
         <div class="row"><strong>命令消息类型</strong><span>Float64</span></div>
@@ -398,25 +395,103 @@
 
     <div id="jointGrid" class="grid"></div>
 
-    <div class="hint">
-      <div><span class="warn">使用方式：</span>在第二个 docker 终端进入容器后运行：<code>bash windshape_dev/arm_control/gamma_arm/gamma_arm_web_control.sh</code>，打开页面并点击“连接 ROS”。</div>
-      <div>本页面发布 ROS2 合法话题 <code>/gamma_arm/joint1/position_cmd</code> ~ <code>/gamma_arm/joint6/position_cmd</code>，脚本会启动 <code>ros_gz_bridge</code> 映射到 Gazebo 话题 <code>/joint/gamma/1/position_cmd</code> ~ <code>/joint/gamma/6/position_cmd</code>。</div>
-      <div>反馈默认订阅 ROS2 话题 <code>/gamma_arm/joint_states</code>。若 Actual 没有曲线，先检查 <code>ros2 topic echo /gamma_arm/joint_states</code> 或查看 <code>log/gamma_arm_bridge.log</code>。</div>
-      <div>建议先单关节小角度测试，例如 A 关节 0.3 rad。B、C 关节承载大臂，速度默认更保守，避免突然抖动。</div>
-    </div>
   </div>
 
 <script>
 const joints = [
-  // Web / ROS2 side topics must be legal ROS2 topic names.
-  // ros_gz_bridge maps these ROS2 topics to the original Gazebo Transport topics:
-  //   /joint/gamma/1/position_cmd ... /joint/gamma/6/position_cmd
-  { label: "A / gamma joint 1", topic: "/gamma_arm/joint1/position_cmd", min: -3.14, max: 3.14, home: 0.0, maxSpeed: 0.70, nameHints: ["A", "a", "joint1", "joint_1", "1"] },
-  { label: "B / gamma joint 2", topic: "/gamma_arm/joint2/position_cmd", min: -3.14, max: 3.14, home: 0.0, maxSpeed: 0.35, nameHints: ["B", "b", "joint2", "joint_2", "2"] },
-  { label: "C / gamma joint 3", topic: "/gamma_arm/joint3/position_cmd", min: -3.14, max: 3.14, home: 0.0, maxSpeed: 0.40, nameHints: ["C", "c", "joint3", "joint_3", "3"] },
-  { label: "D / gamma joint 4", topic: "/gamma_arm/joint4/position_cmd", min: -3.14, max: 3.14, home: 0.0, maxSpeed: 0.65, nameHints: ["D", "d", "joint4", "joint_4", "4"] },
-  { label: "E / gamma joint 5", topic: "/gamma_arm/joint5/position_cmd", min: -3.14, max: 3.14, home: 0.0, maxSpeed: 0.65, nameHints: ["E", "e", "joint5", "joint_5", "5"] },
-  { label: "F / gamma joint 6", topic: "/gamma_arm/joint6/position_cmd", min: -3.14, max: 3.14, home: 0.0, maxSpeed: 0.80, nameHints: ["F", "f", "joint6", "joint_6", "6"] },
+  {
+    label: "A / gamma joint 1",
+    topic: "/gamma_arm/joint1/position_cmd",
+    min: -5.0,
+    max: 5.0,
+    home: -3.14159,
+    maxSpeed: 3.75,
+    uiMode: "centered",
+    uiMin: -1.0,
+    uiMax: 1.0,
+    uiDirection: 1,
+    uiLeftText: "左：逆时针",
+    uiRightText: "右：顺时针",
+    nameHints: ["A", "a", "joint1", "joint_1", "1"]
+  },
+  {
+    label: "B / gamma joint 2",
+    topic: "/gamma_arm/joint2/position_cmd",
+
+    min: -3.14159,
+    max: 1.5708,
+    home: 1.5708,
+    maxSpeed: 3.75,
+    uiMode: "centered",
+    uiMin: 0.0,
+    uiMax: 4.71239,
+    uiDirection: -1,
+    uiLeftText: "左端：初始位",
+    uiRightText: "右：负向最多270°",
+    uiHint: "左端=初始位 1.5708 · 向右=负向转动 · 最大270°",
+    nameHints: ["B", "b", "joint2", "joint_2", "2"]
+  },
+  {
+    label: "C / gamma joint 3",
+    topic: "/gamma_arm/joint3/position_cmd",
+    min: -1.5208,
+    max: 1.62079,
+    home: -1.5208,
+    maxSpeed: 3.75,
+    uiMode: "centered",
+    uiMin: 0.0,
+    uiMax: 3.14159,
+    uiDirection: 1,
+    uiLeftText: "左端：初始位",
+    uiRightText: "右：正向最多180°",
+    uiHint: "左端=初始位 -1.5208 · 向右=正向转动 · 最大180°",
+    nameHints: ["C", "c", "joint3", "joint_3", "3"]
+  },
+  {
+    label: "D / gamma joint 4",
+    topic: "/gamma_arm/joint4/position_cmd",
+    min: -3.2,
+    max: 3.2,
+    home: -1.5708,
+    maxSpeed: 3.75,
+    uiMode: "centered",
+    uiMin: -2.0,
+    uiMax: 2.0,
+    uiDirection: 1,
+    uiLeftText: "左：负向转动",
+    uiRightText: "右：正向转动",
+    nameHints: ["D", "d", "joint4", "joint_4", "4"]
+  },
+  {
+    label: "E / gamma joint 5",
+    topic: "/gamma_arm/joint5/position_cmd",
+    min: -3.2,
+    max: 3.2,
+    home: 0.0,
+    maxSpeed: 3.75,
+    uiMode: "centered",
+    uiMin: -2.0,
+    uiMax: 2.0,
+    uiDirection: 1,
+    uiLeftText: "左：负向转动",
+    uiRightText: "右：正向转动",
+    nameHints: ["E", "e", "joint5", "joint_5", "5"]
+  },
+  {
+    label: "F / gamma joint 6",
+    topic: "/gamma_arm/joint6/position_cmd",
+    min: -3.2,
+    max: 3.2,
+    home: -0.05,
+    maxSpeed: 3.75,
+    uiMode: "centered",
+    uiMin: -2.0,
+    uiMax: 2.0,
+    uiDirection: 1,
+    uiLeftText: "左：负向转动",
+    uiRightText: "右：正向转动",
+    nameHints: ["F", "f", "joint6", "joint_6", "6"]
+  },
 ];
 
 let ros = null;
@@ -431,9 +506,9 @@ let lastChartDrawTime = 0;
 const CHART_DRAW_INTERVAL_MS = 100;
 
 const state = joints.map(j => ({
-  current: j.home,       // smoothed command actually published by the web page
-  target: j.home,        // desired angle from slider/input
-  actual: null,          // feedback angle from /gamma_arm/joint_states
+  current: j.home,
+  target: j.home,
+  actual: null,
   history: [],
   slider: null,
   targetInput: null,
@@ -457,12 +532,51 @@ function clamp(x, lo, hi) {
   return Math.max(lo, Math.min(hi, x));
 }
 
+function isCenteredSlider(j) {
+  return j.uiMode === "centered";
+}
+
+function sliderMin(j) {
+  return isCenteredSlider(j) ? j.uiMin : j.min;
+}
+
+function sliderMax(j) {
+  return isCenteredSlider(j) ? j.uiMax : j.max;
+}
+
+function sliderHomeValue(j) {
+  return isCenteredSlider(j) ? 0.0 : j.home;
+}
+
+function sliderToAngle(j, sliderValue) {
+  const v = Number(sliderValue);
+  if (isCenteredSlider(j)) {
+    return clamp(j.home + (j.uiDirection || 1) * v, j.min, j.max);
+  }
+  return clamp(v, j.min, j.max);
+}
+
+function angleToSlider(j, angle) {
+  const a = Number(angle);
+  if (isCenteredSlider(j)) {
+    return clamp((a - j.home) / (j.uiDirection || 1), sliderMin(j), sliderMax(j));
+  }
+  return clamp(a, j.min, j.max);
+}
+
 function buildUI() {
   grid.innerHTML = "";
 
   joints.forEach((j, i) => {
     const card = document.createElement("div");
     card.className = "joint";
+
+    const rangeMin = sliderMin(j);
+    const rangeMax = sliderMax(j);
+    const rangeHome = sliderHomeValue(j);
+    const sliderHint = isCenteredSlider(j)
+      ? `<div class="joint-topic">${j.uiHint || `${j.uiLeftText || "左"} · 中心=初始位 ${fmt(j.home)} · ${j.uiRightText || "右"}`}</div>`
+      : "";
 
     card.innerHTML = `
       <div class="joint-head">
@@ -478,7 +592,7 @@ function buildUI() {
         <div class="value"><div class="k">最大速度</div><div class="v" id="spd-${i}">${fmt(j.maxSpeed)}</div></div>
       </div>
 
-      <input id="slider-${i}" type="range" min="${j.min}" max="${j.max}" step="0.001" value="${j.home}" />
+      <input id="slider-${i}" type="range" min="${rangeMin}" max="${rangeMax}" step="0.001" value="${rangeHome}" />\n      ${sliderHint}
 
       <div class="chart-wrap">
         <canvas class="joint-chart" id="chart-${i}"></canvas>
@@ -504,20 +618,29 @@ function buildUI() {
     s.chart = document.getElementById(`chart-${i}`);
     s.ctx = s.chart.getContext("2d");
 
-    function setTarget(v) {
+    function setTargetAngle(v) {
       v = clamp(Number(v), j.min, j.max);
       s.target = v;
-      s.slider.value = v;
+      s.slider.value = angleToSlider(j, v);
       s.targetInput.value = v;
       s.targetEl.textContent = fmt(v);
       updateErrorDisplay(i);
     }
 
-    s.slider.addEventListener("input", e => setTarget(e.target.value));
-    s.targetInput.addEventListener("change", e => setTarget(e.target.value));
+    function setTargetFromSlider(sliderValue) {
+      const v = sliderToAngle(j, sliderValue);
+      s.target = v;
+      s.slider.value = sliderValue;
+      s.targetInput.value = v;
+      s.targetEl.textContent = fmt(v);
+      updateErrorDisplay(i);
+    }
 
-    document.getElementById(`zero-${i}`).addEventListener("click", () => setTarget(0.0));
-    document.getElementById(`home-${i}`).addEventListener("click", () => setTarget(j.home));
+    s.slider.addEventListener("input", e => setTargetFromSlider(e.target.value));
+    s.targetInput.addEventListener("change", e => setTargetAngle(e.target.value));
+
+    document.getElementById(`zero-${i}`).addEventListener("click", () => setTargetAngle(0.0));
+    document.getElementById(`home-${i}`).addEventListener("click", () => setTargetAngle(j.home));
 
     drawChart(i);
   });
@@ -638,7 +761,6 @@ function handleJointState(msg) {
       jointIndex = findJointIndexByName(msg.name[k]);
     }
 
-    // 如果 JointState 中没有 name，或 name 匹配失败，则默认按 position 顺序映射 joint1~joint6
     if (jointIndex < 0 && k < joints.length) {
       jointIndex = k;
     }
@@ -662,7 +784,6 @@ function updateErrorDisplay(i) {
     return;
   }
 
-  // 误差定义：目标角 Desired - 实际反馈 Actual
   const error = s.target - s.actual;
   s.errorEl.textContent = fmt(error);
 }
@@ -684,12 +805,10 @@ function publishSmooth() {
 
     const error = s.target - s.current;
 
-    // 速度限制：B 关节默认更慢，避免激发整臂抖动
     const maxStep = j.maxSpeed * speedScale * dt;
     const limitedStep = clamp(error, -maxStep, maxStep);
 
-    // 低通平滑：避免滑块输入高频跳动
-    const smoothStep = limitedStep * alpha + limitedStep * (1 - alpha) * 0.55;
+    const smoothStep = limitedStep * alpha;
 
     if (Math.abs(error) < 0.0005) {
       s.current = s.target;
@@ -798,7 +917,6 @@ function drawChart(i) {
     return padT + (1 - (vv - yMin) / (yMax - yMin)) * plotH;
   }
 
-  // Grid
   ctx.strokeStyle = "rgba(148, 163, 184, 0.16)";
   ctx.lineWidth = 1;
 
@@ -818,7 +936,6 @@ function drawChart(i) {
     ctx.stroke();
   }
 
-  // Axis labels
   ctx.fillStyle = "rgba(229, 231, 235, 0.78)";
   ctx.font = "11px ui-monospace, Menlo, Consolas, monospace";
   ctx.textAlign = "right";
@@ -861,7 +978,6 @@ function drawChart(i) {
   drawLine("command", "#fbbf24", 1.6);
   drawLine("actual", "#22c55e", 2.2);
 
-  // Current numeric overlay
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
   ctx.font = "12px ui-monospace, Menlo, Consolas, monospace";
@@ -874,10 +990,9 @@ function drawChart(i) {
 }
 
 function softStop() {
-  // 软停止：把目标设为当前发布值，不再继续追远处目标
   state.forEach((s, i) => {
     s.target = s.current;
-    s.slider.value = s.current;
+    s.slider.value = angleToSlider(joints[i], s.current);
     s.targetInput.value = s.current;
     s.targetEl.textContent = fmt(s.current);
     updateErrorDisplay(i);
@@ -888,7 +1003,7 @@ function goHome() {
   joints.forEach((j, i) => {
     const s = state[i];
     s.target = j.home;
-    s.slider.value = j.home;
+    s.slider.value = angleToSlider(j, j.home);
     s.targetInput.value = j.home;
     s.targetEl.textContent = fmt(j.home);
     updateErrorDisplay(i);
