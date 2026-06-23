@@ -52,10 +52,8 @@ while [[ $# -gt 0 ]]; do
             ;;
         -h|--help)
             echo "Usage:"
-            echo "  bash docker/run_gz_sitl.sh"
-            echo "  bash docker/run_gz_sitl.sh --build"
-            echo "  bash docker/run_gz_sitl.sh --profile q940_lab_landingbox"
-            echo "  bash docker/run_gz_sitl.sh --build --profile q940_lab_landingbox"
+            echo "  bash docker/run_gz_sitl.sh --profile \"Entity 1\""
+            echo "  bash docker/run_gz_sitl.sh --build --profile \"Entity 1\""
             echo "  bash docker/run_gz_sitl.sh --list"
             exit 0
             ;;

@@ -2,6 +2,7 @@ FROM osrf/ros:humble-desktop-full
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DISTRO=humble
+ENV AMENT_TRACE_SETUP_FILES=
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
@@ -189,13 +190,42 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && if [ "$(lsb_release -rs)" = "24.04" ]; then apt-get install -y --no-install-recommends cppzmq-dev; fi \
     && rm -rf /var/lib/apt/lists/*
 
+# Embedded Gamma Arm Web Control GUI dependencies.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libnss3 \
+    libxss1 \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libgtk-3-0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libxkbcommon-x11-0 \
+    libxcb-cursor0 \
+    libxcb-icccm4 \
+    libxcb-image0 \
+    libxcb-keysyms1 \
+    libxcb-render-util0 \
+    libxcb-xinerama0 \
+    libxcb-xinput0 \
+    libxcb-xfixes0 \
+    libxcb-shape0 \
+    libxcb-randr0 \
+    libxcb-render0 \
+    libxcb-sync1 \
+    libxcb-xkb1 \
+    fonts-dejavu-core \
+    fonts-noto-cjk \
+    && rm -rf /var/lib/apt/lists/*
+
 # PX4 Python dependencies.
 COPY Tools/setup/requirements.txt /tmp/px4-requirements.txt
 
 RUN python3 -m pip install --no-cache-dir -r /tmp/px4-requirements.txt && \
     python3 -m pip install --no-cache-dir \
         MAVProxy \
-        pymavlink
+        pymavlink \
+        PySide6
 
 ARG USERNAME=px4
 ARG USER_UID=1000
@@ -224,6 +254,9 @@ WORKDIR /workspace/VisionFlow-PX4
 
 ENV CCACHE_DIR=/home/${USERNAME}/.ccache
 ENV QT_X11_NO_MITSHM=1
+ENV QTWEBENGINE_DISABLE_SANDBOX=1
+ENV QTWEBENGINE_CHROMIUM_FLAGS="--no-sandbox --disable-gpu --disable-dev-shm-usage"
+ENV XDG_RUNTIME_DIR=/tmp/runtime-${USERNAME}
 ENV LIBGL_ALWAYS_SOFTWARE=0
 
 ENTRYPOINT ["/entrypoint.sh"]

@@ -21,13 +21,19 @@ services:
     environment:
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
+      - QTWEBENGINE_DISABLE_SANDBOX=1
+      - QTWEBENGINE_CHROMIUM_FLAGS=--no-sandbox --disable-gpu --disable-dev-shm-usage
+      - XDG_RUNTIME_DIR=/tmp/runtime-px4
       - LIBGL_ALWAYS_SOFTWARE=0
       - CCACHE_DIR=/home/px4/.ccache
       - ROS_DISTRO=humble
+      - AMENT_TRACE_SETUP_FILES=
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
 
     network_mode: host
+    ipc: host
+    shm_size: "2gb"
     privileged: true
     stdin_open: true
     tty: true
