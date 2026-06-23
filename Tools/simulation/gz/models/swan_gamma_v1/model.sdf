@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <sdf version="1.9">
-  <model name="swan_gamma">
+  <model name="swan_gamma_v1">
     <static>false</static>
     <self_collide>false</self_collide>
     <enable_wind>false</enable_wind>
 
     <include merge="true">
-      <uri>model://swan_uav</uri>
+      <uri>model://swan_uav_v1</uri>
       <pose>0 0 0 0 0 0</pose>
     </include>
 
