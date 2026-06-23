@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <sdf version="1.9">
   <model name="swan_uav">
+    <self_collide>true</self_collide>
     <link name="base_link">
       <inertial>
         <pose>0 0 0 0 -0 0</pose>
@@ -113,6 +114,36 @@
           <izz>0.0114</izz>
         </inertia>
       </inertial>
+      <!-- Simplified collision for battery pack -->
+      <collision name="bat_Link_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.32 0.18 0.10</size>
+          </box>
+        </geometry>
+        <max_contacts>20</max_contacts>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0.0</restitution_coefficient>
+            <threshold>100000.0</threshold>
+          </bounce>
+          <contact>
+            <ode>
+              <kp>100000</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
       <visual name="bat_Link_visual">
         <pose>0 0 0 0 -0 0</pose>
         <geometry>
@@ -161,6 +192,67 @@
           <izz>0.000475</izz>
         </inertia>
       </inertial>
+      <!-- Simplified collision for motor hub and propeller disk -->
+      <collision name="rotor_1_motor_collision">
+        <pose>0 0 -0.02 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.055</radius>
+            <length>0.06</length>
+          </cylinder>
+        </geometry>
+        <max_contacts>20</max_contacts>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0.0</restitution_coefficient>
+            <threshold>100000.0</threshold>
+          </bounce>
+          <contact>
+            <ode>
+              <kp>100000</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
+      <collision name="rotor_1_prop_disk_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.17</radius>
+            <length>0.012</length>
+          </cylinder>
+        </geometry>
+        <max_contacts>20</max_contacts>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0.0</restitution_coefficient>
+            <threshold>100000.0</threshold>
+          </bounce>
+          <contact>
+            <ode>
+              <kp>100000</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
       <visual name="rotor_1_visual">
         <pose>0 0 0 0 -0 0</pose>
         <geometry>
@@ -210,6 +302,67 @@
           <izz>0.000475</izz>
         </inertia>
       </inertial>
+      <!-- Simplified collision for motor hub and propeller disk -->
+      <collision name="rotor_2_motor_collision">
+        <pose>0 0 -0.02 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.055</radius>
+            <length>0.06</length>
+          </cylinder>
+        </geometry>
+        <max_contacts>20</max_contacts>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0.0</restitution_coefficient>
+            <threshold>100000.0</threshold>
+          </bounce>
+          <contact>
+            <ode>
+              <kp>100000</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
+      <collision name="rotor_2_prop_disk_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.17</radius>
+            <length>0.012</length>
+          </cylinder>
+        </geometry>
+        <max_contacts>20</max_contacts>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0.0</restitution_coefficient>
+            <threshold>100000.0</threshold>
+          </bounce>
+          <contact>
+            <ode>
+              <kp>100000</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
       <visual name="rotor_2_visual">
         <pose>0 0 0 3.14159 -0 0</pose>
         <geometry>
@@ -259,6 +412,67 @@
           <izz>0.000475</izz>
         </inertia>
       </inertial>
+      <!-- Simplified collision for motor hub and propeller disk -->
+      <collision name="rotor_3_motor_collision">
+        <pose>0 0 -0.02 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.055</radius>
+            <length>0.06</length>
+          </cylinder>
+        </geometry>
+        <max_contacts>20</max_contacts>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0.0</restitution_coefficient>
+            <threshold>100000.0</threshold>
+          </bounce>
+          <contact>
+            <ode>
+              <kp>100000</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
+      <collision name="rotor_3_prop_disk_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.17</radius>
+            <length>0.012</length>
+          </cylinder>
+        </geometry>
+        <max_contacts>20</max_contacts>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0.0</restitution_coefficient>
+            <threshold>100000.0</threshold>
+          </bounce>
+          <contact>
+            <ode>
+              <kp>100000</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
       <visual name="rotor_3_visual">
         <pose>0 0 0 0 -0 0</pose>
         <geometry>
@@ -308,6 +522,67 @@
           <izz>0.000475</izz>
         </inertia>
       </inertial>
+      <!-- Simplified collision for motor hub and propeller disk -->
+      <collision name="rotor_4_motor_collision">
+        <pose>0 0 -0.02 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.055</radius>
+            <length>0.06</length>
+          </cylinder>
+        </geometry>
+        <max_contacts>20</max_contacts>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0.0</restitution_coefficient>
+            <threshold>100000.0</threshold>
+          </bounce>
+          <contact>
+            <ode>
+              <kp>100000</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
+      <collision name="rotor_4_prop_disk_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.17</radius>
+            <length>0.012</length>
+          </cylinder>
+        </geometry>
+        <max_contacts>20</max_contacts>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0.0</restitution_coefficient>
+            <threshold>100000.0</threshold>
+          </bounce>
+          <contact>
+            <ode>
+              <kp>100000</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
       <visual name="rotor_4_visual">
         <pose>0 0 0 3.14159 -0 0</pose>
         <geometry>
@@ -328,8 +603,6 @@
 
     <static>false</static>
 
-    <!-- Use same motor params as GAMMA original: motorConstant=4.5e-05, maxRotVelocity=1300 -->
-    <!-- motor mapping: 0=FR(cw) 1=BL(cw) 2=FL(ccw) 3=BR(ccw) -->
     <plugin filename="gz-sim-multicopter-motor-model-system" name="gz::sim::systems::MulticopterMotorModel">
       <jointName>rotor_1_joint</jointName>
       <linkName>rotor_1</linkName>
