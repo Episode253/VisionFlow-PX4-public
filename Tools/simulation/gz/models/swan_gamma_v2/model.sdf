@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <model name="swan_gamma_v2">
+    <static>false</static>
+    <self_collide>false</self_collide>
+    <enable_wind>false</enable_wind>
+
+    <include merge="true">
+      <uri>model://swan_uav_v2</uri>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>gamma_arm</name>
+      <uri>model://gamma_arm</uri>
+      <pose>0.39811 0 -0.000287 -2.6443 0 0</pose>
+    </include>
+
+    <joint name="swan_uav_arm_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>gamma_arm::gamma_arm_base_link</child>
+    </joint>
+
+    <!-- Include gripper4 for end-effector -->
+    <include>
+      <name>gripper4</name>
+      <uri>model://gripper4</uri>
+      <pose relative_to="gamma_arm::F_Link">-0.003 0 0.025 0 0 0</pose>
+    </include>
+
+    <joint name="swan_gripper_joint" type="fixed">
+      <parent>gamma_arm::F_Link</parent>
+      <child>gripper4::base_link</child>
+    </joint>
+
+  </model>
+</sdf>
