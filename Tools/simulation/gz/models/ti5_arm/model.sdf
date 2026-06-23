@@ -4,7 +4,6 @@
     <static>false</static>
     <self_collide>false</self_collide>
     <enable_wind>false</enable_wind>
-    <!-- <link name="base_link"> -->
     <link name="ti5_arm_base_link">
       <inertial>
         <pose>0.000202 -0 0.03962 0 -0 0</pose>
@@ -36,8 +35,6 @@
       </visual>
     </link>
     <joint name="A" type="revolute">
-      <!-- <pose relative_to="base_link">-0.000181 0 0.097 0 0 0</pose>
-      <parent>base_link</parent> -->
       <pose relative_to="ti5_arm_base_link">-0.000181 0 0.097 0 0 0</pose>
       <parent>ti5_arm_base_link</parent>
       <child>A_Link</child>
@@ -352,6 +349,7 @@
         <cast_shadows>true</cast_shadows>
       </visual>
     </link>
+
     <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
       <topic>/model/ti5_arm/joint_state</topic>
       <joint_name>A</joint_name>
@@ -361,6 +359,7 @@
       <joint_name>E</joint_name>
       <joint_name>F</joint_name>
     </plugin>
+
     <plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher">
       <publish_link_pose>true</publish_link_pose>
       <publish_visual_pose>false</publish_visual_pose>
@@ -371,6 +370,7 @@
       <use_pose_vector_msg>true</use_pose_vector_msg>
       <update_frequency>100</update_frequency>
     </plugin>
+
     <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
       <joint_name>A</joint_name>
       <joint_index>0</joint_index>
@@ -384,6 +384,7 @@
       <cmd_min>-180.0</cmd_min>
       <initial_position>0.0</initial_position>
     </plugin>
+
     <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
       <joint_name>B</joint_name>
       <joint_index>0</joint_index>
@@ -397,6 +398,7 @@
       <cmd_min>-200.0</cmd_min>
       <initial_position>0.0</initial_position>
     </plugin>
+
     <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
       <joint_name>C</joint_name>
       <joint_index>0</joint_index>
@@ -410,6 +412,7 @@
       <cmd_min>-80.0</cmd_min>
       <initial_position>0.0</initial_position>
     </plugin>
+
     <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
       <joint_name>D</joint_name>
       <joint_index>0</joint_index>
@@ -423,6 +426,7 @@
       <cmd_min>-20.0</cmd_min>
       <initial_position>0.0</initial_position>
     </plugin>
+
     <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
       <joint_name>E</joint_name>
       <joint_index>0</joint_index>
@@ -436,6 +440,7 @@
       <cmd_min>-10.0</cmd_min>
       <initial_position>-0.7854</initial_position>
     </plugin>
+
     <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
       <joint_name>F</joint_name>
       <joint_index>0</joint_index>
