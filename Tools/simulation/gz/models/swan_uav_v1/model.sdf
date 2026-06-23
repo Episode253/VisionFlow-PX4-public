@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <sdf version="1.9">
-  <model name="swan_uav">
+  <model name="swan_uav_v1">
     <self_collide>true</self_collide>
     <link name="base_link">
       <inertial>
@@ -15,7 +15,6 @@
           <izz>0.2024</izz>
         </inertia>
       </inertial>
-      <!-- Collision box: covers body + landing gear feet (Z: -0.355 ~ +0.025) -->
       <collision name="base_link_collision">
         <pose>0 0 -0.17 0 0 0</pose>
         <geometry>
@@ -40,7 +39,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>model://swan_uav/meshes/base_link.STL</uri>
+            <uri>model://swan_uav_v1/meshes/base_link.STL</uri>
           </mesh>
         </geometry>
         <material>
@@ -50,7 +49,7 @@
           <emissive>0 0 0 1</emissive>
         </material>
       </visual>
-      <!-- Sensors on base_link for PX4 gz_bridge compatibility -->
+
       <sensor name="air_pressure_sensor" type="air_pressure">
         <always_on>true</always_on>
         <update_rate>50</update_rate>
@@ -94,7 +93,6 @@
       </sensor>
     </link>
 
-    <!-- Battery -->
     <joint name="bat_joint" type="fixed">
       <pose relative_to="base_link">-0.49118 -2.1e-05 -0.031987 0 -0 0</pose>
       <parent>base_link</parent>
@@ -114,7 +112,6 @@
           <izz>0.0114</izz>
         </inertia>
       </inertial>
-      <!-- Simplified collision for battery pack -->
       <collision name="bat_Link_collision">
         <pose>0 0 0 0 0 0</pose>
         <geometry>
@@ -149,7 +146,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>model://swan_uav/meshes/bat_Link.STL</uri>
+            <uri>model://swan_uav_v1/meshes/bat_Link.STL</uri>
           </mesh>
         </geometry>
         <material>
@@ -161,7 +158,6 @@
       </visual>
     </link>
 
-    <!-- Rotor 1: front-right (turningDirection: cw) -->
     <joint name="rotor_1_joint" type="revolute">
       <pose relative_to="base_link">0.29001 0.34723 0.015659 0 -0 0</pose>
       <parent>base_link</parent>
@@ -192,7 +188,6 @@
           <izz>0.000475</izz>
         </inertia>
       </inertial>
-      <!-- Simplified collision for motor hub and propeller disk -->
       <collision name="rotor_1_motor_collision">
         <pose>0 0 -0.02 0 0 0</pose>
         <geometry>
@@ -258,7 +253,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>model://swan_uav/meshes/rot1_Link.STL</uri>
+            <uri>model://swan_uav_v1/meshes/rot1_Link.STL</uri>
           </mesh>
         </geometry>
         <material>
@@ -271,7 +266,6 @@
       </visual>
     </link>
 
-    <!-- Rotor 2: back-left (turningDirection: cw) -->
     <joint name="rotor_2_joint" type="revolute">
       <pose relative_to="base_link">-0.30999 -0.33727 0.015659 0 -0 0</pose>
       <parent>base_link</parent>
@@ -302,7 +296,6 @@
           <izz>0.000475</izz>
         </inertia>
       </inertial>
-      <!-- Simplified collision for motor hub and propeller disk -->
       <collision name="rotor_2_motor_collision">
         <pose>0 0 -0.02 0 0 0</pose>
         <geometry>
@@ -368,7 +361,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>model://swan_uav/meshes/rot3_Link.STL</uri>
+            <uri>model://swan_uav_v1/meshes/rot2_Link.STL</uri>
           </mesh>
         </geometry>
         <material>
@@ -381,7 +374,6 @@
       </visual>
     </link>
 
-    <!-- Rotor 3: front-left (turningDirection: ccw) -->
     <joint name="rotor_3_joint" type="revolute">
       <pose relative_to="base_link">0.29001 -0.34727 0.015659 0 -0 0</pose>
       <parent>base_link</parent>
@@ -412,7 +404,6 @@
           <izz>0.000475</izz>
         </inertia>
       </inertial>
-      <!-- Simplified collision for motor hub and propeller disk -->
       <collision name="rotor_3_motor_collision">
         <pose>0 0 -0.02 0 0 0</pose>
         <geometry>
@@ -478,7 +469,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>model://swan_uav/meshes/rot2_Link.STL</uri>
+            <uri>model://swan_uav_v1/meshes/rot3_Link.STL</uri>
           </mesh>
         </geometry>
         <material>
@@ -491,7 +482,6 @@
       </visual>
     </link>
 
-    <!-- Rotor 4: back-right (turningDirection: ccw) -->
     <joint name="rotor_4_joint" type="revolute">
       <pose relative_to="base_link">-0.30999 0.33723 0.015659 0 -0 0</pose>
       <parent>base_link</parent>
@@ -522,7 +512,6 @@
           <izz>0.000475</izz>
         </inertia>
       </inertial>
-      <!-- Simplified collision for motor hub and propeller disk -->
       <collision name="rotor_4_motor_collision">
         <pose>0 0 -0.02 0 0 0</pose>
         <geometry>
@@ -588,7 +577,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>model://swan_uav/meshes/rot4_Link.STL</uri>
+            <uri>model://swan_uav_v1/meshes/rot4_Link.STL</uri>
           </mesh>
         </geometry>
         <material>
@@ -672,8 +661,7 @@
     </plugin>
 
     <!-- Ground-truth odometry publisher -->
-    <plugin filename="gz-sim-odometry-publisher-system"
-            name="gz::sim::systems::OdometryPublisher">
+    <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
       <dimensions>3</dimensions>
       <odom_frame>world</odom_frame>
       <robot_base_frame>base_link</robot_base_frame>
