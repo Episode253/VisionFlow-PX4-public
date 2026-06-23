@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
-     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
-     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
-  name="GAMMA0">
-  
-  <link name="dummy_root_link"/> 
-    <joint name="dummy_to_base" type="fixed"> 
-      <parent link="dummy_root_link"/>   <!-- 新增这一行 -->
-      <child link="base_link"/>          <!-- 新增这一行 -->
-      <origin xyz="0 0 0" rpy="0 0 0"/> 
+  name="gamma_arm">
+
+  <link name="dummy_root_link"/>
+    <joint name="dummy_to_base" type="fixed">
+      <parent link="dummy_root_link"/>
+      <child link="base_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
     </joint>
 
   <link
@@ -34,7 +31,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://GAMMA0/meshes/base_link.STL" />
+          filename="package://gamma_arm/meshes/base_link.STL" />
       </geometry>
       <material
         name="">
@@ -48,7 +45,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://GAMMA0/meshes/base_link.STL" />
+          filename="package://gamma_arm/meshes/base_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -74,7 +71,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://GAMMA0/meshes/A_Link.STL" />
+          filename="package://gamma_arm/meshes/A_Link.STL" />
       </geometry>
       <material
         name="">
@@ -88,7 +85,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://GAMMA0/meshes/A_Link.STL" />
+          filename="package://gamma_arm/meshes/A_Link.STL" />
       </geometry>
     </collision>
   </link>
@@ -135,7 +132,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://GAMMA0/meshes/B_Link.STL" />
+          filename="package://gamma_arm/meshes/B_Link.STL" />
       </geometry>
       <material
         name="">
@@ -149,7 +146,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://GAMMA0/meshes/B_Link.STL" />
+          filename="package://gamma_arm/meshes/B_Link.STL" />
       </geometry>
     </collision>
   </link>
@@ -196,7 +193,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://GAMMA0/meshes/C_Link.STL" />
+          filename="package://gamma_arm/meshes/C_Link.STL" />
       </geometry>
       <material
         name="">
@@ -210,7 +207,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://GAMMA0/meshes/C_Link.STL" />
+          filename="package://gamma_arm/meshes/C_Link.STL" />
       </geometry>
     </collision>
   </link>
@@ -257,7 +254,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://GAMMA0/meshes/D_Link.STL" />
+          filename="package://gamma_arm/meshes/D_Link.STL" />
       </geometry>
       <material
         name="">
@@ -271,7 +268,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://GAMMA0/meshes/D_Link.STL" />
+          filename="package://gamma_arm/meshes/D_Link.STL" />
       </geometry>
     </collision>
   </link>
@@ -318,7 +315,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://GAMMA0/meshes/E_Link.STL" />
+          filename="package://gamma_arm/meshes/E_Link.STL" />
       </geometry>
       <material
         name="">
@@ -332,7 +329,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://GAMMA0/meshes/E_Link.STL" />
+          filename="package://gamma_arm/meshes/E_Link.STL" />
       </geometry>
     </collision>
   </link>
@@ -379,7 +376,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://GAMMA0/meshes/F_Link.STL" />
+          filename="package://gamma_arm/meshes/F_Link.STL" />
       </geometry>
       <material
         name="">
@@ -393,7 +390,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://GAMMA0/meshes/F_Link.STL" />
+          filename="package://gamma_arm/meshes/F_Link.STL" />
       </geometry>
     </collision>
   </link>

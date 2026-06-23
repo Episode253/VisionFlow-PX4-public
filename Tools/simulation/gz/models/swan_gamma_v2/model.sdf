@@ -13,7 +13,7 @@
     <include>
       <name>gamma_arm</name>
       <uri>model://gamma_arm</uri>
-      <pose>0.39811 0 -0.000287 -2.6443 0 0</pose>
+      <pose>0.405 -0.015 -0.0295 -2.6443 0 0</pose>
     </include>
 
     <joint name="swan_uav_arm_joint" type="fixed">

@@ -2,7 +2,7 @@
 <sdf version="1.9">
   <model name="gamma_arm">
     <static>false</static>
-    <self_collide>true</self_collide>
+    <self_collide>false</self_collide>
     <enable_wind>false</enable_wind>
 
     <link name="gamma_arm_base_link">
@@ -232,6 +232,7 @@
         </surface>
       </collision>
     </link>
+
     <joint name="C" type="revolute">
       <pose relative_to="B_Link">-0.16587 -0.057 0.18536 0 -0.87406 0</pose>
       <parent>B_Link</parent>
@@ -245,7 +246,7 @@
           <velocity>3.75</velocity>
         </limit>
         <dynamics>
-          <damping>0.01</damping>
+          <damping>0.5</damping>
           <friction>0.01</friction>
           <spring_reference>0</spring_reference>
           <spring_stiffness>0</spring_stiffness>
@@ -315,6 +316,7 @@
         </surface>
       </collision>
     </link>
+
     <joint name="D" type="revolute">
       <pose relative_to="C_Link">0.023891 0.025 0.060208 -1.57080 0.14406 0</pose>
       <parent>C_Link</parent>
@@ -328,7 +330,7 @@
           <velocity>3.75</velocity>
         </limit>
         <dynamics>
-          <damping>0.01</damping>
+          <damping>0.5</damping>
           <friction>0.01</friction>
           <spring_reference>0</spring_reference>
           <spring_stiffness>0</spring_stiffness>
@@ -397,6 +399,7 @@
         </surface>
       </collision>
     </link>
+
     <joint name="E" type="revolute">
       <pose relative_to="D_Link">0.15 -0.0335 0 0 1.57073 0</pose>
       <parent>D_Link</parent>
@@ -410,7 +413,7 @@
           <velocity>3.75</velocity>
         </limit>
         <dynamics>
-          <damping>0.001</damping>
+          <damping>0.5</damping>
           <friction>0.01</friction>
           <spring_reference>0</spring_reference>
           <spring_stiffness>0</spring_stiffness>
@@ -480,6 +483,7 @@
         </surface>
       </collision>
     </link>
+
     <joint name="F" type="revolute">
       <pose relative_to="E_Link">0 0.035 0.084 0 0 0</pose>
       <parent>E_Link</parent>
@@ -493,7 +497,7 @@
           <velocity>3.75</velocity>
         </limit>
         <dynamics>
-          <damping>0.001</damping>
+          <damping>0.5</damping>
           <friction>0.01</friction>
           <spring_reference>0</spring_reference>
           <spring_stiffness>0</spring_stiffness>
