@@ -1,0 +1,1 @@
+/usr/local/lib/libgamma_arm_control.so

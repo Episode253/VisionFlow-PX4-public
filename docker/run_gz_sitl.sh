@@ -243,7 +243,7 @@ docker compose -f docker/compose.yaml run \
         echo "[container] EXTRA_CMAKE_ARGS=${PX4_SELECTED_EXTRA_CMAKE_ARGS}"
 
         build_gamma_arm_control_plugin() {
-            local plugin_dir="/workspace/VisionFlow-PX4/windshape_dev/tools/gamma_arm_control"
+            local plugin_dir="/workspace/VisionFlow-PX4/windshape_dev/plugins/gamma_arm_control"
             local build_dir="${plugin_dir}/build"
             local cache_file="${build_dir}/CMakeCache.txt"
 

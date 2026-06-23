@@ -104,8 +104,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Architecture-specific NuttX toolchain dependencies.
-# For normal x86_64/amd64 development machines, install arm-none-eabi,
-# multilib support, esptool, and Xtensa ESP compiler.
+ARG INSTALL_XTENSA_ESP=0
 RUN set -eux; \
     ARCH="$(uname -m)"; \
     if [ "${ARCH}" = "x86_64" ]; then \
@@ -120,10 +119,14 @@ RUN set -eux; \
             python3 -m pip install --no-cache-dir esptool; \
         fi; \
         rm -rf /var/lib/apt/lists/*; \
-        XTENSA_FILE_NAME="xtensa-esp-elf-13.2.0_20240530-x86_64-linux-gnu.tar.xz"; \
-        wget -q -P /tmp "https://github.com/espressif/crosstool-NG/releases/download/esp-13.2.0_20240530/${XTENSA_FILE_NAME}"; \
-        tar -xf "/tmp/${XTENSA_FILE_NAME}" -C /opt; \
-        rm "/tmp/${XTENSA_FILE_NAME}"; \
+        if [ "${INSTALL_XTENSA_ESP}" = "1" ]; then \
+            XTENSA_FILE_NAME="xtensa-esp-elf-13.2.0_20240530-x86_64-linux-gnu.tar.xz"; \
+            wget --progress=dot:giga --tries=3 --timeout=30 -P /tmp "https://github.com/espressif/crosstool-NG/releases/download/esp-13.2.0_20240530/${XTENSA_FILE_NAME}"; \
+            tar -xf "/tmp/${XTENSA_FILE_NAME}" -C /opt; \
+            rm "/tmp/${XTENSA_FILE_NAME}"; \
+        else \
+            echo "Skipping optional Xtensa ESP compiler download. Set INSTALL_XTENSA_ESP=1 if needed."; \
+        fi; \
     elif [ "${ARCH}" = "aarch64" ]; then \
         apt-get update; \
         apt-get install -y --no-install-recommends \
