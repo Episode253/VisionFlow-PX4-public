@@ -269,6 +269,86 @@ docker compose -f docker/compose.yaml run \
             EXTRA_CMAKE_ARGS="${PX4_SELECTED_EXTRA_CMAKE_ARGS}"
         }
 
+        run_px4_make_with_ucdr_watchdog() {
+            local build_log="$1"
+            local attempt="$2"
+            local stall_timeout="${PX4_UCDR_HEADER_STALL_TIMEOUT:-5}"
+            local check_interval="${PX4_UCDR_HEADER_WATCH_INTERVAL:-5}"
+            local watchdog_status
+            local build_status
+            local watchdog_pid
+
+            : > "${build_log}"
+            watchdog_status="$(mktemp)"
+            echo "0" > "${watchdog_status}"
+
+            echo "[container] PX4 build attempt ${attempt}: uORB ucdr watchdog ${stall_timeout}s"
+
+            set +e
+            (
+                local last_size="0"
+                local current_size="0"
+                local stable_since
+                local now
+
+                stable_since="$(date +%s)"
+
+                while true; do
+                    if grep -q "Startup script returned successfully" "${build_log}" 2>/dev/null; then
+                        exit 0
+                    fi
+
+                    if grep -q "Generating uORB topic ucdr headers" "${build_log}" 2>/dev/null; then
+                        current_size="$(wc -c < "${build_log}" 2>/dev/null || echo 0)"
+
+                        if [ "${current_size}" != "${last_size}" ]; then
+                            last_size="${current_size}"
+                            stable_since="$(date +%s)"
+                        else
+                            now="$(date +%s)"
+
+                            if [ $((now - stable_since)) -ge "${stall_timeout}" ]; then
+                                echo "124" > "${watchdog_status}"
+                                echo ""
+                                echo "[container] PX4 build appears stuck after Generating uORB topic ucdr headers for ${stall_timeout}s."
+                                echo "[container] Stop this build attempt and retry automatically..."
+
+                                pkill -TERM -f "make px4_sitl" >/dev/null 2>&1 || true
+                                sleep 5
+
+                                pkill -KILL -f "make px4_sitl" >/dev/null 2>&1 || true
+                                exit 124
+                            fi
+                        fi
+                    else
+                        stable_since="$(date +%s)"
+                        last_size="$(wc -c < "${build_log}" 2>/dev/null || echo 0)"
+                    fi
+
+                    sleep "${check_interval}"
+                done
+            ) &
+            watchdog_pid="$!"
+
+            set -o pipefail
+            run_px4_make 2>&1 | tee "${build_log}"
+            build_status="$?"
+            set +o pipefail
+
+            kill "${watchdog_pid}" >/dev/null 2>&1 || true
+            wait "${watchdog_pid}" >/dev/null 2>&1 || true
+
+            if [ "$(cat "${watchdog_status}" 2>/dev/null || echo 0)" = "124" ]; then
+                rm -f "${watchdog_status}"
+                set -e
+                return 124
+            fi
+
+            rm -f "${watchdog_status}"
+            set -e
+            return "${build_status}"
+        }
+
         build_gamma_arm_control_plugin
 
         sudo ldconfig
@@ -278,14 +358,34 @@ docker compose -f docker/compose.yaml run \
         export GAMMA_URDF_PATH="/workspace/VisionFlow-PX4/Tools/simulation/gz/models/gamma_arm/gamma_arm.urdf"
 
         BUILD_LOG="$(mktemp)"
-        if ! run_px4_make 2>&1 | tee "${BUILD_LOG}"; then
-            if grep -Eq "CMakeCache.txt.*is different than the directory|needed by .* missing and no known rule to make it" "${BUILD_LOG}"; then
+        UCDR_RETRIES="${PX4_UCDR_HEADER_RETRIES:-1}"
+        BUILD_ATTEMPT=1
+        STALE_CACHE_RETRIED="false"
+
+        while true; do
+            if run_px4_make_with_ucdr_watchdog "${BUILD_LOG}" "${BUILD_ATTEMPT}"; then
+                break
+            fi
+
+            BUILD_STATUS="$?"
+
+            if [ "${BUILD_STATUS}" -eq 124 ] && [ "${BUILD_ATTEMPT}" -le "${UCDR_RETRIES}" ]; then
+                BUILD_ATTEMPT=$((BUILD_ATTEMPT + 1))
+                echo ""
+                echo "[container] Retry PX4 build after uORB ucdr header stall (${BUILD_ATTEMPT}/$((UCDR_RETRIES + 1)))..."
+                sleep 2
+                continue
+            fi
+
+            if [ "${STALE_CACHE_RETRIED}" = "false" ] && grep -Eq "CMakeCache.txt.*is different than the directory|needed by .* missing and no known rule to make it" "${BUILD_LOG}"; then
                 echo ""
                 echo "[container] Detected stale PX4 SITL build cache. Remove build/px4_sitl_default and retry..."
                 rm -rf /workspace/VisionFlow-PX4/build/px4_sitl_default
-                run_px4_make
-            else
-                exit 1
+                STALE_CACHE_RETRIED="true"
+                BUILD_ATTEMPT=$((BUILD_ATTEMPT + 1))
+                continue
             fi
-        fi
+
+            exit "${BUILD_STATUS}"
+        done
     '
