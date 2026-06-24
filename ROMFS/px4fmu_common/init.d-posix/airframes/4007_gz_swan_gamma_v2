@@ -62,10 +62,6 @@ param set-default SIM_GZ_EC_MAX4 1000
 
 param set-default MPC_THR_HOVER 0.8
 
-# param set-default MPC_THR_MIN 0.25
-# param set-default MPC_MANTHR_MIN 0.15
-# param set-default MPC_Z_VEL_MAX_UP 1.5
-# param set-default MPC_Z_VEL_MAX_DN 0.5
-# param set-default MPC_ACC_UP_MAX 2.0
-# param set-default MPC_ACC_DOWN_MAX 1.5
-# param set-default MPC_Z_P 2.0
+param set-default USR_LAMBDA_Q_X 12.00
+param set-default USR_LAMBDA_Q_Y 12.00
+param set-default USR_LAMBDA_Q_Z 8.00
