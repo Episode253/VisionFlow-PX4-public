@@ -145,3 +145,5 @@ windshape_dev/tools/gamma_arm_control/build/*
 
 .codex/*
 .agents/*
+
+Tools/simulation/iscca_model/rviz_preview/swan_gamma_v2_rviz.urdf
