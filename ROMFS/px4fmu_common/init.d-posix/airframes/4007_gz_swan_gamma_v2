@@ -63,5 +63,8 @@ param set-default SIM_GZ_EC_MAX4 1000
 param set-default MPC_THR_HOVER 0.8
 
 param set-default USR_LAMBDA_Q_X 12.00
-param set-default USR_LAMBDA_Q_Y 12.00
-param set-default USR_LAMBDA_Q_Z 8.00
+param set-default USR_LAMBDA_Q_Y 14.50
+param set-default USR_LAMBDA_Q_Z 12.00
+param set-default USR_I_YY 0.40
+param set-default USR_I_ZZ 0.40
+param set-default USR_YAWRATE_MAX 40.0
