@@ -1,0 +1,12 @@
+menuconfig MODULES_PREGME_ATT_CONTROL_V2
+	bool "pregme_att_control_v2"
+	default n
+	---help---
+		Enable the custom multicopter attitude/direct actuator control module.
+
+menuconfig USER_PREGME_ATT_CONTROL_V2
+	bool "pregme_att_control_v2 running as userspace module"
+	default n
+	depends on BOARD_PROTECTED && MODULES_PREGME_ATT_CONTROL_V2
+	---help---
+		Run pregme_att_control_v2 in userspace memory on protected builds.
