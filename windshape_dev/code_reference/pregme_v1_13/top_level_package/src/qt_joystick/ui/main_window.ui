@@ -1,0 +1,962 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindowDesign</class>
+ <widget class="QMainWindow" name="MainWindowDesign">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1180</width>
+    <height>720</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>980</width>
+    <height>640</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Mission Deck</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>:/images/icon.png</normaloff>:/images/icon.png</iconset>
+  </property>
+  <property name="locale">
+   <locale language="English" country="Australia"/>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QMainWindow {
+    background: #07120f;
+}
+
+#centralwidget {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                stop:0 #07120f,
+                                stop:0.46 #0e201d,
+                                stop:1 #16251a);
+}
+
+QTabWidget::pane {
+    border: 0;
+    background: transparent;
+}
+
+QTabBar::tab {
+    min-width: 130px;
+    padding: 10px 20px;
+    margin-right: 8px;
+    border-radius: 16px;
+    color: #9fb6ac;
+    background: rgba(255, 255, 255, 24);
+    font: 700 10pt "DejaVu Sans";
+}
+
+QTabBar::tab:selected {
+    color: #07120f;
+    background: #d6f36f;
+}
+
+#heroPanel {
+    border-radius: 28px;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #d6f36f,
+                                stop:0.52 #8ed9b6,
+                                stop:1 #5bc3d6);
+}
+
+#heroTitle {
+    color: #07120f;
+    font: 900 27pt "DejaVu Sans";
+    letter-spacing: 1px;
+}
+
+#heroSubtitle {
+    color: #173028;
+    font: 600 11pt "DejaVu Sans";
+}
+
+#statusPill {
+    color: #d6f36f;
+    background: #07120f;
+    border: 1px solid rgba(214, 243, 111, 150);
+    border-radius: 18px;
+    padding: 8px 14px;
+    font: 800 10pt "DejaVu Sans";
+}
+
+#groupBox_12 {
+    border: 1px solid rgba(214, 243, 111, 72);
+    border-radius: 28px;
+    margin-top: 20px;
+    padding: 28px 24px 24px 24px;
+    background: rgba(7, 18, 15, 190);
+    color: #ecf8d8;
+    font: 900 13pt "DejaVu Sans";
+}
+
+#groupBox_12::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 22px;
+    padding: 0 12px;
+    color: #d6f36f;
+    background: #07120f;
+}
+
+QFrame[panelRole="controlCard"] {
+    border: 1px solid rgba(255, 255, 255, 38);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 18);
+}
+
+QFrame[panelRole="controlCard"]:hover {
+    border: 1px solid rgba(214, 243, 111, 150);
+    background: rgba(214, 243, 111, 28);
+}
+
+QLabel[role="eyebrow"] {
+    color: #91a79e;
+    font: 800 8pt "DejaVu Sans";
+    letter-spacing: 1px;
+}
+
+QLabel[role="channelTitle"] {
+    color: #f1f6e8;
+    font: 900 13pt "DejaVu Sans";
+}
+
+QLabel[role="channelHint"] {
+    color: #9fb6ac;
+    font: 600 9pt "DejaVu Sans";
+}
+
+QComboBox {
+    min-height: 38px;
+    padding: 6px 14px;
+    border-radius: 15px;
+    border: 1px solid rgba(214, 243, 111, 90);
+    color: #f7ffe9;
+    background: rgba(3, 11, 9, 210);
+    font: 800 10pt "DejaVu Sans";
+}
+
+QComboBox:hover {
+    border: 1px solid #d6f36f;
+}
+
+QComboBox::drop-down {
+    border: 0;
+    width: 28px;
+}
+
+QComboBox QAbstractItemView {
+    selection-background-color: #d6f36f;
+    selection-color: #07120f;
+    color: #f7ffe9;
+    background: #0b1815;
+    border: 1px solid #d6f36f;
+    outline: 0;
+}
+
+QLCDNumber {
+    min-height: 42px;
+    border: 1px solid rgba(91, 195, 214, 130);
+    border-radius: 14px;
+    color: #5bc3d6;
+    background: rgba(0, 0, 0, 115);
+}
+
+QPushButton {
+    min-height: 52px;
+    border: 0;
+    border-radius: 20px;
+    padding: 8px 24px;
+    font: 900 13pt "DejaVu Sans";
+}
+
+#button_connect {
+    color: #07120f;
+    background: #d6f36f;
+}
+
+#button_connect:hover {
+    background: #eaff8f;
+}
+
+#button_connect:disabled {
+    color: rgba(7, 18, 15, 120);
+    background: rgba(214, 243, 111, 95);
+}
+
+#quit_button {
+    color: #f8e7d4;
+    background: rgba(214, 95, 75, 210);
+}
+
+#quit_button:hover {
+    background: #eb755d;
+}
+
+QMenuBar {
+    color: #cbd9d2;
+    background: #07120f;
+}
+
+QMenuBar::item:selected, QMenu::item:selected {
+    color: #07120f;
+    background: #d6f36f;
+}
+
+QMenu {
+    color: #ecf8d8;
+    background: #0b1815;
+    border: 1px solid rgba(214, 243, 111, 80);
+}
+
+QStatusBar {
+    color: #9fb6ac;
+    background: #07120f;
+}</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="rootLayout">
+    <property name="leftMargin">
+     <number>24</number>
+    </property>
+    <property name="topMargin">
+     <number>22</number>
+    </property>
+    <property name="rightMargin">
+     <number>24</number>
+    </property>
+    <property name="bottomMargin">
+     <number>20</number>
+    </property>
+    <property name="spacing">
+     <number>18</number>
+    </property>
+    <item>
+     <widget class="QFrame" name="heroPanel">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>138</height>
+       </size>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <layout class="QHBoxLayout" name="heroLayout">
+       <property name="leftMargin">
+        <number>30</number>
+       </property>
+       <property name="topMargin">
+        <number>24</number>
+       </property>
+       <property name="rightMargin">
+        <number>30</number>
+       </property>
+       <property name="bottomMargin">
+        <number>24</number>
+       </property>
+       <item>
+        <layout class="QVBoxLayout" name="heroTextLayout">
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="heroTitle">
+           <property name="text">
+            <string>MISSION DECK</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="heroSubtitle">
+           <property name="text">
+            <string>Virtual RC panel for PX4 / MAVROS channel override</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="heroTextSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>18</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="heroSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="statusPill">
+         <property name="text">
+          <string>ROS LINK: STANDBY</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTabWidget" name="tab_manager">
+      <property name="locale">
+       <locale language="English" country="Australia"/>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab_status">
+       <attribute name="title">
+        <string>Flight Console</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>12</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QGroupBox" name="groupBox_12">
+          <property name="title">
+           <string>Channel Matrix</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <property name="leftMargin">
+            <number>24</number>
+           </property>
+           <property name="topMargin">
+            <number>30</number>
+           </property>
+           <property name="rightMargin">
+            <number>24</number>
+           </property>
+           <property name="bottomMargin">
+            <number>24</number>
+           </property>
+           <property name="spacing">
+            <number>18</number>
+           </property>
+           <item>
+            <layout class="QGridLayout" name="channelGrid">
+             <property name="horizontalSpacing">
+              <number>18</number>
+             </property>
+             <property name="verticalSpacing">
+              <number>18</number>
+             </property>
+             <item row="0" column="0">
+              <widget class="QFrame" name="modeCard">
+               <property name="property" stdset="0">
+                <string>controlCard</string>
+               </property>
+               <property name="panelRole" stdset="0">
+                <string>controlCard</string>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <layout class="QVBoxLayout" name="horizontalLayout">
+                <property name="leftMargin">
+                 <number>18</number>
+                </property>
+                <property name="topMargin">
+                 <number>16</number>
+                </property>
+                <property name="rightMargin">
+                 <number>18</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>16</number>
+                </property>
+                <property name="spacing">
+                 <number>10</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="label">
+                  <property name="role" stdset="0">
+                   <string>channelTitle</string>
+                  </property>
+                  <property name="text">
+                   <string>Primary Flight Mode</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_1_hint">
+                  <property name="role" stdset="0">
+                   <string>channelHint</string>
+                  </property>
+                  <property name="text">
+                   <string>CH5 / SC switch</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="ComboBox_1">
+                  <property name="currentIndex">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Stabilized Hold</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Position Lock</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Offboard Engage</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLCDNumber" name="lcdNumber_1">
+                  <property name="segmentStyle">
+                   <enum>QLCDNumber::Flat</enum>
+                  </property>
+                  <property name="intValue" stdset="0">
+                   <number>-1</number>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QFrame" name="autoCard">
+               <property name="panelRole" stdset="0">
+                <string>controlCard</string>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <layout class="QVBoxLayout" name="horizontalLayout_2">
+                <property name="leftMargin">
+                 <number>18</number>
+                </property>
+                <property name="topMargin">
+                 <number>16</number>
+                </property>
+                <property name="rightMargin">
+                 <number>18</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>16</number>
+                </property>
+                <property name="spacing">
+                 <number>10</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="label_2">
+                  <property name="role" stdset="0">
+                   <string>channelTitle</string>
+                  </property>
+                  <property name="text">
+                   <string>Auto Offboard Gate</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_2_hint">
+                  <property name="role" stdset="0">
+                   <string>channelHint</string>
+                  </property>
+                  <property name="text">
+                   <string>CH6 / SD switch</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="ComboBox_2">
+                  <item>
+                   <property name="text">
+                    <string>Manual Gate</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Auto Gate</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLCDNumber" name="lcdNumber_2">
+                  <property name="segmentStyle">
+                   <enum>QLCDNumber::Flat</enum>
+                  </property>
+                  <property name="intValue" stdset="0">
+                   <number>0</number>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="0" column="2">
+              <widget class="QFrame" name="missionCard">
+               <property name="panelRole" stdset="0">
+                <string>controlCard</string>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <layout class="QVBoxLayout" name="horizontalLayout_3">
+                <property name="leftMargin">
+                 <number>18</number>
+                </property>
+                <property name="topMargin">
+                 <number>16</number>
+                </property>
+                <property name="rightMargin">
+                 <number>18</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>16</number>
+                </property>
+                <property name="spacing">
+                 <number>10</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="label_3">
+                  <property name="role" stdset="0">
+                   <string>channelTitle</string>
+                  </property>
+                  <property name="text">
+                   <string>Mission Selector</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_3_hint">
+                  <property name="role" stdset="0">
+                   <string>channelHint</string>
+                  </property>
+                  <property name="text">
+                   <string>CH7 / SE switch</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="ComboBox_3">
+                  <property name="currentIndex">
+                   <number>1</number>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Route Track</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Launch Hover</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Land Sequence</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLCDNumber" name="lcdNumber_3">
+                  <property name="segmentStyle">
+                   <enum>QLCDNumber::Flat</enum>
+                  </property>
+                  <property name="intValue" stdset="0">
+                   <number>0</number>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QFrame" name="coordinateCard">
+               <property name="panelRole" stdset="0">
+                <string>controlCard</string>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <layout class="QVBoxLayout" name="horizontalLayout_4">
+                <property name="leftMargin">
+                 <number>18</number>
+                </property>
+                <property name="topMargin">
+                 <number>16</number>
+                </property>
+                <property name="rightMargin">
+                 <number>18</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>16</number>
+                </property>
+                <property name="spacing">
+                 <number>10</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="label_4">
+                  <property name="role" stdset="0">
+                   <string>channelTitle</string>
+                  </property>
+                  <property name="text">
+                   <string>Cooperative Task</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_4_hint">
+                  <property name="role" stdset="0">
+                   <string>channelHint</string>
+                  </property>
+                  <property name="text">
+                   <string>CH9 / SB switch</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="ComboBox_4">
+                  <item>
+                   <property name="text">
+                    <string>Task Isolated</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Task Coordinated</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLCDNumber" name="lcdNumber_4">
+                  <property name="segmentStyle">
+                   <enum>QLCDNumber::Flat</enum>
+                  </property>
+                  <property name="intValue" stdset="0">
+                   <number>0</number>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QFrame" name="deltaCard">
+               <property name="panelRole" stdset="0">
+                <string>controlCard</string>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <layout class="QVBoxLayout" name="horizontalLayout_5">
+                <property name="leftMargin">
+                 <number>18</number>
+                </property>
+                <property name="topMargin">
+                 <number>16</number>
+                </property>
+                <property name="rightMargin">
+                 <number>18</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>16</number>
+                </property>
+                <property name="spacing">
+                 <number>10</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="label_5">
+                  <property name="role" stdset="0">
+                   <string>channelTitle</string>
+                  </property>
+                  <property name="text">
+                   <string>Delta Actuator</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_5_hint">
+                  <property name="role" stdset="0">
+                   <string>channelHint</string>
+                  </property>
+                  <property name="text">
+                   <string>CH10 / SA switch</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="ComboBox_5">
+                  <item>
+                   <property name="text">
+                    <string>Delta Down</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Delta Up</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLCDNumber" name="lcdNumber_5">
+                  <property name="segmentStyle">
+                   <enum>QLCDNumber::Flat</enum>
+                  </property>
+                  <property name="intValue" stdset="0">
+                   <number>0</number>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="QFrame" name="armingCard">
+               <property name="panelRole" stdset="0">
+                <string>controlCard</string>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <layout class="QVBoxLayout" name="horizontalLayout_6">
+                <property name="leftMargin">
+                 <number>18</number>
+                </property>
+                <property name="topMargin">
+                 <number>16</number>
+                </property>
+                <property name="rightMargin">
+                 <number>18</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>16</number>
+                </property>
+                <property name="spacing">
+                 <number>10</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="label_6">
+                  <property name="role" stdset="0">
+                   <string>channelTitle</string>
+                  </property>
+                  <property name="text">
+                   <string>Motor Safety</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_6_hint">
+                  <property name="role" stdset="0">
+                   <string>channelHint</string>
+                  </property>
+                  <property name="text">
+                   <string>Arming command channel</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="ComboBox_6">
+                  <item>
+                   <property name="text">
+                    <string>Motors Safe</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Motors Armed</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLCDNumber" name="lcdNumber_6">
+                  <property name="segmentStyle">
+                   <enum>QLCDNumber::Flat</enum>
+                  </property>
+                  <property name="intValue" stdset="0">
+                   <number>0</number>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_7">
+             <property name="spacing">
+              <number>14</number>
+             </property>
+             <item>
+              <spacer name="actionSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="quit_button">
+               <property name="text">
+                <string>Shut Down Panel</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="button_connect">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="toolTip">
+                <string>Connect this virtual transmitter to ROS.</string>
+               </property>
+               <property name="statusTip">
+                <string>Start publishing the configured virtual RC channels.</string>
+               </property>
+               <property name="text">
+                <string>Start ROS Link</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1180</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;Console</string>
+    </property>
+    <addaction name="action_Preferences"/>
+    <addaction name="separator"/>
+    <addaction name="actionAbout"/>
+    <addaction name="actionAbout_Qt"/>
+    <addaction name="separator"/>
+    <addaction name="action_Quit"/>
+   </widget>
+   <addaction name="menu_File"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="action_Quit">
+   <property name="text">
+    <string>&amp;Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
+  </action>
+  <action name="action_Preferences">
+   <property name="text">
+    <string>&amp;Preferences</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>&amp;About Mission Deck</string>
+   </property>
+  </action>
+  <action name="actionAbout_Qt">
+   <property name="text">
+    <string>About &amp;Qt</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>action_Quit</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindowDesign</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>quit_button</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindowDesign</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>859</x>
+     <y>552</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>469</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

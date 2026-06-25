@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>qt_joystick</name>
+  <version>0.1.0</version>
+  <description>Qt joystick and simulation remote panel for ROS 2.</description>
+  <maintainer email="ahao@gmail.com">ahao</maintainer>
+  <author>ahao</author>
+  <license>BSD</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>qt_build</depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>mavros_msgs</depend>
+
+  <build_depend>qtbase5-dev</build_depend>
+  <exec_depend>qtbase5-dev</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
