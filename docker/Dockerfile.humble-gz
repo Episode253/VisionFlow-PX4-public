@@ -221,6 +221,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-noto-cjk \
     && rm -rf /var/lib/apt/lists/*
 
+# Flight Review system dependencies.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    sqlite3 \
+    libfftw3-bin \
+    libfftw3-dev \
+    libatlas3-base \
+    && rm -rf /var/lib/apt/lists/*
+
 # PX4 Python dependencies.
 COPY Tools/setup/requirements.txt /tmp/px4-requirements.txt
 
@@ -229,6 +237,15 @@ RUN python3 -m pip install --no-cache-dir -r /tmp/px4-requirements.txt && \
         MAVProxy \
         pymavlink \
         PySide6
+
+# Flight Review Python dependencies.
+COPY windshape_dev/flight_review/app/requirements.txt /tmp/flight_review_requirements.txt
+
+RUN python3 -m venv /opt/flight_review_venv && \
+    /opt/flight_review_venv/bin/python -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    /opt/flight_review_venv/bin/pip install --no-cache-dir -r /tmp/flight_review_requirements.txt
+
+ENV FLIGHT_REVIEW_VENV=/opt/flight_review_venv
 
 ARG USERNAME=px4
 ARG USER_UID=1000
@@ -245,7 +262,7 @@ RUN mkdir -p \
     /home/${USERNAME}/.gz \
     /home/${USERNAME}/.gz/sim \
     /home/${USERNAME}/.gz/sim/8 && \
-    chown -R ${USER_UID}:${USER_GID} /workspace /home/${USERNAME}
+    chown -R ${USER_UID}:${USER_GID} /workspace /home/${USERNAME} /opt/flight_review_venv
 
 RUN usermod -aG dialout ${USERNAME} || true
 
