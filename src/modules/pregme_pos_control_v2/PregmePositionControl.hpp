@@ -54,7 +54,7 @@ private:
 	void reset_setpoint_to_nan(vehicle_local_position_setpoint_s &setpoint);
 	void reset_setpoint_to_nan(trajectory_setpoint_s &setpoint);
 
-	void limit_thrust_during_landing(vehicle_attitude_setpoint_s &setpoint, const TakeoffState takeoff_state, float dt);
+	void limit_thrust_during_landing(vehicle_attitude_setpoint_s &setpoint, const TakeoffState takeoff_state, float dt, bool landing_contact_after_flight);
 	float slew_thrust_z(float target_thrust_z, float dt, float slew_rate);
 
 	Takeoff _takeoff;

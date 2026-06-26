@@ -47,11 +47,7 @@ void Takeoff::updateTakeoffState(const bool armed, const bool landed, const bool
 		}
 		// FALLTHROUGH
 	case TakeoffState::flight:
-		// During the first part of takeoff the land detector can still report
-		// landed/ground_contact. Do not drop back to ready_for_takeoff while
-		// a takeoff request is still active, otherwise the ramp is repeatedly
-		// restarted and the aircraft may stay on fast idle without leaving ground.
-		if (landed && !want_takeoff) {
+		if (landed) {
 			_takeoff_state = TakeoffState::ready_for_takeoff;
 			_takeoff_ramp_progress = 0.f;
 		}

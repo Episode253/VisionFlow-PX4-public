@@ -8,11 +8,60 @@
 #include <lib/matrix/matrix/math.hpp>
 #include <px4_platform_common/events.h>
 #include <px4_platform_common/defines.h>
+#include <uORB/topics/vehicle_command.h>
 
 using namespace matrix;
 
 namespace
 {
+
+uORB::Publication<vehicle_command_s> g_vehicle_command_pub{ORB_ID(vehicle_command)};
+hrt_abstime g_touchdown_start_us{0};
+hrt_abstime g_last_disarm_request_us{0};
+bool g_seen_real_flight_after_arm{false};
+
+void reset_post_landing_disarm_state()
+{
+	g_touchdown_start_us = 0;
+	g_last_disarm_request_us = 0;
+	g_seen_real_flight_after_arm = false;
+}
+
+void request_disarm_after_stable_touchdown(bool post_flight_touchdown,
+		const PositionControlStates &states, hrt_abstime now_us)
+{
+	if (!post_flight_touchdown) {
+		g_touchdown_start_us = 0;
+		return;
+	}
+
+	if (g_touchdown_start_us == 0) {
+		g_touchdown_start_us = now_us;
+		return;
+	}
+
+	const bool touchdown_confirmed_long_enough = (now_us - g_touchdown_start_us) > 1200_ms;
+	const bool vertical_speed_low = !PX4_ISFINITE(states.velocity(2)) || fabsf(states.velocity(2)) < 0.35f;
+	const bool request_rate_limited = (g_last_disarm_request_us == 0) || ((now_us - g_last_disarm_request_us) > 2000_ms);
+
+	if (!touchdown_confirmed_long_enough || !vertical_speed_low || !request_rate_limited) {
+		return;
+	}
+
+	vehicle_command_s cmd{};
+	cmd.timestamp = now_us;
+	cmd.command = vehicle_command_s::VEHICLE_CMD_COMPONENT_ARM_DISARM;
+	cmd.param1 = 0.f; // disarm
+	cmd.param2 = 0.f; // do not force-disarm in the air
+	cmd.target_system = 1;
+	cmd.target_component = 1;
+	cmd.source_system = 1;
+	cmd.source_component = 1;
+	cmd.from_external = false;
+
+	g_vehicle_command_pub.publish(cmd);
+	g_last_disarm_request_us = now_us;
+}
 
 trajectory_setpoint_s generate_hold_setpoint(const PositionControlStates &states)
 {
@@ -279,6 +328,10 @@ void PregmePositionControl::Run()
 		_vehicle_control_mode_sub.update(&_vehicle_control_mode);
 		_vehicle_land_detected_sub.update(&_vehicle_land_detected);
 
+		if (!_vehicle_control_mode.flag_armed) {
+			reset_post_landing_disarm_state();
+		}
+
 		PositionControlStates states{set_vehicle_states(local_pos, dt)};
 
 		if (_vehicle_control_mode.flag_multicopter_position_control_enabled) {
@@ -334,22 +387,25 @@ void PregmePositionControl::Run()
 				    || (PX4_ISFINITE(_setpoint.velocity[2]) && (_setpoint.velocity[2] < -0.05f))
 				    || (PX4_ISFINITE(_setpoint.acceleration[2]) && (_setpoint.acceleration[2] < -0.1f)));
 
+			const bool land_detector_contact = _vehicle_land_detected.landed
+				|| _vehicle_land_detected.ground_contact
+				|| _vehicle_land_detected.maybe_landed;
+
 			const bool was_flying = (_takeoff.getTakeoffState() >= TakeoffState::flight);
-			const bool ground_contact_without_takeoff = _vehicle_control_mode.flag_armed
-				&& was_flying
-				&& _vehicle_land_detected.ground_contact
-				&& !setpoint_requests_takeoff;
 
-			const bool landed_without_takeoff = _vehicle_control_mode.flag_armed
-				&& was_flying
-				&& _vehicle_land_detected.landed
-				&& !setpoint_requests_takeoff;
 
-			const bool landing_contact_without_takeoff = ground_contact_without_takeoff || landed_without_takeoff;
+			const bool landing_contact_after_flight = _vehicle_control_mode.flag_armed
+				&& was_flying
+				&& land_detector_contact;
+
+			const bool landing_contact_without_takeoff = landing_contact_after_flight;
 
 			if (_vehicle_control_mode.flag_armed && (_vehicle_land_detected.landed || landing_contact_without_takeoff)) {
 				if (landing_contact_without_takeoff) {
 					_vehicle_constraints.want_takeoff = false;
+					reset_setpoint_to_nan(_setpoint);
+					_setpoint.timestamp = local_pos.timestamp;
+					_setpoint.acceleration[2] = 100.f;
 
 				} else {
 					_vehicle_constraints.want_takeoff = _vehicle_constraints.want_takeoff || setpoint_requests_takeoff;
@@ -368,7 +424,18 @@ void PregmePositionControl::Run()
 
 			const bool not_taken_off = (_takeoff.getTakeoffState() < TakeoffState::rampup);
 			const bool flying = (_takeoff.getTakeoffState() >= TakeoffState::flight);
-			const bool flying_but_ground_contact = flying && ground_contact_without_takeoff;
+			const bool flying_but_landing_contact = flying && landing_contact_without_takeoff;
+
+			if (_vehicle_control_mode.flag_armed && flying && !land_detector_contact) {
+				g_seen_real_flight_after_arm = true;
+			}
+
+			const bool post_flight_touchdown_for_disarm = landing_contact_after_flight
+				|| (_vehicle_control_mode.flag_armed
+				    && g_seen_real_flight_after_arm
+				    && land_detector_contact);
+
+			request_disarm_after_stable_touchdown(post_flight_touchdown_for_disarm, states, time_stamp_now);
 
 			if (!flying) {
 				// Keep takeoff deterministic: do not let hover-thrust estimator alter the thrust scale before flight.
@@ -388,7 +455,7 @@ void PregmePositionControl::Run()
 				_setpoint.acceleration[2] = NAN;
 			}
 
-			if (not_taken_off || flying_but_ground_contact) {
+			if (not_taken_off || flying_but_landing_contact) {
 				reset_setpoint_to_nan(_setpoint);
 				_setpoint.timestamp = local_pos.timestamp;
 				_setpoint.acceleration[2] = 100.f;
@@ -406,7 +473,7 @@ void PregmePositionControl::Run()
 			const float speed_down = PX4_ISFINITE(_vehicle_constraints.speed_down) ? _vehicle_constraints.speed_down : _param_pregme_z_vel_max_dn.get();
 			const float speed_horizontal = _param_pregme_xy_vel_max.get();
 
-			const float minimum_thrust = (flying && !flying_but_ground_contact) ? _param_pregme_thr_min.get() : 0.f;
+			const float minimum_thrust = (flying && !flying_but_landing_contact) ? _param_pregme_thr_min.get() : 0.f;
 
 			_control.setThrustLimits(minimum_thrust, _param_pregme_thr_max.get());
 			_control.setVelocityLimits(math::constrain(speed_horizontal, 0.f, _param_pregme_xy_vel_max.get()),
@@ -475,7 +542,7 @@ void PregmePositionControl::Run()
 			vehicle_attitude_setpoint_s attitude_setpoint{};
 			_control.getAttitudeSetpoint(attitude_setpoint);
 
-			limit_thrust_during_landing(attitude_setpoint, _takeoff.getTakeoffState(), dt);
+			limit_thrust_during_landing(attitude_setpoint, _takeoff.getTakeoffState(), dt, landing_contact_after_flight);
 
 			attitude_setpoint.timestamp = hrt_absolute_time();
 			_vehicle_attitude_setpoint_pub.publish(attitude_setpoint);
@@ -595,13 +662,18 @@ float PregmePositionControl::slew_thrust_z(float target_thrust_z, float dt, floa
 }
 
 void PregmePositionControl::limit_thrust_during_landing(vehicle_attitude_setpoint_s &setpoint,
-		const TakeoffState takeoff_state, float dt)
+		const TakeoffState takeoff_state, float dt, bool landing_contact_after_flight)
 {
 	const bool armed = _vehicle_control_mode.flag_armed;
 	const bool active_takeoff = _vehicle_constraints.want_takeoff && (takeoff_state >= TakeoffState::rampup);
-	const bool ground_without_takeoff_request = !_vehicle_constraints.want_takeoff
-		&& (_vehicle_land_detected.landed || _vehicle_land_detected.ground_contact)
-		&& ((takeoff_state < TakeoffState::rampup) || (takeoff_state >= TakeoffState::flight));
+	const bool land_detector_contact = _vehicle_land_detected.landed
+		|| _vehicle_land_detected.ground_contact
+		|| _vehicle_land_detected.maybe_landed;
+
+	const bool ground_without_takeoff_request = landing_contact_after_flight
+		|| (!_vehicle_constraints.want_takeoff
+		    && land_detector_contact
+		    && ((takeoff_state < TakeoffState::rampup) || (takeoff_state >= TakeoffState::flight)));
 
 	if (!armed) {
 		setpoint.thrust_body[0] = 0.f;
@@ -621,7 +693,7 @@ void PregmePositionControl::limit_thrust_during_landing(vehicle_attitude_setpoin
 		target_thrust_z = 0.f;
 		setpoint.thrust_body[0] = 0.f;
 		setpoint.thrust_body[1] = 0.f;
-		slew_rate = THRUST_SLEW_LANDING;
+		slew_rate = THRUST_SLEW_FLIGHT;
 
 	} else if (active_takeoff || (takeoff_state < TakeoffState::flight)) {
 		slew_rate = THRUST_SLEW_TAKEOFF;
