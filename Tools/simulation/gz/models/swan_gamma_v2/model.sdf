@@ -21,7 +21,6 @@
       <child>gamma_arm::gamma_arm_base_link</child>
     </joint>
 
-    <!-- Include gripper4 for end-effector -->
     <include>
       <name>gripper4</name>
       <uri>model://gripper4</uri>
@@ -31,6 +30,18 @@
     <joint name="swan_gripper_joint" type="fixed">
       <parent>gamma_arm::F_Link</parent>
       <child>gripper4::base_link</child>
+    </joint>
+
+    <!-- Intel RealSense D435 mounted on gripper4 -->
+    <include>
+      <name>realsense_d435</name>
+      <uri>model://Intel_realsense_d435</uri>
+      <pose relative_to="gripper4::base_link">0.040 0 -0.0125 -1.5708 0 -1.5708</pose>
+    </include>
+
+    <joint name="gripper_realsense_d435_joint" type="fixed">
+      <parent>gripper4::base_link</parent>
+      <child>realsense_d435::link</child>
     </joint>
 
   </model>
