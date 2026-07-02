@@ -257,8 +257,11 @@ if __name__ == "__main__":
             all_topics.extend(get_topics(msg_filename))
         all_topics.sort()
 
-        for f in args.file:
+        total = len(args.file)
+        for idx, f in enumerate(args.file, 1):
             generate_output_from_file(generate_idx, f, args.outputdir, args.package, args.templatedir, INCL_DEFAULT, all_topics)
+            sys.stderr.write("[{}/{}] Generated ucdr header for {}\n".format(idx, total, os.path.basename(f)))
+            sys.stderr.flush()
 
         # Generate topics list header and source file
         if TOPICS_LIST_TEMPLATE_FILE[generate_idx] is not None and os.path.isfile(os.path.join(args.templatedir, TOPICS_LIST_TEMPLATE_FILE[generate_idx])):
