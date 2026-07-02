@@ -219,7 +219,7 @@ parameters:
       type: float
       default: 8.0
       min: 6.0
-      max: 40.0
+      max: 150
       decimal: 2
       increment: 0.1
     USR_ROLLRATE_MAX:
