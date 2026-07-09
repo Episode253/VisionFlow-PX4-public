@@ -10,48 +10,80 @@ using namespace time_literals;
 
 namespace
 {
+static constexpr float CESO_XY_DISTURBANCE_LIMIT = 1.5f;     // m/s^2, horizontal attitude-setpoint protection
+static constexpr float CESO_XY_LPF_CUTOFF_HZ = 1.5f;         // Hz, suppress high-frequency XY disturbance injection
+static constexpr float CESO_XY_DEADZONE = 0.03f;             // m/s^2, suppress tiny horizontal observer noise
 
-// Vertical CESO injection protection for OFFBOARD altitude hold.
-// The ESO still estimates Z disturbance, but the value injected into the
-// thrust channel is bounded and low-pass filtered to avoid thrust pumping.
 static constexpr float CESO_Z_DISTURBANCE_LIMIT = 2.0f;      // m/s^2 equivalent, about 0.2 g
 static constexpr float CESO_Z_LPF_CUTOFF_HZ = 1.5f;          // conservative vertical disturbance bandwidth
 static constexpr float CESO_Z_DEADZONE = 0.03f;              // suppress tiny estimator noise around hover
 
-float g_delta_v_z_filtered = 0.f;
-bool g_delta_v_z_filter_initialized = false;
+struct CESOInjectionAxisState {
+	float filtered{0.f};
+	bool initialized{false};
+};
 
-float updateVerticalCESOInjection(float delta_v_z_raw, bool vertical_control_enabled, float dt)
+CESOInjectionAxisState g_delta_v_injection_state[3];
+
+void resetCESOInjectionAxis(CESOInjectionAxisState &state)
 {
-	if (!vertical_control_enabled || !PX4_ISFINITE(delta_v_z_raw)) {
-		g_delta_v_z_filtered = 0.f;
-		g_delta_v_z_filter_initialized = false;
+	state.filtered = 0.f;
+	state.initialized = false;
+}
+
+void resetCESOInjectionStates()
+{
+	for (int i = 0; i < 3; i++) {
+		resetCESOInjectionAxis(g_delta_v_injection_state[i]);
+	}
+}
+
+float applySoftDeadzone(float value, float deadzone)
+{
+	deadzone = PX4_ISFINITE(deadzone) ? math::max(deadzone, 0.f) : 0.f;
+
+	const float abs_value = fabsf(value);
+
+	if (abs_value <= deadzone) {
+		return 0.f;
+	}
+
+	const float sign = (value >= 0.f) ? 1.f : -1.f;
+	return sign * (abs_value - deadzone);
+}
+
+float updateProtectedCESOInjection(float raw, bool control_enabled, float dt,
+					  float limit, float cutoff_hz, float deadzone,
+					  CESOInjectionAxisState &state)
+{
+	if (!control_enabled || !PX4_ISFINITE(raw)) {
+		resetCESOInjectionAxis(state);
 		return 0.f;
 	}
 
 	dt = (PX4_ISFINITE(dt) && dt > 0.f) ? math::constrain(dt, 0.001f, 0.04f) : 0.01f;
+	limit = PX4_ISFINITE(limit) ? math::max(fabsf(limit), 0.f) : 0.f;
+	cutoff_hz = PX4_ISFINITE(cutoff_hz) ? math::max(cutoff_hz, 0.f) : 0.f;
 
-	const float delta_v_z_limited = math::constrain(delta_v_z_raw,
-		-CESO_Z_DISTURBANCE_LIMIT, CESO_Z_DISTURBANCE_LIMIT);
+	const float limited = (limit > 0.f) ? math::constrain(raw, -limit, limit) : 0.f;
 
-	if (!g_delta_v_z_filter_initialized) {
-		// Start from zero after reset/takeoff transition and let the estimate fade in.
-		g_delta_v_z_filtered = 0.f;
-		g_delta_v_z_filter_initialized = true;
+	if (!state.initialized) {
+		state.filtered = 0.f;
+		state.initialized = true;
 	}
 
-	const float alpha = expf(-6.28318530718f * CESO_Z_LPF_CUTOFF_HZ * dt);
-	g_delta_v_z_filtered = alpha * g_delta_v_z_filtered + (1.f - alpha) * delta_v_z_limited;
+	const float alpha = (cutoff_hz > 0.f) ? expf(-6.28318530718f * cutoff_hz * dt) : 0.f;
+	state.filtered = alpha * state.filtered + (1.f - alpha) * limited;
 
-	if (fabsf(g_delta_v_z_filtered) < CESO_Z_DEADZONE) {
-		return 0.f;
+	const float output = applySoftDeadzone(state.filtered, deadzone);
+
+	if (output == 0.f) {
+		state.filtered *= 0.95f;
 	}
 
-	return g_delta_v_z_filtered;
+	return output;
 }
-
 } // namespace
-
 
 void PosControl::setControlParas(const Vector3f &bm_lambda_p, const Vector3f &bm_K_p)
 {
@@ -92,11 +124,6 @@ void PosControl::setPresetTraj(const Vector3f e0, const Vector3f ev0)
 
 	for (int i = 0; i < 3; i++) {
 		if (!PX4_ISFINITE(_pos_sp_last(i))) {
-			// V1.13-compatible initialization: force the first cycle after reset
-			// to enter the preset-trajectory refresh branch below. If this is
-			// initialized exactly to _pos_sp(i), e0_last/ev0_last can remain zero
-			// after reset and the transient trajectory is not initialized from
-			// the current position/velocity error.
 			_pos_sp_last(i) = _pos_sp(i) + _preset_traj.epsilon;
 		}
 	}
@@ -165,6 +192,7 @@ void PosControl::setState(const PositionControlStates &states)
 	_pos = states.position;
 	_vel = states.velocity;
 	_vel_dot = states.acceleration;
+	
 	if (!PX4_ISFINITE(_yaw_sp)) {
 		_yaw_sp = states.yaw;
 	}
@@ -227,15 +255,22 @@ void PosControl::_positionControl(const float dt)
 	_autopilot.vel_err = _vel - _vel_sp;
 	ControlMath::setZeroIfNanVector3f(_autopilot.vel_err);
 
+	const bool horizontal_control_enabled = PX4_ISFINITE(_pos_sp(0)) || PX4_ISFINITE(_pos_sp(1))
+							|| PX4_ISFINITE(_vel_sp(0)) || PX4_ISFINITE(_vel_sp(1));
 	const bool vertical_control_enabled = PX4_ISFINITE(_pos_sp(2)) || PX4_ISFINITE(_vel_sp(2));
 
-	delta_v = _pregme_eso.delta_est;
-	ControlMath::setZeroIfNanVector3f(delta_v);
+	Vector3f delta_v_raw = _pregme_eso.delta_est;
+	ControlMath::setZeroIfNanVector3f(delta_v_raw);
 
-	// Keep Z-axis CESO disturbance rejection, but do not inject the raw observer
-	// output directly into thrust. The protected injection preserves the anti-
-	// disturbance path while avoiding vertical thrust pumping in OFFBOARD hover.
-	delta_v(2) = updateVerticalCESOInjection(delta_v(2), vertical_control_enabled, dt);
+	delta_v(0) = updateProtectedCESOInjection(delta_v_raw(0), horizontal_control_enabled, dt,
+							 CESO_XY_DISTURBANCE_LIMIT, CESO_XY_LPF_CUTOFF_HZ, CESO_XY_DEADZONE,
+							 g_delta_v_injection_state[0]);
+	delta_v(1) = updateProtectedCESOInjection(delta_v_raw(1), horizontal_control_enabled, dt,
+							 CESO_XY_DISTURBANCE_LIMIT, CESO_XY_LPF_CUTOFF_HZ, CESO_XY_DEADZONE,
+							 g_delta_v_injection_state[1]);
+	delta_v(2) = updateProtectedCESOInjection(delta_v_raw(2), vertical_control_enabled, dt,
+							 CESO_Z_DISTURBANCE_LIMIT, CESO_Z_LPF_CUTOFF_HZ, CESO_Z_DEADZONE,
+							 g_delta_v_injection_state[2]);
 
 	setPresetTraj(_autopilot.pos_err, _autopilot.vel_err);
 
@@ -364,9 +399,8 @@ void PosControl::resetESO()
 	_pregme_eso.xi1 = {NAN, NAN, NAN};
 	_pregme_eso.xi2 = {0.0f, 0.0f, 0.0f};
 
-	// Reset the protected Z-CESO injection path together with the observer.
-	g_delta_v_z_filtered = 0.f;
-	g_delta_v_z_filter_initialized = false;
+	// Reset the protected CESO injection filters together with the observer.
+	resetCESOInjectionStates();
 }
 
 void PosControl::resetPresetTraj()
