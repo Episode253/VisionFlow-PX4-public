@@ -1,24 +1,24 @@
-<sdf version="1.10">
-  <world name="laboratory_no_landingbox_vla_task0">
-    <physics name="1ms" type="ignored">
+<sdf version='1.10'>
+  <world name='laboratory_no_landingbox_vla_task0'>
+    <physics name='1ms' type='ignored'>
       <max_step_size>0.001</max_step_size>
       <real_time_factor>1</real_time_factor>
       <real_time_update_rate>1000</real_time_update_rate>
     </physics>
-    <plugin name="gz::sim::systems::Physics" filename="gz-sim-physics-system"/>
-    <plugin name="gz::sim::systems::UserCommands" filename="gz-sim-user-commands-system"/>
-    <plugin name="gz::sim::systems::SceneBroadcaster" filename="gz-sim-scene-broadcaster-system"/>
-    <plugin name="gz::sim::systems::Sensors" filename="gz-sim-sensors-system">
+    <plugin name='gz::sim::systems::Physics' filename='gz-sim-physics-system'/>
+    <plugin name='gz::sim::systems::UserCommands' filename='gz-sim-user-commands-system'/>
+    <plugin name='gz::sim::systems::SceneBroadcaster' filename='gz-sim-scene-broadcaster-system'/>
+    <plugin name='gz::sim::systems::Sensors' filename='gz-sim-sensors-system'>
       <render_engine>ogre2</render_engine>
     </plugin>
-    <plugin name="gz::sim::systems::Imu" filename="gz-sim-imu-system"/>
-    <plugin name="gz::sim::systems::AirPressure" filename="gz-sim-air-pressure-system"/>
-    <plugin name="gz::sim::systems::Magnetometer" filename="gz-sim-magnetometer-system"/>
-    <plugin name="gz::sim::systems::NavSat" filename="gz-sim-navsat-system"/>
-    <plugin name="gz::sim::systems::Altimeter" filename="gz-sim-altimeter-system"/>
+    <plugin name='gz::sim::systems::Imu' filename='gz-sim-imu-system'/>
+    <plugin name='gz::sim::systems::AirPressure' filename='gz-sim-air-pressure-system'/>
+    <plugin name='gz::sim::systems::Magnetometer' filename='gz-sim-magnetometer-system'/>
+    <plugin name='gz::sim::systems::NavSat' filename='gz-sim-navsat-system'/>
+    <plugin name='gz::sim::systems::Altimeter' filename='gz-sim-altimeter-system'/>
     <gravity>0 0 -9.8000000000000007</gravity>
     <magnetic_field>6.0000000000000002e-06 2.3e-05 -4.1999999999999998e-05</magnetic_field>
-    <atmosphere type="adiabatic"/>
+    <atmosphere type='adiabatic'/>
     <spherical_coordinates>
       <surface_model>EARTH_WGS84</surface_model>
       <world_frame_orientation>ENU</world_frame_orientation>
@@ -32,10 +32,10 @@
       <background>0.699999988 0.699999988 0.699999988 1</background>
       <shadows>true</shadows>
     </scene>
-    <model name="ground_plane">
+    <model name='ground_plane'>
       <static>true</static>
-      <link name="link">
-        <collision name="collision">
+      <link name='link'>
+        <collision name='collision'>
           <geometry>
             <plane>
               <normal>0 0 1</normal>
@@ -50,7 +50,7 @@
             <contact/>
           </surface>
         </collision>
-        <visual name="visual">
+        <visual name='visual'>
           <geometry>
             <plane>
               <normal>0 0 1</normal>
@@ -81,39 +81,39 @@
       <pose>0 0 0 0 0 0</pose>
       <self_collide>false</self_collide>
     </model>
-    <model name="Depot">
+    <model name='Depot'>
       <static>false</static>
-      <link name="main">
-        <collision name="selected_big_box_top_support_collision">
-  <pose>3.33709132974 -4.78183100414 1.94 0 0 1.1928599708</pose>
-  <geometry>
-    <box>
-      <size>1.35 0.95 0.06</size>
-    </box>
-  </geometry>
-  <surface>
-    <friction>
-      <ode>
-        <mu>1.2</mu>
-        <mu2>1.2</mu2>
-      </ode>
-    </friction>
-    <bounce>
-      <restitution_coefficient>0</restitution_coefficient>
-      <threshold>100000</threshold>
-    </bounce>
-    <contact>
-      <ode>
-        <kp>1000000</kp>
-        <kd>100</kd>
-        <max_vel>0.1</max_vel>
-        <min_depth>0.001</min_depth>
-      </ode>
-    </contact>
-  </surface>
-  <max_contacts>8</max_contacts>
-</collision>
-        <visual name="ROOF_visual">
+      <link name='main'>
+        <collision name='selected_big_box_top_support_collision'>
+          <pose>3.3370913297399998 -4.7818310041399998 1.9399999999999999 0 0 1.1928599708000001</pose>
+          <geometry>
+            <box>
+              <size>1.3500000000000001 0.94999999999999996 0.059999999999999998</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>1.2</mu>
+                <mu2>1.2</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+              <threshold>100000</threshold>
+            </bounce>
+            <contact>
+              <ode>
+                <kp>1000000</kp>
+                <kd>100</kd>
+                <max_vel>0.10000000000000001</max_vel>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+          </surface>
+          <max_contacts>8</max_contacts>
+        </collision>
+        <visual name='ROOF_visual'>
           <geometry>
             <mesh>
               <scale>0.59999999999999998 0.59999999999999998 0.59999999999999998</scale>
@@ -134,12 +134,12 @@
                 <metalness_map>model://depot/materials/textures/ROOF_Metalness.png</metalness_map>
                 <roughness_map>model://depot/materials/textures/ROOF_Roughness.png</roughness_map>
                 <emissive_map>model://depot/materials/textures/ROOF_Emissive.png</emissive_map>
-                <light_map uv_set="1">model://depot/materials/textures/DepotLightmap.png</light_map>
+                <light_map uv_set='1'>model://depot/materials/textures/DepotLightmap.png</light_map>
               </metal>
             </pbr>
           </material>
         </visual>
-        <visual name="WALLS_visual">
+        <visual name='WALLS_visual'>
           <geometry>
             <mesh>
               <scale>0.59999999999999998 0.59999999999999998 0.59999999999999998</scale>
@@ -159,12 +159,12 @@
                 <normal_map>model://depot/materials/textures/WALLS_Normal.png</normal_map>
                 <metalness_map>model://depot/materials/textures/WALLS_Metalness.png</metalness_map>
                 <roughness_map>model://depot/materials/textures/WALLS_Roughness.png</roughness_map>
-                <light_map uv_set="1">model://depot/materials/textures/DepotLightmap.png</light_map>
+                <light_map uv_set='1'>model://depot/materials/textures/DepotLightmap.png</light_map>
               </metal>
             </pbr>
           </material>
         </visual>
-        <visual name="PILLERS_visual">
+        <visual name='PILLERS_visual'>
           <geometry>
             <mesh>
               <scale>0.59999999999999998 0.59999999999999998 0.59999999999999998</scale>
@@ -184,12 +184,12 @@
                 <normal_map>model://depot/materials/textures/PILLERS_Normal.png</normal_map>
                 <metalness_map>model://depot/materials/textures/PILLERS_Metalness.png</metalness_map>
                 <roughness_map>model://depot/materials/textures/PILLERS_Roughness.png</roughness_map>
-                <light_map uv_set="1">model://depot/materials/textures/DepotLightmap.png</light_map>
+                <light_map uv_set='1'>model://depot/materials/textures/DepotLightmap.png</light_map>
               </metal>
             </pbr>
           </material>
         </visual>
-        <visual name="FANS_visual">
+        <visual name='FANS_visual'>
           <geometry>
             <mesh>
               <scale>0.59999999999999998 0.59999999999999998 0.59999999999999998</scale>
@@ -209,12 +209,12 @@
                 <normal_map>model://depot/materials/textures/FANS_Normal.png</normal_map>
                 <metalness_map>model://depot/materials/textures/FANS_Metalness.png</metalness_map>
                 <roughness_map>model://depot/materials/textures/FANS_Roughness.png</roughness_map>
-                <light_map uv_set="1">model://depot/materials/textures/DepotLightmap.png</light_map>
+                <light_map uv_set='1'>model://depot/materials/textures/DepotLightmap.png</light_map>
               </metal>
             </pbr>
           </material>
         </visual>
-        <visual name="WINDOW_visual">
+        <visual name='WINDOW_visual'>
           <geometry>
             <mesh>
               <scale>0.59999999999999998 0.59999999999999998 0.59999999999999998</scale>
@@ -237,7 +237,7 @@
             </pbr>
           </material>
         </visual>
-        <visual name="INTERCOM_visual">
+        <visual name='INTERCOM_visual'>
           <geometry>
             <mesh>
               <scale>0.59999999999999998 0.59999999999999998 0.59999999999999998</scale>
@@ -258,12 +258,12 @@
                 <metalness_map>model://depot/materials/textures/INTERCOM_Metalness.png</metalness_map>
                 <roughness_map>model://depot/materials/textures/INTERCOM_Roughness.png</roughness_map>
                 <emissive_map>model://depot/materials/textures/INTERCOM_Emissive.png</emissive_map>
-                <light_map uv_set="1">model://depot/materials/textures/DepotLightmap.png</light_map>
+                <light_map uv_set='1'>model://depot/materials/textures/DepotLightmap.png</light_map>
               </metal>
             </pbr>
           </material>
         </visual>
-        <visual name="FireAlarm_visual">
+        <visual name='FireAlarm_visual'>
           <geometry>
             <mesh>
               <scale>0.59999999999999998 0.59999999999999998 0.59999999999999998</scale>
@@ -283,12 +283,12 @@
                 <normal_map>model://depot/materials/textures/FireAlarm_Normal.png</normal_map>
                 <metalness_map>model://depot/materials/textures/FireAlarm_Metalness.png</metalness_map>
                 <roughness_map>model://depot/materials/textures/FireAlarm_Roughness.png</roughness_map>
-                <light_map uv_set="1">model://depot/materials/textures/DepotLightmap.png</light_map>
+                <light_map uv_set='1'>model://depot/materials/textures/DepotLightmap.png</light_map>
               </metal>
             </pbr>
           </material>
         </visual>
-        <visual name="FireAlarmPole_visual">
+        <visual name='FireAlarmPole_visual'>
           <geometry>
             <mesh>
               <scale>0.59999999999999998 0.59999999999999998 0.59999999999999998</scale>
@@ -308,12 +308,12 @@
                 <normal_map>model://depot/materials/textures/FireAlarmPole_Normal.png</normal_map>
                 <metalness_map>model://depot/materials/textures/FireAlarmPole_Metalness.png</metalness_map>
                 <roughness_map>model://depot/materials/textures/FireAlarmPole_Roughness.png</roughness_map>
-                <light_map uv_set="1">model://depot/materials/textures/DepotLightmap.png</light_map>
+                <light_map uv_set='1'>model://depot/materials/textures/DepotLightmap.png</light_map>
               </metal>
             </pbr>
           </material>
         </visual>
-        <visual name="Pipes_visual">
+        <visual name='Pipes_visual'>
           <geometry>
             <mesh>
               <scale>0.59999999999999998 0.59999999999999998 0.59999999999999998</scale>
@@ -333,12 +333,12 @@
                 <normal_map>model://depot/materials/textures/Pipes_Normal.png</normal_map>
                 <metalness_map>model://depot/materials/textures/Pipes_Metalness.png</metalness_map>
                 <roughness_map>model://depot/materials/textures/Pipes_Roughness.png</roughness_map>
-                <light_map uv_set="1">model://depot/materials/textures/DepotLightmap.png</light_map>
+                <light_map uv_set='1'>model://depot/materials/textures/DepotLightmap.png</light_map>
               </metal>
             </pbr>
           </material>
         </visual>
-        <visual name="STAIRS_visual">
+        <visual name='STAIRS_visual'>
           <geometry>
             <mesh>
               <scale>0.59999999999999998 0.59999999999999998 0.59999999999999998</scale>
@@ -358,12 +358,12 @@
                 <normal_map>model://depot/materials/textures/STAIRS_Normal.png</normal_map>
                 <metalness_map>model://depot/materials/textures/STAIRS_Metalness.png</metalness_map>
                 <roughness_map>model://depot/materials/textures/STAIRS_Roughness.png</roughness_map>
-                <light_map uv_set="1">model://depot/materials/textures/DepotLightmap.png</light_map>
+                <light_map uv_set='1'>model://depot/materials/textures/DepotLightmap.png</light_map>
               </metal>
             </pbr>
           </material>
         </visual>
-        <visual name="BOXSET_visual">
+        <visual name='BOXSET_visual'>
           <geometry>
             <mesh>
               <scale>0.59999999999999998 0.59999999999999998 0.59999999999999998</scale>
@@ -384,12 +384,12 @@
                 <metalness_map>model://depot/materials/textures/BOXSET_Metalness.png</metalness_map>
                 <roughness_map>model://depot/materials/textures/BOXSET_Roughness.png</roughness_map>
                 <emissive_map>model://depot/materials/textures/BOXSET_Emissive.png</emissive_map>
-                <light_map uv_set="1">model://depot/materials/textures/DepotLightmap.png</light_map>
+                <light_map uv_set='1'>model://depot/materials/textures/DepotLightmap.png</light_map>
               </metal>
             </pbr>
           </material>
         </visual>
-        <visual name="FLOOR_visual">
+        <visual name='FLOOR_visual'>
           <geometry>
             <mesh>
               <scale>0.59999999999999998 0.59999999999999998 0.59999999999999998</scale>
@@ -409,12 +409,12 @@
                 <normal_map>model://depot/materials/textures/FLOOR_Normal.png</normal_map>
                 <metalness_map>model://depot/materials/textures/FLOOR_Metalness.png</metalness_map>
                 <roughness_map>model://depot/materials/textures/FLOOR_Roughness.png</roughness_map>
-                <light_map uv_set="1">model://depot/materials/textures/DepotLightmap.png</light_map>
+                <light_map uv_set='1'>model://depot/materials/textures/DepotLightmap.png</light_map>
               </metal>
             </pbr>
           </material>
         </visual>
-        <visual name="FanBack_visual">
+        <visual name='FanBack_visual'>
           <geometry>
             <mesh>
               <scale>0.59999999999999998 0.59999999999999998 0.59999999999999998</scale>
@@ -435,7 +435,7 @@
             </pbr>
           </material>
         </visual>
-        <visual name="crates">
+        <visual name='crates'>
           <geometry>
             <mesh>
               <scale>0.59999999999999998 0.59999999999999998 0.59999999999999998</scale>
@@ -469,9 +469,9 @@
         </inertial>
         <enable_wind>false</enable_wind>
       </link>
-      <link name="Fan1">
-        <pose>-5.0153999999999996 -0.29519999999999991 6.1200000000000001 0 0 -1.5018530718491006</pose>
-        <visual name="visual">
+      <link name='Fan1'>
+        <pose>-5.0153999999999987 -0.29519999999999991 6.1200000000000001 0 0 -2.0433739080588547</pose>
+        <visual name='visual'>
           <pose>5.0153999999999996 0.29520000000000002 -6.1200000000000001 0 0 0</pose>
           <geometry>
             <mesh>
@@ -492,13 +492,13 @@
                 <normal_map>model://depot/materials/textures/FANS_Normal.png</normal_map>
                 <metalness_map>model://depot/materials/textures/FANS_Metalness.png</metalness_map>
                 <roughness_map>model://depot/materials/textures/FANS_Roughness.png</roughness_map>
-                <light_map uv_set="1">model://depot/materials/textures/DepotLightmap.png</light_map>
+                <light_map uv_set='1'>model://depot/materials/textures/DepotLightmap.png</light_map>
               </metal>
             </pbr>
           </material>
         </visual>
-        <light name="fan_light" type="point">
-          <pose>0 0 0 0 0 0</pose>
+        <light name='fan_light' type='point'>
+          <pose>1.3322676295501878e-15 0 8.8817841970012523e-16 0 0 0</pose>
           <cast_shadows>false</cast_shadows>
           <intensity>1</intensity>
           <direction>0 0 -1</direction>
@@ -530,9 +530,9 @@
         </inertial>
         <enable_wind>false</enable_wind>
       </link>
-      <link name="Fan2">
-        <pose>5.0153999999999996 -0.29519999999999991 6.1200000000000001 0 0 -3.0037061436982007</pose>
-        <visual name="visual">
+      <link name='Fan2'>
+        <pose>5.0154000000000005 -0.29519999999999857 6.1200000000000001 0 0 2.1984374910618882</pose>
+        <visual name='visual'>
           <pose>5.0153999999999996 0.29520000000000002 -6.1200000000000001 0 0 0</pose>
           <geometry>
             <mesh>
@@ -553,13 +553,13 @@
                 <normal_map>model://depot/materials/textures/FANS_Normal.png</normal_map>
                 <metalness_map>model://depot/materials/textures/FANS_Metalness.png</metalness_map>
                 <roughness_map>model://depot/materials/textures/FANS_Roughness.png</roughness_map>
-                <light_map uv_set="1">model://depot/materials/textures/DepotLightmap.png</light_map>
+                <light_map uv_set='1'>model://depot/materials/textures/DepotLightmap.png</light_map>
               </metal>
             </pbr>
           </material>
         </visual>
-        <light name="fan_light" type="point">
-          <pose>0 0 0 0 0 0</pose>
+        <light name='fan_light' type='point'>
+          <pose>-8.8817841970012523e-16 1.1102230246251565e-16 0 0 0 0</pose>
           <cast_shadows>false</cast_shadows>
           <intensity>1</intensity>
           <direction>0 0 -1</direction>
@@ -591,12 +591,12 @@
         </inertial>
         <enable_wind>false</enable_wind>
       </link>
-      <joint name="world_joint" type="fixed">
+      <joint name='world_joint' type='fixed'>
         <parent>world</parent>
         <child>main</child>
         <pose>0 0 0 0 0 0</pose>
       </joint>
-      <joint name="fan1_joint" type="revolute">
+      <joint name='fan1_joint' type='revolute'>
         <parent>main</parent>
         <child>Fan1</child>
         <axis>
@@ -616,9 +616,9 @@
             <friction>0</friction>
           </dynamics>
         </axis>
-        <pose>0 0 0 0 0 0</pose>
+        <pose>1.3322676295501878e-15 0 8.8817841970012523e-16 0 0 0</pose>
       </joint>
-      <joint name="fan2_joint" type="revolute">
+      <joint name='fan2_joint' type='revolute'>
         <parent>main</parent>
         <child>Fan2</child>
         <axis>
@@ -638,21 +638,21 @@
             <friction>0</friction>
           </dynamics>
         </axis>
-        <pose>0 0 0 0 0 0</pose>
+        <pose>-8.8817841970012523e-16 1.1102230246251565e-16 0 0 0 0</pose>
       </joint>
-      <plugin name="gz::sim::systems::JointController" filename="gz-sim-joint-controller-system">
+      <plugin name='gz::sim::systems::JointController' filename='gz-sim-joint-controller-system'>
         <joint_name>fan1_joint</joint_name>
         <initial_velocity>1.0</initial_velocity>
       </plugin>
-      <plugin name="gz::sim::systems::JointController" filename="gz-sim-joint-controller-system">
+      <plugin name='gz::sim::systems::JointController' filename='gz-sim-joint-controller-system'>
         <joint_name>fan2_joint</joint_name>
         <initial_velocity>2.0</initial_velocity>
       </plugin>
       <pose>0.9967685907005146 -3.3815086108846657 0 0 0 0</pose>
       <self_collide>false</self_collide>
     </model>
-    <model xmlns:ignition="https://ignitionrobotics.org/schema" name="Mecanum_lift">
-      <link name="chassis">
+    <model name='Mecanum_lift' xmlns:ignition='https://ignitionrobotics.org/schema'>
+      <link name='chassis'>
         <inertial>
           <mass>1.14395</mass>
           <inertia>
@@ -665,7 +665,7 @@
           </inertia>
           <pose>0 0 0 0 0 0</pose>
         </inertial>
-        <collision name="scissor">
+        <collision name='scissor'>
           <pose>-0.029999999999999999 -0.13200000000000001 0.70799999999999996 0 0 0</pose>
           <geometry>
             <box>
@@ -680,8 +680,8 @@
             <contact/>
           </surface>
         </collision>
-        <collision name="bar_1">
-          <pose>-0.042000000000000003 0.29399999999999998 1.98 0 1.5700000000004057 0</pose>
+        <collision name='bar_1'>
+          <pose>-0.042000000000000003 0.29399999999999998 1.98 0 1.5700000000006846 0</pose>
           <geometry>
             <cylinder>
               <radius>0.029999999999999999</radius>
@@ -696,8 +696,8 @@
             <contact/>
           </surface>
         </collision>
-        <collision name="bar_2">
-          <pose>-0.042000000000000003 0.29399999999999998 1.5780000000000001 0 1.5700000000004057 0</pose>
+        <collision name='bar_2'>
+          <pose>-0.042000000000000003 0.29399999999999998 1.5780000000000001 0 1.5700000000006846 0</pose>
           <geometry>
             <cylinder>
               <radius>0.029999999999999999</radius>
@@ -712,8 +712,8 @@
             <contact/>
           </surface>
         </collision>
-        <collision name="bar_3">
-          <pose>-0.042000000000000003 -0.55800000000000005 1.5780000000000001 0 1.5700000000004057 0</pose>
+        <collision name='bar_3'>
+          <pose>-0.042000000000000003 -0.55800000000000005 1.5780000000000001 0 1.5700000000006846 0</pose>
           <geometry>
             <cylinder>
               <radius>0.029999999999999999</radius>
@@ -728,8 +728,8 @@
             <contact/>
           </surface>
         </collision>
-        <collision name="bar_4">
-          <pose>-0.042000000000000003 -0.55800000000000005 1.98 0 1.5700000000004057 0</pose>
+        <collision name='bar_4'>
+          <pose>-0.042000000000000003 -0.55800000000000005 1.98 0 1.5700000000006846 0</pose>
           <geometry>
             <cylinder>
               <radius>0.029999999999999999</radius>
@@ -744,7 +744,7 @@
             <contact/>
           </surface>
         </collision>
-        <visual name="visual">
+        <visual name='visual'>
           <pose>0 0 -0.084000000000000005 1.5700000000000001 0 0</pose>
           <geometry>
             <mesh>
@@ -768,8 +768,8 @@
         <pose>0 0 0 0 0 0</pose>
         <enable_wind>false</enable_wind>
       </link>
-      <link name="front_right_wheel">
-        <pose>0.85799999999999743 -0.55200000000000315 0.18600000000000005 -5.169878828456423e-26 4.2628706177452112e-19 -1.101926227756496e-44</pose>
+      <link name='front_right_wheel'>
+        <pose>0.85799999999999743 -0.55200000000000404 0.18600000000000008 -2.0679515313825692e-25 7.9988875274735946e-19 -8.2706558558979762e-44</pose>
         <inertial>
           <mass>2</mass>
           <inertia>
@@ -782,7 +782,7 @@
           </inertia>
           <pose>0 0 0 0 0 0</pose>
         </inertial>
-        <collision name="collision">
+        <collision name='collision'>
           <geometry>
             <sphere>
               <radius>0.17999999999999999</radius>
@@ -793,14 +793,14 @@
               <ode>
                 <mu>1</mu>
                 <mu2>0</mu2>
-                <fdir1 ignition:expressed_in="chassis">1 1 0</fdir1>
+                <fdir1 ignition:expressed_in='chassis'>1 1 0</fdir1>
               </ode>
             </friction>
             <bounce/>
             <contact/>
           </surface>
         </collision>
-        <visual name="visual">
+        <visual name='visual'>
           <geometry>
             <mesh>
               <uri>model://mecanum_lift/meshes/mecanum_wheel_right.STL</uri>
@@ -815,8 +815,8 @@
         </visual>
         <enable_wind>false</enable_wind>
       </link>
-      <link name="rear_right_wheel">
-        <pose>-0.93000000000000149 -0.55200000000000138 0.18600000000000005 -5.169878828456423e-26 3.230319185982909e-19 -8.3501793843848137e-45</pose>
+      <link name='rear_right_wheel'>
+        <pose>-0.93000000000000238 -0.55200000000000315 0.18600000000000008 -1.5509636485369269e-25 6.0609151024239021e-19 -4.7001295003639686e-44</pose>
         <inertial>
           <mass>2</mass>
           <inertia>
@@ -829,7 +829,7 @@
           </inertia>
           <pose>0 0 0 0 0 0</pose>
         </inertial>
-        <collision name="collision">
+        <collision name='collision'>
           <geometry>
             <sphere>
               <radius>0.17999999999999999</radius>
@@ -840,14 +840,14 @@
               <ode>
                 <mu>1</mu>
                 <mu2>0</mu2>
-                <fdir1 ignition:expressed_in="chassis">1 -1 0</fdir1>
+                <fdir1 ignition:expressed_in='chassis'>1 -1 0</fdir1>
               </ode>
             </friction>
             <bounce/>
             <contact/>
           </surface>
         </collision>
-        <visual name="visual">
+        <visual name='visual'>
           <geometry>
             <mesh>
               <uri>model://mecanum_lift/meshes/mecanum_wheel_left.STL</uri>
@@ -862,8 +862,8 @@
         </visual>
         <enable_wind>false</enable_wind>
       </link>
-      <link name="front_left_wheel">
-        <pose>0.85799999999999832 0.28199999999999648 0.186 0 3.8779169488461137e-19 0</pose>
+      <link name='front_left_wheel'>
+        <pose>0.85799999999999921 0.2819999999999947 0.186 -1.0339757656912846e-25 8.9758999526458124e-19 -4.6404315131526595e-44</pose>
         <inertial>
           <mass>2</mass>
           <inertia>
@@ -876,7 +876,7 @@
           </inertia>
           <pose>0 0 0 0 0 0</pose>
         </inertial>
-        <collision name="collision">
+        <collision name='collision'>
           <geometry>
             <sphere>
               <radius>0.17999999999999999</radius>
@@ -887,14 +887,14 @@
               <ode>
                 <mu>1</mu>
                 <mu2>0</mu2>
-                <fdir1 ignition:expressed_in="chassis">1 -1 0</fdir1>
+                <fdir1 ignition:expressed_in='chassis'>1 -1 0</fdir1>
               </ode>
             </friction>
             <bounce/>
             <contact/>
           </surface>
         </collision>
-        <visual name="visual">
+        <visual name='visual'>
           <geometry>
             <mesh>
               <uri>model://mecanum_lift/meshes/mecanum_wheel_left.STL</uri>
@@ -909,8 +909,8 @@
         </visual>
         <enable_wind>false</enable_wind>
       </link>
-      <link name="rear_left_wheel">
-        <pose>-0.93000000000000194 0.28199999999999825 0.18600000000000003 -5.169878828456423e-26 3.4686274001435074e-19 -8.9661916799028821e-45</pose>
+      <link name='rear_left_wheel'>
+        <pose>-0.93000000000000194 0.28199999999999559 0.186 -1.5509636485369269e-25 7.0036751739647782e-19 -5.4312228004899542e-44</pose>
         <inertial>
           <mass>2</mass>
           <inertia>
@@ -923,7 +923,7 @@
           </inertia>
           <pose>0 0 0 0 0 0</pose>
         </inertial>
-        <collision name="collision">
+        <collision name='collision'>
           <geometry>
             <sphere>
               <radius>0.17999999999999999</radius>
@@ -934,14 +934,14 @@
               <ode>
                 <mu>1</mu>
                 <mu2>0</mu2>
-                <fdir1 ignition:expressed_in="chassis">1 1 0</fdir1>
+                <fdir1 ignition:expressed_in='chassis'>1 1 0</fdir1>
               </ode>
             </friction>
             <bounce/>
             <contact/>
           </surface>
         </collision>
-        <visual name="visual">
+        <visual name='visual'>
           <geometry>
             <mesh>
               <uri>model://mecanum_lift/meshes/mecanum_wheel_right.STL</uri>
@@ -956,7 +956,7 @@
         </visual>
         <enable_wind>false</enable_wind>
       </link>
-      <joint name="front_left_wheel_joint" type="revolute">
+      <joint name='front_left_wheel_joint' type='revolute'>
         <parent>chassis</parent>
         <child>front_left_wheel</child>
         <axis>
@@ -978,7 +978,7 @@
         </axis>
         <pose>0 0 0 0 0 0</pose>
       </joint>
-      <joint name="front_right_wheel_joint" type="revolute">
+      <joint name='front_right_wheel_joint' type='revolute'>
         <parent>chassis</parent>
         <child>front_right_wheel</child>
         <axis>
@@ -1000,7 +1000,7 @@
         </axis>
         <pose>0 0 0 0 0 0</pose>
       </joint>
-      <joint name="rear_left_wheel_joint" type="revolute">
+      <joint name='rear_left_wheel_joint' type='revolute'>
         <parent>chassis</parent>
         <child>rear_left_wheel</child>
         <axis>
@@ -1022,7 +1022,7 @@
         </axis>
         <pose>0 0 0 0 0 0</pose>
       </joint>
-      <joint name="rear_right_wheel_joint" type="revolute">
+      <joint name='rear_right_wheel_joint' type='revolute'>
         <parent>chassis</parent>
         <child>rear_right_wheel</child>
         <axis>
@@ -1044,7 +1044,7 @@
         </axis>
         <pose>0 0 0 0 0 0</pose>
       </joint>
-      <plugin name="gz::sim::systems::MecanumDrive" filename="gz-sim-mecanum-drive-system">
+      <plugin name='gz::sim::systems::MecanumDrive' filename='gz-sim-mecanum-drive-system'>
         <front_left_joint>front_left_wheel_joint</front_left_joint>
         <back_left_joint>rear_left_wheel_joint</back_left_joint>
         <front_right_joint>front_right_wheel_joint</front_right_joint>
@@ -1053,13 +1053,13 @@
         <wheelbase>1.788</wheelbase>
         <wheel_radius>0.18</wheel_radius>
       </plugin>
-      <pose>-3.2437677383422248 -7.0934500694254456 -0.0055457340405697855 -3.1975829267146201e-10 9.1989644033665842e-12 -3.1346999995414646</pose>
+      <pose>-3.2437677383422203 -7.0934500694254332 -0.0060003946093289849 -3.1665802139019323e-10 9.1087428696411947e-12 -3.1346999995414646</pose>
       <static>false</static>
       <self_collide>false</self_collide>
     </model>
-    <model name="small_box_blue">
+    <model name='small_box_blue'>
       <static>false</static>
-      <link name="link">
+      <link name='link'>
         <pose>0 0 0.013357000000000001 0 0 0</pose>
         <inertial>
           <pose>0 0 0.1066 0 0 0</pose>
@@ -1073,7 +1073,7 @@
             <izz>0.0065595599999999999</izz>
           </inertia>
         </inertial>
-        <visual name="visual">
+        <visual name='visual'>
           <geometry>
             <mesh>
               <uri>model://small_blue_box/meshes/blueboxsmall.dae</uri>
@@ -1091,7 +1091,7 @@
             </pbr>
           </material>
         </visual>
-        <collision name="Box017">
+        <collision name='Box017'>
           <pose>0.038454599999999999 0 0.19253799999999999 1.5708 -5.5511151231257827e-17 1.5708</pose>
           <geometry>
             <box>
@@ -1106,7 +1106,7 @@
             <contact/>
           </surface>
         </collision>
-        <collision name="Box016">
+        <collision name='Box016'>
           <pose>0 0 0.222694 0 0 -1.5708</pose>
           <geometry>
             <box>
@@ -1121,7 +1121,7 @@
             <contact/>
           </surface>
         </collision>
-        <collision name="Box015">
+        <collision name='Box015'>
           <pose>-0.0384549 0 0.19253799999999999 1.5708 5.5511151231257827e-17 -1.5708</pose>
           <geometry>
             <box>
@@ -1136,7 +1136,7 @@
             <contact/>
           </surface>
         </collision>
-        <collision name="Box014">
+        <collision name='Box014'>
           <pose>0.085797999999999999 0 0.186198 0 0 0</pose>
           <geometry>
             <box>
@@ -1151,7 +1151,7 @@
             <contact/>
           </surface>
         </collision>
-        <collision name="Box013">
+        <collision name='Box013'>
           <pose>-0.085798200000000005 0 0.186198 0 0 0</pose>
           <geometry>
             <box>
@@ -1166,7 +1166,7 @@
             <contact/>
           </surface>
         </collision>
-        <collision name="Box012">
+        <collision name='Box012'>
           <pose>0 0 0.17479800000000001 0 0 0</pose>
           <geometry>
             <box>
@@ -1181,7 +1181,7 @@
             <contact/>
           </surface>
         </collision>
-        <collision name="Box011">
+        <collision name='Box011'>
           <pose>0.064688399999999993 0 0.187166 -1.5708 -5.5511151231257827e-17 -1.5708</pose>
           <geometry>
             <box>
@@ -1196,7 +1196,7 @@
             <contact/>
           </surface>
         </collision>
-        <collision name="Box010">
+        <collision name='Box010'>
           <pose>-0.064687999999999996 0 0.187166 1.5708 5.5511151231257827e-17 -1.5708</pose>
           <geometry>
             <box>
@@ -1211,7 +1211,7 @@
             <contact/>
           </surface>
         </collision>
-        <collision name="Box009">
+        <collision name='Box009'>
           <pose>0.063527399999999998 0.00015355800000000001 0.00053693499999999999 -1.5708 -5.5511151231257827e-17 -1.5708</pose>
           <geometry>
             <box>
@@ -1226,7 +1226,7 @@
             <contact/>
           </surface>
         </collision>
-        <collision name="Box008">
+        <collision name='Box008'>
           <pose>-0.063527100000000003 0.00015357000000000001 0.00053693499999999999 1.5708 5.5511151231257827e-17 -1.5708</pose>
           <geometry>
             <box>
@@ -1241,7 +1241,7 @@
             <contact/>
           </surface>
         </collision>
-        <collision name="Box007">
+        <collision name='Box007'>
           <pose>0.064688399999999993 0 -0.0029698400000000001 -1.5708 -5.5511151231257827e-17 -1.5708</pose>
           <geometry>
             <box>
@@ -1256,7 +1256,7 @@
             <contact/>
           </surface>
         </collision>
-        <collision name="Box006">
+        <collision name='Box006'>
           <pose>-0.064687999999999996 0 -0.0029698400000000001 1.5708 5.5511151231257827e-17 -1.5708</pose>
           <geometry>
             <box>
@@ -1271,7 +1271,7 @@
             <contact/>
           </surface>
         </collision>
-        <collision name="Box005">
+        <collision name='Box005'>
           <pose>0 0 0.091903499999999999 0 0 0</pose>
           <geometry>
             <box>
@@ -1288,10 +1288,50 @@
         </collision>
         <enable_wind>false</enable_wind>
       </link>
-      <pose>4.3338599204398935 -8.1633396150233644 1.9539738024761912 1.0654197136176496e-11 -3.8793080797946032e-08 1.1928599708046401</pose>
+      <pose>4.3338599204255042 -8.1633396150192272 1.9700739523608879 7.8937642101414653e-11 -3.3110458525225801e-10 1.1928599708046412</pose>
       <self_collide>false</self_collide>
     </model>
-    <light name="sun" type="directional">
+    <model name='red_coke_can'>
+      <link name='link'>
+        <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>0.00083000000000000001</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00083000000000000001</iyy>
+            <iyz>0</iyz>
+            <izz>0.00083000000000000001</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>model://red_coke_can/meshes/coke_can.obj</uri>
+              <scale>1.2 1.2 1.2</scale>
+            </mesh>
+          </geometry>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://red_coke_can/meshes/coke_can.obj</uri>
+              <scale>1.2 1.2 1.2</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <pose>0 0 0 0 0 0</pose>
+        <enable_wind>false</enable_wind>
+      </link>
+      <surface_props:material>metal</surface_props:material>
+      <surface_props:biofouling_rating>0</surface_props:biofouling_rating>
+      <surface_props:roughness>0.0</surface_props:roughness>
+      <pose>3.9819185853160506 -8.0205757085927765 1.96987815412214 -0.011210511649109894 0.0040280262863674797 0.00014183413245196506</pose>
+      <static>false</static>
+      <self_collide>false</self_collide>
+    </model>
+    <light name='sun' type='directional'>
       <pose>0 0 10 0 0 0</pose>
       <cast_shadows>true</cast_shadows>
       <intensity>1</intensity>
