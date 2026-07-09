@@ -177,7 +177,7 @@ parameters:
         short: 预设轨迹补偿增益
         long: 预设轨迹补偿耦合系数。代码中使用 zp = pos_err - k * ed、zp_dot = vel_err - k * ed_dot；k=0 基本相当于关闭大部分预设瞬态补偿。
       type: float
-      default: 1.0
+      default: 0.0
       min: 0.0
       max: 1.0
       decimal: 2
