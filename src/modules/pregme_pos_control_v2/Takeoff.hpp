@@ -35,6 +35,7 @@ public:
 private:
 	TakeoffState _takeoff_state = TakeoffState::disarmed;
 	systemlib::Hysteresis _spoolup_time_hysteresis{false};
+	
 	float _takeoff_ramp_time{0.f};
 	float _takeoff_ramp_vz_init{0.f};
 	float _takeoff_ramp_progress{0.f};

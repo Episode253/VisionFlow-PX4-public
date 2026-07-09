@@ -36,7 +36,6 @@ void zeroVector3(Vector3f &v)
 	v(2) = 0.f;
 }
 
-
 void setNanVector4(Vector<float, 4> &v)
 {
 	for (int i = 0; i < 4; i++) {

@@ -5,8 +5,6 @@
 
 void Takeoff::generateInitialRampValue(float velocity_p_gain)
 {
-	// Keep the parameter path intact, but make the ramp start from a conservative
-	// zero upward-speed limit and grow toward the requested takeoff speed.
 	velocity_p_gain = math::max(fabsf(velocity_p_gain), 0.01f);
 	_takeoff_ramp_vz_init = CONSTANTS_ONE_G / velocity_p_gain;
 }
@@ -23,14 +21,14 @@ void Takeoff::updateTakeoffState(const bool armed, const bool landed, const bool
 		} else {
 			break;
 		}
-		// FALLTHROUGH
+
 	case TakeoffState::spoolup:
 		if (_spoolup_time_hysteresis.get_state()) {
 			_takeoff_state = TakeoffState::ready_for_takeoff;
 		} else {
 			break;
 		}
-		// FALLTHROUGH
+
 	case TakeoffState::ready_for_takeoff:
 		if (want_takeoff) {
 			_takeoff_state = TakeoffState::rampup;
@@ -38,14 +36,14 @@ void Takeoff::updateTakeoffState(const bool armed, const bool landed, const bool
 		} else {
 			break;
 		}
-		// FALLTHROUGH
+
 	case TakeoffState::rampup:
 		if (_takeoff_ramp_progress >= 1.f) {
 			_takeoff_state = TakeoffState::flight;
 		} else {
 			break;
 		}
-		// FALLTHROUGH
+
 	case TakeoffState::flight:
 		if (landed) {
 			_takeoff_state = TakeoffState::ready_for_takeoff;

@@ -23,10 +23,6 @@ void addIfNotNanVector3f(matrix::Vector3f &setpoint, const matrix::Vector3f &add
 
 void setZeroIfNanVector3f(matrix::Vector3f &vector);
 
-/**
- * Compatibility helper used by the custom controller to infer position from
- * velocity when a position setpoint is not provided.
- */
 void setPositionIfPositionIsNan(matrix::Vector3f &vel_sp, matrix::Vector3f &pos_sp, float dt);
 
-} // namespace ControlMath
+} // namespace

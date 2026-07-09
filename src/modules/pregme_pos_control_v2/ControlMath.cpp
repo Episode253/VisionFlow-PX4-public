@@ -164,4 +164,4 @@ void setPositionIfPositionIsNan(Vector3f &vel_sp, Vector3f &pos_sp, float dt)
 	}
 }
 
-} // namespace ControlMath
+} // namespace

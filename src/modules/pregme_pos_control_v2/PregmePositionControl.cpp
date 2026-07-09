@@ -14,7 +14,6 @@ using namespace matrix;
 
 namespace
 {
-
 uORB::Publication<vehicle_command_s> g_vehicle_command_pub{ORB_ID(vehicle_command)};
 hrt_abstime g_touchdown_start_us{0};
 hrt_abstime g_last_disarm_request_us{0};
