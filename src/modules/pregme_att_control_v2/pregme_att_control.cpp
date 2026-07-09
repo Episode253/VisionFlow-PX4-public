@@ -12,7 +12,7 @@ using namespace matrix;
 
 ModuleBase::Descriptor UserAttitudeControl::desc{task_spawn, custom_command, print_usage};
 
-// The system is configured for multicopter operation by default, with all VTOL-related logic removed.
+// 模块设计的初衷是针对四旋翼无人机的，保留 VTOL 相关的代码结构，但禁用 VTOL 的生效逻辑以确保专注于旋翼机控制
 UserAttitudeControl::UserAttitudeControl() :
 	ModuleParams(nullptr),
 	WorkItem(MODULE_NAME, px4::wq_configurations::rate_ctrl),
@@ -37,7 +37,7 @@ UserAttitudeControl::~UserAttitudeControl()
 bool UserAttitudeControl::init()
 {
 	if (!_vehicle_angular_velocity_sub.registerCallback()) {
-		PX4_ERR("vehicle_angular_velocity callback registration failed ！");
+		PX4_ERR("vehicle_angular_velocity callback registration failed");
 		return false;
 	}
 
@@ -62,6 +62,9 @@ void UserAttitudeControl::parameters_updated()
 		_param_PresetTraj_epsilon.get(),
 		_param_PresetTraj_k.get());
 
+        //     | Ixx  -Ixy  -Ixz |
+        // I = | -Ixy  Iyy  -Iyz |
+        //     | -Ixz  -Iyz  Izz |
 
 	float inertia_b[9] = {
 		_param_usr_i_xx.get(), -_param_usr_i_xy.get(), -_param_usr_i_xz.get(),
@@ -70,6 +73,7 @@ void UserAttitudeControl::parameters_updated()
 	};
 
 	SquareMatrix<float, 3> inertia_matrix(inertia_b);
+
 	_attitude_control.setInertiaMatrix(inertia_matrix);
 
 	using math::radians;
@@ -81,11 +85,10 @@ void UserAttitudeControl::parameters_updated()
 
 	_man_tilt_max = math::radians(_param_usr_man_tilt_max.get());
 
-	// Since the CBRK_RATE_CTRL_KEY parameter is not available in PX4 v1.17, a default constant value of 121212 is used here.
+	// 其他 PX4 版本中使用的参数是 CBRK_RATE_CTRL_KEY ,但是该参数不适用于 PX4 V1.17 架构所以给定默认固定值
 	_actuators_0_circuit_breaker_enabled = (_param_cbrk_rate_ctrl.get() == 121212);
 }
 
-// Adapt to the current PX4 manual_control_setpoint.throttle [-1, 1] input specification and implement throttle safety clamping.
 float UserAttitudeControl::throttle_curve(float throttle_stick_input)
 {
 	// PX4 manual_control_setpoint.throttle is in range [-1, 1].
@@ -109,7 +112,7 @@ float UserAttitudeControl::throttle_curve(float throttle_stick_input)
 		break;
 	}
 
-	// Missing ETH throttle estimation logic.
+	// 缺少油门自动估计的逻辑
 	return math::constrain(thrust, 0.f, _param_usr_thr_max.get());
 }
 
@@ -191,8 +194,7 @@ void UserAttitudeControl::update_vehicle_status()
 
 			// Add safety protection logic for arming/unlocking.
 			const bool armed = (vehicle_status.arming_state == vehicle_status_s::ARMING_STATE_ARMED);
-			_spooled_up = armed && hrt_elapsed_time(&vehicle_status.armed_time) >
-				_param_com_spoolup_time.get() * 1_s;
+			_spooled_up = armed && hrt_elapsed_time(&vehicle_status.armed_time) > _param_com_spoolup_time.get() * 1_s;
 		}
 	}
 }
@@ -205,18 +207,6 @@ void UserAttitudeControl::update_landed_state()
 		if (_vehicle_land_detected_sub.copy(&vehicle_land_detected)) {
 			_landed = vehicle_land_detected.landed;
 			_maybe_landed = vehicle_land_detected.maybe_landed;
-		}
-	}
-}
-
-void UserAttitudeControl::update_landing_gear()
-{
-	if (_landing_gear_sub.updated()) {
-		landing_gear_s landing_gear{};
-
-		if (_landing_gear_sub.copy(&landing_gear)
-		    && landing_gear.landing_gear != landing_gear_s::GEAR_KEEP) {
-			_landing_gear = landing_gear.landing_gear;
 		}
 	}
 }
@@ -346,12 +336,10 @@ void UserAttitudeControl::Run()
 
 	update_vehicle_status();
 	update_landed_state();
-	update_landing_gear();
 
 	const bool is_hovering = _vehicle_type_rotary_wing && !_vtol_in_transition_mode;
 
-	const bool run_att_ctrl =
-		_vehicle_control_mode.flag_control_attitude_enabled && is_hovering;
+	const bool run_att_ctrl = _vehicle_control_mode.flag_control_attitude_enabled && is_hovering;
 
 	if (!run_att_ctrl) {
 		_man_x_input_filter.reset(0.f);
@@ -379,8 +367,7 @@ void UserAttitudeControl::Run()
 		return;
 	}
 
-	if (!_vehicle_control_mode.flag_armed
-	    || _vehicle_status.vehicle_type != vehicle_status_s::VEHICLE_TYPE_ROTARY_WING) {
+	if (!_vehicle_control_mode.flag_armed || _vehicle_status.vehicle_type != vehicle_status_s::VEHICLE_TYPE_ROTARY_WING) {
 		_attitude_control.resetESO();
 		_attitude_control.resetPresetTraj();
 	}
@@ -388,11 +375,7 @@ void UserAttitudeControl::Run()
 	const Quatf q{v_att.q};
 	bool attitude_setpoint_generated = false;
 
-	const bool manual_stabilized =
-		_vehicle_control_mode.flag_control_manual_enabled
-		&& !_vehicle_control_mode.flag_control_altitude_enabled
-		&& !_vehicle_control_mode.flag_control_velocity_enabled
-		&& !_vehicle_control_mode.flag_control_position_enabled;
+	const bool manual_stabilized = false;
 
 	if (manual_stabilized) {
 		generate_attitude_setpoint(q, dt, _reset_yaw_sp);
@@ -500,17 +483,10 @@ int UserAttitudeControl::print_usage(const char *reason)
 		R"DESCR_STR(
 ### Description
 Custom multicopter attitude controller for PX4 Control Allocation architecture.
-
-This module runs on vehicle_angular_velocity updates, generates manual stabilized attitude setpoints when required,
-uses the custom Att_Control backend, and publishes vehicle_torque_setpoint and vehicle_thrust_setpoint.
-
-This version is only for multicopter platforms. VTOL and legacy actuator_controls output logic have been removed.
-
-Important: this module publishes vehicle_torque_setpoint and vehicle_thrust_setpoint directly.
 Do not run it together with the stock mc_rate_control module.
 )DESCR_STR");
 
-	PRINT_MODULE_USAGE_NAME("usr_att_control", "controller");
+	PRINT_MODULE_USAGE_NAME("pregme_att_control", "controller");
 	PRINT_MODULE_USAGE_COMMAND("start");
 	PRINT_MODULE_USAGE_DEFAULT_COMMANDS();
 
