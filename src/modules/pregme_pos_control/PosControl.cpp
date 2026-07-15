@@ -207,6 +207,12 @@ void PosControl::setInputSetpoint(const trajectory_setpoint_s &setpoint)
 	_yawspeed_sp = setpoint.yawspeed;
 }
 
+void PosControl::setBodyState(const Dcmf &R_body_to_world, const Vector3f &omega_body)
+{
+	_R_body_to_world = R_body_to_world;
+	_omega_body = omega_body;
+}
+
 void PosControl::setInputSetpoint(const vehicle_local_position_setpoint_s &setpoint)
 {
 	_pos_sp = Vector3f(setpoint.x, setpoint.y, setpoint.z);
@@ -257,9 +263,33 @@ void PosControl::_positionControl(const float dt)
 
 	const bool horizontal_control_enabled = PX4_ISFINITE(_pos_sp(0)) || PX4_ISFINITE(_pos_sp(1))
 							|| PX4_ISFINITE(_vel_sp(0)) || PX4_ISFINITE(_vel_sp(1));
+
 	const bool vertical_control_enabled = PX4_ISFINITE(_pos_sp(2)) || PX4_ISFINITE(_vel_sp(2));
 
-	Vector3f delta_v_raw = _pregme_eso.delta_est;
+	// 机械臂质心耦合补偿: Δv = -R·[ω×(ω×p_C^B)]
+	// 从 ArmJointSubscriber 读取最新系统质心
+	{
+		auto *arm = ArmJointSubscriber::instance();
+		_p_c_b = arm->getSystemCom();
+
+		if (_p_c_b.norm() > 1e-6f) {
+			// 向心加速度补偿: a_c = ω × (ω × p_C^B)
+			const Vector3f w_cross_p = _omega_body.cross(_p_c_b);
+			const Vector3f a_c_body = _omega_body.cross(w_cross_p);
+
+			// Δv = -R · a_c_body (负号: 从机体系补偿转换到世界系速度增量)
+			_delta_v_comp = -(_R_body_to_world * a_c_body);
+		} else {
+			_delta_v_comp.setZero();
+		}
+	}
+
+	// NaN 保护
+	ControlMath::setZeroIfNanVector3f(_delta_v_comp);
+
+	// ESO 只估计未知残差扰动, 控制端显式加上已知耦合项
+	Vector3f delta_v_raw = _pregme_eso.delta_est + _delta_v_comp;
+
 	ControlMath::setZeroIfNanVector3f(delta_v_raw);
 
 	delta_v(0) = updateProtectedCESOInjection(delta_v_raw(0), horizontal_control_enabled, dt,
@@ -281,7 +311,10 @@ void PosControl::_positionControl(const float dt)
 	_autopilot.f_iusl = _contolParas.bm_Kp * _autopilot.slide_mode + g + delta_v
 		+ _contolParas.bm_lambda_p * _autopilot.zp_dot - _preset_traj.k * _preset_traj.ed_ddot;
 
-	const Vector3f u_v = -_autopilot.f_iusl + g;
+	// CESO观测器更新：u_v是加上重力之后的机体期望加速度，它与当前位置实际测量值_pos一起作为CESO的输入，来估计下一周期的扰动
+	// 把已知耦合补偿项并入系统输入, ESO 只估计残差
+	const Vector3f u_v = -_autopilot.f_iusl + g + _delta_v_comp;
+	
 	PositionCESO(_pos, u_v, dt);
 
 	_acc_cal = -_autopilot.f_iusl + g;

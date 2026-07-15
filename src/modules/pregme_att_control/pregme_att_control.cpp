@@ -8,6 +8,8 @@
 #include <mathlib/mathlib.h>
 #include <matrix/matrix/math.hpp>
 
+#include <lib/gamma_arm_dynamics/ArmJointSubscriber.hpp>
+
 using namespace matrix;
 
 ModuleBase::Descriptor UserAttitudeControl::desc{task_spawn, custom_command, print_usage};
@@ -336,6 +338,9 @@ void UserAttitudeControl::Run()
 
 	update_vehicle_status();
 	update_landed_state();
+
+	// 机械臂质心更新
+	ArmJointSubscriber::instance()->update();
 
 	const bool is_hovering = _vehicle_type_rotary_wing && !_vtol_in_transition_mode;
 

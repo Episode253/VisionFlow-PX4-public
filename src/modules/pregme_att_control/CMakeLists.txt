@@ -13,6 +13,7 @@ px4_add_module(
 		# pregme_att_control_params_en.yaml
 	DEPENDS
 		Att_control
+		gamma_arm_dynamics
 		mathlib
 		px4_work_queue
 		StickYaw

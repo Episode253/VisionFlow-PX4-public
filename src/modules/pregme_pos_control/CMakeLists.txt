@@ -15,6 +15,7 @@ px4_add_module(
 		pregme_pos_control_params_zh.yaml
 		# pregme_pos_control_params_en.yaml
 	DEPENDS
+	        gamma_arm_dynamics
 		px4_work_queue
 		controllib
 		geo

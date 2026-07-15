@@ -314,6 +314,9 @@ void Att_Control::runAttitudeControl(const Quatf &q,
 	Quatf q_current = q;
 	q_current.normalize();
 
+	// 缓存 body→world 旋转矩阵, 供 updateCouplingCompensation 使用
+	_R_body_to_world = Dcmf(q_current);
+
 	Quatf q_error = _attitude_setpoint_q.inversed() * q_current;
 	q_error.normalize();
 
@@ -373,13 +376,21 @@ void Att_Control::runAttitudeControl(const Quatf &q,
 		zeroVector3(_usr_eso.delta_esti);
 	}
 
+	// 机械臂质心耦合补偿 (从 ArmJointSubscriber 读取最新 CoM)
+	updateCouplingCompensation();
+
 	const Vector3f control_vec = (-1.f) * (_controller_param.K_q * slide_mode_q)
 					   + (-0.5f) * (Q_dot * omega_error)
 					   + (-1.f) * (_controller_param.lambda_q * zq_dot)
 					   + _preset_traj.k * _preset_traj.ed_ddot;
 
 	const Vector3f gyro_comp = current_rate % (_I_b * current_rate);
-	torque = 2.f * (_I_b * (Q_inv * control_vec)) + gyro_comp - _I_b * _usr_eso.delta_esti;
+
+	// 机械臂质心偏移补偿: Δω_comp = I⁻¹[m_total · p_C^B × R^T·g]
+	// ESO 只估计残余未知扰动, 控制端显式加上已知 Δω_comp
+	const Vector3f delta_omega_total = _usr_eso.delta_esti + _delta_omega_comp;
+
+	torque = 2.f * (_I_b * (Q_inv * control_vec)) + gyro_comp - _I_b * delta_omega_total;
 
 	if (!isFiniteVector3(torque)) {
 		zeroVector3(torque);
@@ -390,7 +401,10 @@ void Att_Control::runAttitudeControl(const Quatf &q,
 
 	_tau = torque;
 	const Vector3f u_w = _I_b_inve * (_tau - gyro_comp);
-	UsrAttitudeESO(current_rate, u_w, dt);
+
+	// 把已知耦合补偿项并入系统输入, ESO 只估计残差
+	const Vector3f u_w_for_eso = u_w + _delta_omega_comp;
+	UsrAttitudeESO(current_rate, u_w_for_eso, dt);
 
 	for (int i = 0; i < 3; i++) {
 		_usr_eso.delta_esti(i) = PX4_ISFINITE(_usr_eso.delta_esti(i)) ?
@@ -462,4 +476,51 @@ void Att_Control::getRateControlStatus(rate_ctrl_status_s &rate_ctrl_status) con
 	rate_ctrl_status.rollspeed_integ = PX4_ISFINITE(_usr_eso.delta_esti(0)) ? _usr_eso.delta_esti(0) : 0.f;
 	rate_ctrl_status.pitchspeed_integ = PX4_ISFINITE(_usr_eso.delta_esti(1)) ? _usr_eso.delta_esti(1) : 0.f;
 	rate_ctrl_status.yawspeed_integ = PX4_ISFINITE(_usr_eso.delta_esti(2)) ? _usr_eso.delta_esti(2) : 0.f;
+}
+
+// 机械臂质心耦合补偿
+//
+// Δω_comp = I_b⁻¹ [m_total · p_C^B × (R^T · g)]
+//
+// 物理含义:
+//   p_C^B: 系统总质心在机体系下的偏移 (来自 ArmJointSubscriber)
+//   R^T·g: 重力在机体系下的方向
+//   p_C^B × (R^T·g): 质心偏移产生的重力矩臂
+//   乘以 m_total 得到力矩, 除以 I_b 得到角加速度补偿量
+
+void Att_Control::updateCouplingCompensation()
+{
+	auto *arm = ArmJointSubscriber::instance();
+
+	_p_c_b = arm->getSystemCom();
+	_coupling_total_mass = arm->getTotalMass();
+
+	// 将 ArmJointSubscriber 的质心数据传递给姿态环
+	// 如果质心全零 (机械臂未运动), 不产生补偿
+	const float com_norm = _p_c_b.norm();
+
+	if (com_norm < 1e-6f || _coupling_total_mass < 0.1f) {
+		zeroVector3(_delta_omega_comp);
+		return;
+	}
+
+	// g_n 在世界 NED 系下为 (0, 0, 9.8066)
+	constexpr float G = 9.8066f;
+	const Vector3f g_n(0.f, 0.f, G);
+
+	// 重力在机体系下的方向
+	const Vector3f body_g_dir = _R_body_to_world.transpose() * g_n;
+
+	// 重力矩: τ_g = m_total · p_C^B × (R^T · g)
+	const Vector3f gravity_torque = _coupling_total_mass * (_p_c_b.cross(body_g_dir));
+
+	// 角加速度补偿: Δω = I⁻¹ · τ_g
+	_delta_omega_comp = _I_b_inve * gravity_torque;
+
+	// NaN 保护
+	for (int i = 0; i < 3; ++i) {
+		if (!PX4_ISFINITE(_delta_omega_comp(i))) {
+			_delta_omega_comp(i) = 0.f;
+		}
+	}
 }

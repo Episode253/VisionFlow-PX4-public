@@ -1,7 +1,11 @@
 #pragma once
 
+#include <Att_control.hpp>
+
 #include <matrix/matrix/math.hpp>
 #include <perf/perf_counter.h>
+#include <drivers/drv_hrt.h>
+
 #include <px4_platform_common/px4_config.h>
 #include <px4_platform_common/defines.h>
 #include <px4_platform_common/module.h>
@@ -22,18 +26,14 @@
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/vehicle_land_detected.h>
 
-#include <lib/mathlib/math/filter/AlphaFilter.hpp>
-
 #include <uORB/topics/battery_status.h>
 #include <uORB/topics/rate_ctrl_status.h>
 #include <uORB/topics/vehicle_angular_velocity.h>
 #include <uORB/topics/vehicle_torque_setpoint.h>
 #include <uORB/topics/vehicle_thrust_setpoint.h>
-
-#include <Att_control.hpp>
-
-#include <drivers/drv_hrt.h>
 #include <uORB/topics/vehicle_local_position.h>
+
+#include <lib/mathlib/math/filter/AlphaFilter.hpp>
 
 using namespace time_literals;
 

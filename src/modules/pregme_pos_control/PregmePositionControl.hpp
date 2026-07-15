@@ -9,10 +9,12 @@
 #include <lib/perf/perf_counter.h>
 #include <lib/slew_rate/SlewRateYaw.hpp>
 #include <lib/systemlib/mavlink_log.h>
+
 #include <px4_platform_common/defines.h>
 #include <px4_platform_common/module.h>
 #include <px4_platform_common/module_params.h>
 #include <px4_platform_common/px4_work_queue/ScheduledWorkItem.hpp>
+
 #include <uORB/Publication.hpp>
 #include <uORB/Subscription.hpp>
 #include <uORB/SubscriptionCallback.hpp>
@@ -27,6 +29,8 @@
 #include <uORB/topics/vehicle_land_detected.h>
 #include <uORB/topics/vehicle_local_position.h>
 #include <uORB/topics/vehicle_local_position_setpoint.h>
+#include <uORB/topics/vehicle_attitude.h>
+#include <uORB/topics/vehicle_angular_velocity.h>
 
 using namespace time_literals;
 
@@ -71,6 +75,8 @@ private:
 	uORB::Subscription _vehicle_constraints_sub{ORB_ID(vehicle_constraints)};
 	uORB::Subscription _vehicle_control_mode_sub{ORB_ID(vehicle_control_mode)};
 	uORB::Subscription _vehicle_land_detected_sub{ORB_ID(vehicle_land_detected)};
+	uORB::Subscription _vehicle_attitude_sub{ORB_ID(vehicle_attitude)};
+	uORB::Subscription _vehicle_angular_velocity_sub{ORB_ID(vehicle_angular_velocity)};
 
 	hrt_abstime _time_stamp_last_loop{0};
 	hrt_abstime _last_warn{0};
@@ -198,10 +204,10 @@ private:
 	static constexpr float ALTITUDE_THRESHOLD = 0.3f;
 	static constexpr float MAX_SAFE_TILT_DEG = 89.f;
 
-	static constexpr float THRUST_SLEW_TAKEOFF = 0.60f;	// faster but still smooth takeoff thrust ramp for OFFBOARD altitude hold
-	static constexpr float THRUST_SLEW_LANDING = 0.80f;	// smooth but not too slow after real landing
-	static constexpr float THRUST_SLEW_FLIGHT = 10.0f;	// transparent during normal flight
-	static constexpr float TAKEOFF_SPEED_SP_MIN = 0.01f;	// avoid the previous 0.15 m/s step at ramp start
+	static constexpr float THRUST_SLEW_TAKEOFF = 0.60f;	        // faster but still smooth takeoff thrust ramp for OFFBOARD altitude hold
+	static constexpr float THRUST_SLEW_LANDING = 0.80f;	        // smooth but not too slow after real landing
+	static constexpr float THRUST_SLEW_FLIGHT = 10.0f;	        // transparent during normal flight
+	static constexpr float TAKEOFF_SPEED_SP_MIN = 0.01f;	        // avoid the previous 0.15 m/s step at ramp start
 	static constexpr float TAKEOFF_ALTITUDE_STEP_MIN = 0.05f;	// avoid an abrupt 0.3 m position step at ramp start
 	static constexpr float THRUST_ZERO_EPS = 0.002f;
 

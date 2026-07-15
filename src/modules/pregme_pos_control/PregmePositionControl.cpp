@@ -511,6 +511,19 @@ void PregmePositionControl::Run()
 
 			_control.setState(states);
 
+			// 机械臂耦合补偿: 传递机体姿态 + 角速度给位置控制器
+			{
+				vehicle_attitude_s v_att{};
+				_vehicle_attitude_sub.update(&v_att);
+				const Quatf q_att(v_att.q);
+
+				vehicle_angular_velocity_s av{};
+				_vehicle_angular_velocity_sub.update(&av);
+				const Vector3f omega_body(av.xyz);
+
+				_control.setBodyState(Dcmf(q_att), omega_body);
+			}
+
 			if (_control.update(dt)) {
 				_failsafe_land_hysteresis.set_state_and_update(false, time_stamp_now);
 

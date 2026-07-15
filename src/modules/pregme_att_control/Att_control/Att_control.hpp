@@ -1,6 +1,8 @@
 #pragma once
 
 #include <matrix/matrix/math.hpp>
+#include <lib/gamma_arm_dynamics/ArmJointSubscriber.hpp>
+
 #include <uORB/topics/rate_ctrl_status.h>
 
 class Att_Control
@@ -48,6 +50,7 @@ public:
 	 * @param torque output body torque command [N*m before external normalization]
 	 * @param rates_sp output body rate setpoint for logging/compatibility [rad/s]
 	 * @param pos_z local position z in PX4 NED frame [m]
+	 * @param R_body_to_world rotation from body to world frame
 	 */
 	void update(const matrix::Quatf &q,
 		    const matrix::Vector3f &rate,
@@ -56,6 +59,9 @@ public:
 		    matrix::Vector3f &torque,
 		    matrix::Vector3f &rates_sp,
 		    float pos_z);
+
+	/** Pull latest system COM from ArmJointSubscriber and compute coupling compensation. */
+	void updateCouplingCompensation();
 
 	void getRateControlStatus(rate_ctrl_status_s &rate_ctrl_status) const;
 
@@ -99,6 +105,12 @@ private:
 	matrix::Vector3f _tau;
 	matrix::SquareMatrix<float, 3> _I_b;
 	matrix::SquareMatrix<float, 3> _I_b_inve;
+
+	// 机械臂耦合补偿 (CoM offset compensation)
+	matrix::Dcmf _R_body_to_world;                // 从 ArmJointSubscriber / controller 更新
+	matrix::Vector3f _p_c_b{};                     // 系统总质心 (机体系 NED), 从 ArmJointSubscriber 读取
+	matrix::Vector3f _delta_omega_comp{};          // Δω = I⁻¹[m_total·p_C^B × R^T·g]
+	float _coupling_total_mass{0.f};               // 缓存的总质量
 
 	struct preset_traj {
 		float l{1.f};

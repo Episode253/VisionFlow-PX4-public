@@ -4,8 +4,10 @@
 
 #include <cmath>
 #include <float.h>
-#include <lib/mathlib/mathlib.h>
 #include <matrix/matrix/math.hpp>
+#include <lib/mathlib/mathlib.h>
+#include <lib/gamma_arm_dynamics/ArmJointSubscriber.hpp>
+
 #include <uORB/topics/trajectory_setpoint.h>
 #include <uORB/topics/vehicle_attitude_setpoint.h>
 #include <uORB/topics/vehicle_local_position_setpoint.h>
@@ -70,6 +72,9 @@ public:
 	void setInputSetpoint(const trajectory_setpoint_s &setpoint);
 	void setInputSetpoint(const vehicle_local_position_setpoint_s &setpoint);
 
+	/** 设置机体状态 (位姿 + 角速度), 用于机械臂耦合补偿。 */
+	void setBodyState(const matrix::Dcmf &R_body_to_world, const matrix::Vector3f &omega_body);
+
 	bool update(const float dt);
 
 	void resetIntegral() { _autopilot.pos_err_integ.setZero(); }
@@ -88,7 +93,6 @@ private:
 
 	matrix::Vector3f g = matrix::Vector3f(0.f, 0.f, G);
 
-
 	PositionControlStates _states{};
 
 	float _lim_vel_horizontal{};
@@ -102,16 +106,22 @@ private:
 	matrix::Vector3f _pos{};
 	matrix::Vector3f _vel{};
 	matrix::Vector3f _vel_dot{};
+	matrix::Vector3f delta_v{};
 
 	matrix::Vector3f _pos_sp{};
 	matrix::Vector3f _vel_sp{};
 	matrix::Vector3f _acc_sp{};
 	matrix::Vector3f _acc_cal{};
 	matrix::Vector3f _thr_sp{};
+
 	float _yaw_sp{};
 	float _yawspeed_sp{};
 
-	matrix::Vector3f delta_v{};
+	// 机械臂耦合补偿 (CoM offset → velocity compensation)
+	matrix::Dcmf _R_body_to_world;             // 世界系到机体系的旋转矩阵
+	matrix::Vector3f _omega_body{};            // 机体角速度 [rad/s]
+	matrix::Vector3f _p_c_b{};                 // 系统总质心 (机体系 NED), 从 ArmJointSubscriber 读取
+	matrix::Vector3f _delta_v_comp{};          // Δv = -R·[ω×(ω×p_C^B)]
 
 	struct pregme_ESO {
 		float EPSI{1.f};
