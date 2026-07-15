@@ -769,7 +769,7 @@ computes trajectory corrections, thrust and attitude setpoints.
 	return 0;
 }
 
-extern "C" __EXPORT int pregme_pos_control_v2_main(int argc, char *argv[])
+extern "C" __EXPORT int pregme_pos_control_main(int argc, char *argv[])
 {
 	return ModuleBase::main(PregmePositionControl::desc, argc, argv);
 }

@@ -1,8 +1,8 @@
 add_subdirectory(Att_control)
 
 px4_add_module(
-	MODULE modules__pregme_att_control_v2
-	MAIN   pregme_att_control_v2
+	MODULE modules__pregme_att_control
+	MAIN   pregme_att_control
 	COMPILE_FLAGS
 		${MAX_CUSTOM_OPT_LEVEL}
 	SRCS

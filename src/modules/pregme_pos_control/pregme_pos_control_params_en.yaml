@@ -1,6 +1,6 @@
-module_name: pregme_pos_control_v2
+module_name: pregme_pos_control
 parameters:
-- group: Pregme Position Control V2
+- group: Pregme Position Control
   definitions:
     PREGME_LPX:
       description:

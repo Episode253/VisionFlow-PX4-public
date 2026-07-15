@@ -493,7 +493,7 @@ Do not run it together with the stock mc_rate_control module.
 	return 0;
 }
 
-extern "C" __EXPORT int pregme_att_control_v2_main(int argc, char *argv[])
+extern "C" __EXPORT int pregme_att_control_main(int argc, char *argv[])
 {
 	return ModuleBase::main(UserAttitudeControl::desc, argc, argv);
 }

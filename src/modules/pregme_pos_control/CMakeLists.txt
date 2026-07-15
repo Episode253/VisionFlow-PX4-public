@@ -1,6 +1,6 @@
 px4_add_module(
-	MODULE modules__pregme_pos_control_v2
-	MAIN pregme_pos_control_v2
+	MODULE modules__pregme_pos_control
+	MAIN pregme_pos_control
 	COMPILE_FLAGS
 	SRCS
 		ControlMath.cpp

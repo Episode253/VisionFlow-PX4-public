@@ -1,6 +1,6 @@
-module_name: pregme_att_control_v2
+module_name: pregme_att_control
 parameters:
-- group: Pregme Attitude Control V2
+- group: Pregme Attitude Control
   definitions:
     USR_I_XX:
       description:

@@ -1,12 +1,12 @@
-menuconfig MODULES_PREGME_POS_CONTROL_V2
-	bool "pregme_pos_control_v2"
+menuconfig MODULES_PREGME_POS_CONTROL
+	bool "pregme_pos_control"
 	default n
 	---help---
-		Enable support for pregme_pos_control_v2
+		Enable support for pregme_pos_control
 
-menuconfig USER_PREGME_POS_CONTROL_V2
-	bool "pregme_pos_control_v2 running as userspace module"
+menuconfig USER_PREGME_POS_CONTROL
+	bool "pregme_pos_control running as userspace module"
 	default n
-	depends on BOARD_PROTECTED && MODULES_PREGME_POS_CONTROL_V2
+	depends on BOARD_PROTECTED && MODULES_PREGME_POS_CONTROL
 	---help---
-		Put pregme_pos_control_v2 in userspace memory
+		Put pregme_pos_control in userspace memory
