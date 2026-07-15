@@ -77,7 +77,7 @@ float updateProtectedCESOInjection(float raw, bool control_enabled, float dt,
 
 	const float output = applySoftDeadzone(state.filtered, deadzone);
 
-	if (output == 0.f) {
+	if (fabsf(output) <= 1.0e-6f) {
 		state.filtered *= 0.95f;
 	}
 
@@ -192,7 +192,7 @@ void PosControl::setState(const PositionControlStates &states)
 	_pos = states.position;
 	_vel = states.velocity;
 	_vel_dot = states.acceleration;
-	
+
 	if (!PX4_ISFINITE(_yaw_sp)) {
 		_yaw_sp = states.yaw;
 	}

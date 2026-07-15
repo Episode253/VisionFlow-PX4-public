@@ -36,8 +36,8 @@ UserAttitudeControl::~UserAttitudeControl()
 
 bool UserAttitudeControl::init()
 {
-	if (!_vehicle_angular_velocity_sub.registerCallback()) {
-		PX4_ERR("vehicle_angular_velocity callback registration failed");
+	if (!_vehicle_attitude_sub.registerCallback()) {
+		PX4_ERR("vehicle_attitude callback registration failed");
 		return false;
 	}
 
@@ -282,7 +282,7 @@ void UserAttitudeControl::publish_torque_thrust_setpoint(const vehicle_attitude_
 void UserAttitudeControl::Run()
 {
 	if (should_exit()) {
-		_vehicle_angular_velocity_sub.unregisterCallback();
+		_vehicle_attitude_sub.unregisterCallback();
 		exit_and_cleanup(desc);
 		return;
 	}
