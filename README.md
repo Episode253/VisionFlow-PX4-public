@@ -6,7 +6,6 @@
 
 - **PreGME Controllers** — Full replacement of standard `mc_att_control` and `mc_pos_control` with sliding-mode Prescribed Performance Control (PPC) algorithms, including centroid compensation and composite error state observer (CESO).
 - **Gamma Arm Integration** — Tight coupling between PX4 flight control and Gamma-series robotic arm dynamics via the `gamma_arm_dynamics` library.
-- **Neural Network Control** — TensorFlow Lite Micro integration for learned control policies alongside traditional PPC.
 - **Rich Gazebo Simulation** — Custom worlds, models, and plugins for indoor laboratory manipulation scenarios (landing boxes, VLA tasks, hardware-in-the-loop).
 - **ROS2 Ecosystem** — Zenoh middleware, uXRCE-DDS client, and a complete ROS2 Humble Docker environment.
 
@@ -14,11 +13,22 @@
 
 ### Check Available Build Targets
 
+> `ninja -t targets` 列出所有可构建目标，用 `grep` 过滤特定关键词即可查找，以 `gz_q940_ti` 为例：
+
 ```bash
+# 查看所有 gz_ 开头的仿真目标
+ninja -C build/px4_sitl_default -t targets | grep "^gz_"
+
+# 按关键词筛选，例如查找 q940_ti 相关目标
 ninja -C build/px4_sitl_default -t targets | grep gz_q940_ti
+
+# 查找所有 swan_gamma 相关目标
+ninja -C build/px4_sitl_default -t targets | grep gz_swan_gamma
 ```
 
-### Launch Simulation Environments
+### Native Launch (Local Deployment)
+
+> 以下命令直接在本地宿主机上运行 PX4 SITL + Gazebo
 
 | Profile | Description | Command |
 |---------|-------------|---------|
@@ -30,7 +40,9 @@ ninja -C build/px4_sitl_default -t targets | grep gz_q940_ti
 | Entity 6 | X500 with gimbal | `PX4_GZ_WORLD=laboratory_no_landingbox make px4_sitl gz_x500_gimbal_laboratory_no_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
 | Entity 7 | Differential drive rover | `PX4_GZ_MODEL_POSE="0,0,0.5,0,0,0" make px4_sitl gz_differential_rover_laboratory_no_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
 
-### Recommended: Docker-Based Launch
+### Docker-Based Launch (Recommended)
+
+> Docker 方式封装了完整的 ROS2 Humble + Gazebo 环境，推荐首次使用或需要隔离开发环境的场景
 
 ```bash
 # List available profiles
@@ -52,8 +64,8 @@ bash windshape_dev/data_stream/gz_bridge/bridge_gz_ros.sh
 # Camera stream visualization
 bash windshape_dev/data_stream/image_stream/camera_stream.sh
 
-# Ti5 arm web control
-bash windshape_dev/arm_control/ti5_arm_web_control.sh
+# Arm web control
+bash docker/into_gz_sitl.sh
 
 # MAVROS node
 source thirdparty/install/setup.bash && ros2 launch mavros px4.launch fcu_url:=udp://:14540@localhost:14557
@@ -120,14 +132,6 @@ VisionFlow-PX4/
 |--------|---------|--------------|
 | `pregme_att_control` | Attitude control | Sliding-mode PPC, CESO, inertia matrix, rate limits, trajectory presets |
 | `pregme_pos_control` | Position control | Sliding-mode PPC, lambda_p/Kp gains per axis, takeoff, collision constraints |
-
-Both modules use Chinese-language parameter files (`*_params_zh.yaml`) and were consolidated to a unified V2 version in recent commits.
-
-### Neural Network Control
-
-| Module | Purpose | Key Features |
-|--------|---------|--------------|
-| `mc_nn_control` | Learned control | TensorFlow Lite Micro integration, motor RPM normalization, thrust coefficient control |
 
 ### Simulation Stack
 
@@ -207,35 +211,16 @@ Custom posix airframes in `ROMFS/px4fmu_common/init.d-posix/airframes/`:
 | `px4_sitl_default` | POSIX | Gazebo SITL (primary development target) |
 | `px4_fmu-v6x_default` | NuttX | STM32H7 firmware (FMUv6X) |
 
-## Recent Development History
-
-| Commit | Description |
-|--------|-------------|
-| `a59add95` | Merged Centroid Compensation Algorithm |
-| `1b8c2e59` | Standardize PreGME naming (removed version suffixes) |
-| `23f53cbd` | Consolidate PreGME into V2 version |
-| `d38c2237` | Remove V1 PreGME version |
-| `378cf788` | Control law triggered by pose updates instead of angular velocity |
-| `442aea22` | Modify world environment |
-| `566a0361` | Add XY lateral CESO protection |
-| `0f9268dc` | Fix uORB process hanging during compilation |
-| `7ee4dea1` | Add Intel RealSense wrist-mounted camera |
-| `35e0e3eb` | Add flight review tool and Docker support |
-
 ## Key Differences from Stock PX4
 
 1. **PreGME Controllers** — Sliding-mode PPC replaces standard MC controllers (core research contribution)
 2. **Robotic Arm Integration** — `gamma_arm_dynamics` bridges PX4 flight control with Gamma-series arm dynamics
-3. **Neural Network Control** — TFLite Micro integration alongside traditional PPC
-4. **Heavy Gazebo Simulation** — Custom worlds, models, plugins for indoor lab manipulation
-5. **ROS2 Integration** — Zenoh middleware, uXRCE-DDS, Gazebo-ROS bridge, complete ROS2 Humble Docker
-6. **HKUST Custom Hardware** — nxt-dual and nxt-v1 board configs
-7. **Camera Feedback Pipeline** — OAK-D and Intel RealSense support with geotagging
-8. **Local Position Estimator** — Block-based LPE as EKF2 alternative
-9. **Differential Rover Support** — Full rover control stack alongside quadcopter
-10. **Flight Review System** — Web-based log review with PID analysis and 3D visualization
+3. **Heavy Gazebo Simulation** — Custom worlds, models, plugins for indoor lab manipulation
+4. **ROS2 Integration** — Zenoh middleware, uXRCE-DDS, Gazebo-ROS bridge, complete ROS2 Humble Docker
+5. **Camera Feedback Pipeline** — OAK-D and Intel RealSense support with geotagging
+6. **Differential Rover Support** — Full rover control stack alongside quadcopter
 
 ## Documentation
 
-- [`doc/PreGME: Prescribed Performance Control of.pdf`](doc/PreGME:%20Prescribed%20Performance%20Control%20of.pdf) — PreGME theoretical foundation
-- [`doc/PreGME:Parameter reference.pdf`](doc/PreGME:Parameter%20reference.pdf) — Parameter reference guide
+- [`doc/PreGME: Prescribed Performance Control of Aerial Manipulators based on Variable-Gain ESO.pdf`](doc/PreGME:%20Prescribed%20Performance%20Control%20of%20Aerial%20Manipulators%20based%20on%20Variable-Gain%20ESO.pdf) — PreGME theoretical foundation
+- [`doc/PreGME:Parameter Reference.pdf`](doc/PreGME:Parameter%20Reference.pdf) — Parameter reference guide
