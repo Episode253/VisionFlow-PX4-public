@@ -9,6 +9,19 @@
 - **Rich Gazebo Simulation** — Custom worlds, models, and plugins for indoor laboratory manipulation scenarios (landing boxes, VLA tasks, hardware-in-the-loop).
 - **ROS2 Ecosystem** — Zenoh middleware, uXRCE-DDS client, and a complete ROS2 Humble Docker environment.
 
+## Prerequisites
+
+> 本地部署需要以下环境与组件支持
+
+| 环境 / 组件 | 版本或信息 |
+|-------------|-----------|
+| 操作系统 | Ubuntu 22.04 |
+| ROS 2 版本 | Humble |
+| Gazebo Sim 版本 | Harmonic V8.11.0 |
+| Ros-GZ Bridge 版本 | `ros-humble-ros-gz-harmonic` |
+| PX4 版本 | V1.17.0 |
+| QGC 版本 / 下载地址 | <https://github.com/Renwang-Huang/VisionFlow-PX4/releases/tag/V1.17.0> |
+
 ## Quick Start
 
 ### Check Available Build Targets
@@ -219,6 +232,19 @@ Custom posix airframes in `ROMFS/px4fmu_common/init.d-posix/airframes/`:
 4. **ROS2 Integration** — Zenoh middleware, uXRCE-DDS, Gazebo-ROS bridge, complete ROS2 Humble Docker
 5. **Camera Feedback Pipeline** — OAK-D and Intel RealSense support with geotagging
 6. **Differential Rover Support** — Full rover control stack alongside quadcopter
+
+## Citation
+
+If you use this codebase in your research, please cite the associated paper:
+
+```bibtex
+@article{ji2025pregme,
+  title={PreGME: Prescribed Performance Control of Aerial Manipulators based on Variable-Gain ESO},
+  author={Ji, Mengyu and Guo, Shiliang and Li, Zhengzhen and Shen, Jiahao and Cao, Huazi and Zhao, Shiyu},
+  journal={arXiv preprint arXiv:2512.22957},
+  year={2025}
+}
+```
 
 ## Documentation
 
