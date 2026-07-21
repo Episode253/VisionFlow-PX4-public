@@ -4,7 +4,6 @@
  * @file gamma_arm_dynamics.hpp
  */
 
-#include <array>
 #include <math.h>
 #include <matrix/matrix/math.hpp>
 
@@ -37,14 +36,14 @@ struct ArmUavParam {
 	matrix::SquareMatrix<float, 3> R_mount;
 
 	BodyParam base_link{};
-	std::array<BodyParam, kArmLinkNum> links{};
-	std::array<DhParam, kJointNum> dh{};
+	BodyParam links[kArmLinkNum]{};
+	DhParam   dh[kJointNum]{};
 };
 
 struct ComStateInBody {
 	matrix::Vector3f p_c_uav_B{};
 	matrix::Vector3f p_c_base_link_B{};
-	std::array<matrix::Vector3f, kArmLinkNum> p_c_links_B{};
+	matrix::Vector3f p_c_links_B[kArmLinkNum]{};
 	matrix::Vector3f p_C_arm_B{};
 	matrix::Vector3f p_C_B{};
 	float m_arm   = 0.f;

@@ -165,7 +165,7 @@ ComStateInBody computeComStateInBody(const float q[6], const ArmUavParam &param)
 	s.p_c_uav_B = param.pc_uav;
 
 	// 正运动学: DH 连乘
-	std::array<matrix::SquareMatrix<float, 4>, kArmLinkNum> T;
+	matrix::SquareMatrix<float, 4> T[kArmLinkNum];
 	{
 		matrix::SquareMatrix<float, 4> acc;
 		acc.setIdentity();
