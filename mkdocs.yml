@@ -1,0 +1,261 @@
+site_name: VisionFlow-PX4 开发手册
+site_description: VisionFlow-PX4 定制化 PX4 Autopilot — 无人机-机械臂协同操作仿真与控制
+site_url: https://windylab.github.io/VisionFlow-PX4/
+repo_url: https://github.com/Renwang-Huang/VisionFlow-PX4
+repo_name: VisionFlow-PX4
+
+edit_uri: blob/main/docs/
+
+# Theme
+theme:
+  name: material
+  custom_dir: docs/overrides
+  icon:
+    logo: material/rocket-launch
+    repo: fontawesome/brands/github
+  favicon: assets/favicon.svg
+  logo: assets/logo.svg
+  features:
+    - navigation.indexes
+    - navigation.tracking
+    - navigation.sections
+    - navigation.breadcrumbs
+    - navigation.footer
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    - content.code.copy
+    - content.action.edit
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off
+        name: Switch to light mode
+
+# Plugins
+plugins:
+  - i18n:
+      docs_structure: folder
+      fallback_to_default: true
+      languages:
+        - locale: zh
+          default: true
+          name: 中文
+          build: true
+        - locale: en
+          name: English
+          build: true
+          nav_translations:
+            概述: Overview
+            快速开始: Getting Started
+            系统架构: System Architecture
+            核心模块: Core Modules
+            PreGME 控制器: PreGME Controllers
+            Gamma 机械臂集成: Gamma Arm Integration
+            神经网络控制: Neural Network Control
+            差动小车控制: Differential Rover Control
+            Zenoh 中间件: Zenoh Middleware
+            仿真资产: Simulation Assets
+            场景世界: World Scenes
+            模型: Models
+            资产使用指南: Asset Usage Guide
+            工具链: Toolchain
+            硬件支持: Hardware Support
+            通信协议: Communication Protocols
+            开发指南: Development Guide
+            参考资料: References
+            环境要求: Prerequisites
+            Docker 启动: Docker Launch
+            本地启动: Native Launch
+            快速验证: Quick Start
+            架构总览: Architecture Overview
+            控制栈: Control Stack
+            仿真栈: Simulation Stack
+            通信栈: Communication Stack
+            姿态控制: Attitude Control
+            位置控制: Position Control
+            参数参考: Parameter Reference
+            动力学库: Dynamics Library
+            Gazebo 插件: Gazebo Plugin
+            实验室降落箱: Laboratory Landing Box
+            实验室无降落箱: Laboratory No Landing Box
+            VLA 任务: VLA Tasks
+            室内餐厅: Indoor Dining
+            湾区海岸: Baylands Coast
+            Q940TI 系列: Q940TI Series
+            Swan Gamma 系列: Swan Gamma Series
+            X500 系列: X500 Variants
+            差动小车: Rovers
+            Docker 工作流: Docker Workflow
+            飞行日志审查: Flight Review
+            数据流桥接: Data Streaming
+            机械臂控制面板: Arm Control GUI
+            UAV 控制脚本: UAV Control Scripts
+            HKUST 定制板: HKUST Boards
+            支持板卡列表: Supported Boards
+            添加新板指南: Adding New Boards
+            自定义消息: Custom Messages
+            消息参考: Message Reference
+            编译流程: Building
+            添加新模块: Adding Modules
+            贡献指南: Contributing
+  - search:
+      separator: '[\s\-，。！？,.!?]'
+      lang:
+        - zh
+        - en
+
+# Configuration
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.snippets:
+      check_paths: true
+  - pymdownx.progressbar
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Extra
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Renwang-Huang/VisionFlow-PX4
+    - icon: fontawesome/brands/docker
+      link: https://hub.docker.com/
+  generator: false
+  consent:
+    title: Cookie consent
+    description: >-
+      我们使用 cookies 来识别您的重复访问和偏好。
+      同时我们也衡量哪些文档对您最有帮助。
+  alternate:
+    - name: 中文
+      link: /
+      lang: zh
+    - name: English
+      link: /en/
+      lang: en
+
+extra_css:
+  - assets/stylesheets/extra.css
+
+extra_javascript:
+  - https://unpkg.com/mermaid@11.9.0/dist/mermaid.min.js
+  - assets/javascripts/extra.js
+
+# Navigation
+nav:
+  - 概述: index.md
+  - 快速开始:
+    - getting-started/index.md
+    - 环境要求: getting-started/prerequisites.md
+    - Docker 启动: getting-started/docker-launch.md
+    - 本地启动: getting-started/native-launch.md
+    - 快速验证: getting-started/quick-start.md
+  - 系统架构:
+    - architecture/index.md
+    - 架构总览: architecture/overview.md
+    - 控制栈: architecture/control-stack.md
+    - 仿真栈: architecture/simulation-stack.md
+    - 通信栈: architecture/communication-stack.md
+  - 核心模块:
+    - modules/index.md
+    - PreGME 控制器:
+      - modules/pregme-controllers/index.md
+      - 姿态控制: modules/pregme-controllers/attitude-control.md
+      - 位置控制: modules/pregme-controllers/position-control.md
+      - 参数参考: modules/pregme-controllers/parameters.md
+    - Gamma 机械臂集成:
+      - modules/gamma-arm-integration/index.md
+      - 动力学库: modules/gamma-arm-integration/dynamics-library.md
+      - Gazebo 插件: modules/gamma-arm-integration/gazebo-plugin.md
+    - 神经网络控制: modules/neural-network-control/index.md
+    - 差动小车控制: modules/rover-controller/index.md
+    - Zenoh 中间件: modules/zenoh-middleware/index.md
+  - 仿真资产:
+    - simulation/index.md
+    - 场景世界:
+      - simulation/worlds/index.md
+      - 实验室降落箱: simulation/worlds/laboratory-landingbox.md
+      - 实验室无降落箱: simulation/worlds/laboratory-no-landingbox.md
+      - VLA 任务: simulation/worlds/vla-tasks.md
+      - 室内餐厅: simulation/worlds/indoor-dining.md
+      - 湾区海岸: simulation/worlds/baylands-coast.md
+    - 模型:
+      - simulation/models/index.md
+      - Q940TI 系列: simulation/models/q940-ti.md
+      - Swan Gamma 系列: simulation/models/swan-gamma.md
+      - X500 系列: simulation/models/x500-variants.md
+      - 差动小车: simulation/models/rovers.md
+    - 资产使用指南: simulation/assets-guide.md
+  - 工具链:
+    - tools/index.md
+    - Docker 工作流: tools/docker-workflow.md
+    - 飞行日志审查: tools/flight-review.md
+    - 数据流桥接: tools/data-streaming.md
+    - 机械臂控制面板: tools/arm-control-gui.md
+    - UAV 控制脚本: tools/uav-control-scripts.md
+  - 硬件支持:
+    - hardware/index.md
+    - HKUST 定制板: hardware/hkust-boards.md
+    - 支持板卡列表: hardware/supported-boards.md
+    - 添加新板指南: hardware/board-addition.md
+  - 通信协议:
+    - messages/index.md
+    - 自定义消息: messages/custom-messages.md
+    - 消息参考: messages/message-reference.md
+  - 开发指南:
+    - development/index.md
+    - 编译流程: development/building.md
+    - 添加新模块: development/adding-modules.md
+    - 贡献指南: development/contributing.md
+  - 参考资料:
+    - references/index.md
+    - references/airframes.md
+    - references/parameters.md
+    - references/citations.md

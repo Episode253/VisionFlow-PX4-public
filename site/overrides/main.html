@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+<!--
+  VisionFlow-PX4 Theme Override — Unified Navigation Header
+  Clean, single-row sticky header with integrated navigation, search, and tools.
+-->
+
+<!--
+  Announcement bar — disabled. Set `extra.announce` in mkdocs.yml to enable.
+  Only renders when announcement text is non-empty.
+  Jinja2 whitespace stripping (-) ensures the block returns an empty string
+  when no announcement is configured, preventing the wrapper from rendering.
+-->
+{%- block announce -%}
+{%- if config.extra.announce and config.extra.announce is string and config.extra.announce | trim | length > 0 -%}
+    <aside class="md-banner" data-md-component="announce">
+      <div class="md-banner__inner md-grid md-typeset">
+        {{ config.extra.announce }}
+      </div>
+    </aside>
+{%- endif -%}
+{%- endblock -%}
+
+<!--
+  Outdated version warning
+-->
+{% block outdated %}
+  <aside class="md-banner md-banner--warning" data-md-component="outdated">
+    <div class="md-banner__inner md-grid md-typeset">
+      您正在查看旧版本文档。
+      <a href="{{ base_url }}">
+        <strong>点击这里前往最新版本。</strong>
+      </a>
+    </div>
+  </aside>
+{% endblock %}
+
+<!--
+  Unified Header — single sticky bar combining brand, nav, search, and tool buttons.
+  Replaces the old three-layer (ecosystem bar + header + tabs) layout.
+-->
+{% block header %}
+  <header class="md-header" data-md-component="header">
+    <nav class="md-header__inner md-grid" aria-label="{{ lang.t('header') }}">
+
+      <!-- Mobile drawer toggle (leftmost on narrow screens) -->
+      <label class="md-header__button md-icon" for="__drawer">
+        {% set icon = config.theme.icon.menu or "material/menu" %}
+        {% include ".icons/" ~ icon ~ ".svg" %}
+      </label>
+
+      <!-- Logo -->
+      <a
+        href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}"
+        title="{{ config.site_name | e }}"
+        class="md-header__button md-logo"
+        aria-label="{{ config.site_name }}"
+        data-md-component="logo"
+      >
+        {% if config.theme.logo %}
+          <img src="{{ config.theme.logo | url }}" alt="logo" />
+        {% else %}
+          {% include "partials/logo.html" %}
+        {% endif %}
+      </a>
+
+      <!-- Brand: Project Name / Docs -->
+      <div class="md-header__brand">
+        <a
+          href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}"
+          class="md-header__title-link"
+        >
+          VisionFlow-PX4
+        </a>
+        <span class="md-header__brand-divider" aria-hidden="true">/</span>
+        <span class="md-header__brand-sub">Docs</span>
+      </div>
+
+      <!-- Main Navigation — populated by extra.js -->
+      <nav
+        class="md-header__nav"
+        id="md-main-nav"
+        aria-label="{{ lang.t('tabs') }}"
+      >
+        <!-- JS injects nav items here -->
+      </nav>
+
+      <!-- Right-side tools group -->
+      <div class="md-header__tools">
+
+        <!-- Search -->
+        {% if "material/search" in config.plugins %}
+          {% set search = config.plugins["material/search"] | attr("config") %}
+          {% if search.enabled %}
+            <label class="md-header__button md-icon" for="__search">
+              {% set icon = config.theme.icon.search or "material/magnify" %}
+              {% include ".icons/" ~ icon ~ ".svg" %}
+            </label>
+            {% include "partials/search.html" %}
+          {% endif %}
+        {% endif %}
+
+        <!-- Theme toggle — palette -->
+        {% if config.theme.palette %}
+          {% if not config.theme.palette is mapping %}
+            {% include "partials/palette.html" %}
+          {% endif %}
+        {% endif %}
+        {% if not config.theme.palette is mapping %}
+          {% include "partials/javascripts/palette.html" %}
+        {% endif %}
+
+        <!-- Language switch -->
+        {% if config.extra.alternate %}
+          {% include "partials/alternate.html" %}
+        {% endif %}
+
+        <!-- GitHub link -->
+        {% if config.repo_url %}
+          <a
+            href="{{ config.repo_url }}"
+            class="md-header__tool-btn"
+            target="_blank"
+            rel="noopener"
+            aria-label="{{ lang.t('source') }}"
+            title="{{ config.repo_name | d('GitHub') }}"
+          >
+            {% set icon = config.theme.icon.repo or "fontawesome/brands/github" %}
+            {% include ".icons/" ~ icon ~ ".svg" %}
+            <span class="md-header__tool-label">{{ config.repo_name | d('GitHub') }}</span>
+          </a>
+        {% endif %}
+      </div>
+    </nav>
+  </header>
+{% endblock %}
+
+<!--
+  Keep tabs block empty — we handle nav in the unified header
+-->
+{% block tabs %}{% endblock %}
+
+<!--
+  Footer — Previous/Next pagination + meta bar with build time and social links
+-->
+{% block footer %}
+  <footer class="md-footer">
+    {% if page.previous_page or page.next_page %}
+      <nav class="md-footer__inner md-grid" aria-label="Document pagination">
+        {% if page.previous_page %}
+          {% set direction = lang.t("footer.previous") %}
+          <a
+            href="{{ page.previous_page.url | url }}"
+            class="md-footer__link md-footer__link--prev"
+            aria-label="{{ direction }}: {{ page.previous_page.title | e }}"
+          >
+            <div class="md-footer__icon md-footer__icon--prev" aria-hidden="true">
+              {% include ".icons/material/arrow-left.svg" %}
+            </div>
+            <div class="md-footer__body">
+              <span class="md-footer__direction">{{ direction }}</span>
+              <span class="md-footer__title">{{ page.previous_page.title }}</span>
+            </div>
+          </a>
+        {% endif %}
+        {% if page.next_page %}
+          {% set direction = lang.t("footer.next") %}
+          <a
+            href="{{ page.next_page.url | url }}"
+            class="md-footer__link md-footer__link--next"
+            aria-label="{{ direction }}: {{ page.next_page.title | e }}"
+          >
+            <div class="md-footer__body">
+              <span class="md-footer__direction">{{ direction }}</span>
+              <span class="md-footer__title">{{ page.next_page.title }}</span>
+            </div>
+            <div class="md-footer__icon md-footer__icon--next" aria-hidden="true">
+              {% include ".icons/material/arrow-right.svg" %}
+            </div>
+          </a>
+        {% endif %}
+      </nav>
+    {% endif %}
+    <div class="md-footer-meta md-typeset">
+      <div class="md-footer-meta__inner md-grid">
+        <!-- Left: project links + social -->
+        <div class="md-footer-meta__left">
+          <a
+            href="https://github.com/Renwang-Huang/VisionFlow-PX4"
+            class="md-footer-meta__link"
+            target="_blank"
+            rel="noopener"
+            aria-label="Open VisionFlow-PX4 on GitHub"
+          >
+            <span class="md-footer-meta__link-icon" aria-hidden="true">
+              {% include ".icons/fontawesome/brands/github.svg" %}
+            </span>
+            <span class="md-footer-meta__link-text">GitHub</span>
+          </a>
+          <a
+            href="https://hub.docker.com/"
+            class="md-footer-meta__link"
+            target="_blank"
+            rel="noopener"
+            aria-label="Open VisionFlow-PX4 on Docker Hub"
+          >
+            <span class="md-footer-meta__link-icon" aria-hidden="true">
+              {% include ".icons/fontawesome/brands/docker.svg" %}
+            </span>
+            <span class="md-footer-meta__link-text">Docker</span>
+          </a>
+        </div>
+        <!-- Right: build time + copyright -->
+        <div class="md-footer-meta__right">
+        </div>
+      </div>
+    </div>
+  </footer>
+{% endblock %}
+
+<!--
+  Additional scripts — build time display (language-aware)
+-->
+{% block scripts %}
+  {# Register closed shadow roots so Lightbox can access Mermaid SVGs.
+     Material for MkDocs creates closed shadow roots for Mermaid diagrams;
+     we save a reference via WeakMap without altering the mode. #}
+  <script>
+    (() => {
+      if (window.__shadowRootRegistry) return;
+
+      const registry = new WeakMap();
+      const originalAttachShadow = Element.prototype.attachShadow;
+
+      Element.prototype.attachShadow = function (options) {
+        const root = originalAttachShadow.call(this, options);
+
+        if (options?.mode === "closed") {
+          registry.set(this, root);
+        }
+
+        return root;
+      };
+
+      window.__shadowRootRegistry = registry;
+    })();
+  </script>
+  {{ super() }}
+  <script>
+    // Expose site base URL for JS navigation generation.
+    // MkDocs template variable {{ base_url }} is the relative path
+    // to the site root; e.g. "" locally or "/VisionFlow-PX4" on Pages.
+    window.__VF_BASE_URL = "{{ base_url }}";
+
+    // Build time display — language-aware
+    document.addEventListener("DOMContentLoaded", function() {
+      var buildDateStr = "{{ build_date_utc }}";
+      if (!buildDateStr) return;
+      var buildTime = new Date(buildDateStr);
+      if (isNaN(buildTime.getTime())) return;
+
+      var targetEl = document.querySelector(".md-footer-meta__right");
+      if (!targetEl) return;
+
+      var lang = document.documentElement.lang || "";
+      var isZh = lang.startsWith("zh");
+
+      // Locale-aware date format
+      var dateStr;
+      try {
+        dateStr = buildTime.toLocaleDateString(isZh ? "zh-CN" : "en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        });
+      } catch (e) {
+        dateStr = buildTime.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        });
+      }
+
+      var timeStr;
+      try {
+        timeStr = buildTime.toLocaleTimeString(isZh ? "zh-CN" : "en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: !isZh
+        });
+      } catch (e) {
+        timeStr = buildTime.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true
+        });
+      }
+
+      var timeEl = document.createElement("span");
+      timeEl.classList.add("md-footer-meta__build-time");
+      // Use SVG clock icon for consistent rendering across themes
+      timeEl.innerHTML =
+        '<svg class="md-footer-meta__clock-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+        '<circle cx="12" cy="12" r="10"/>' +
+        '<path d="M12 6v6l4 2"/>' +
+        '</svg>' +
+        (isZh ? "文档构建时间：" : "Doc build time: ") +
+        dateStr + " " + timeStr;
+
+      targetEl.insertBefore(timeEl, targetEl.firstChild);
+    });
+  </script>
+{% endblock %}

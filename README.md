@@ -94,7 +94,7 @@ VisionFlow-PX4/
 ├── boards/                    # Board configs (HKUST nxt-dual, nxt-v1 + 10 vendors)
 ├── build/                     # Build artifacts (px4_sitl_default, px4_fmu-v6x_default)
 ├── cmake/                     # Custom CMake helpers
-├── doc/                       # PreGME research papers (Parameter reference, PPC theory)
+├── docs/references/           # PreGME research papers (Parameter reference, PPC theory)
 ├── docker/                    # Docker SITL workflow (ROS2 Humble + Gazebo)
 │   ├── run_gz_sitl.sh         # Profile-based launcher with 7 entities
 │   ├── compose.yaml           # Docker Compose setup
@@ -248,5 +248,5 @@ If you use this codebase in your research, please cite the associated paper:
 
 ## Documentation
 
-- [`doc/PreGME: Prescribed Performance Control of Aerial Manipulators based on Variable-Gain ESO.pdf`](doc/PreGME:%20Prescribed%20Performance%20Control%20of%20Aerial%20Manipulators%20based%20on%20Variable-Gain%20ESO.pdf) — PreGME theoretical foundation
-- [`doc/PreGME:Parameter Reference.pdf`](doc/PreGME:Parameter%20Reference.pdf) — Parameter reference guide
+- [`docs/references/PreGME: Prescribed Performance Control of Aerial Manipulators based on Variable-Gain ESO.pdf`](docs/references/PreGME:%20Prescribed%20Performance%20Control%20of%20Aerial%20Manipulators%20based%20on%20Variable-Gain%20ESO.pdf) — PreGME theoretical foundation
+- [`docs/references/PreGME:Parameter Reference.pdf`](docs/references/PreGME:Parameter%20Reference.pdf) — Parameter reference guide
