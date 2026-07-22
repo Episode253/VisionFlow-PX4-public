@@ -86,7 +86,8 @@ print_profiles() {
     local index=1
     local item
     for item in "${SITL_PROFILES[@]}"; do
-        IFS='|' read -r PROFILE_ID PROFILE_NAME PROFILE_WORLD PROFILE_TARGET PROFILE_EXTRA <<< "${item}"
+        IFS='|' read -r PROFILE_ID PROFILE_NAME PROFILE_WORLD PROFILE_TARGET PROFILE_EXTRA PROFILE_POSE <<< "${item}"
+        PROFILE_POSE="${PROFILE_POSE:-}"
 
         if [ "${PROFILE_ID}" = "${DEFAULT_PROFILE:-}" ]; then
             echo "  ${index}) ${PROFILE_ID}  [default]"
@@ -98,6 +99,11 @@ print_profiles() {
         echo "     world  : ${PROFILE_WORLD}"
         echo "     target : ${PROFILE_TARGET}"
         echo "     extra  : ${PROFILE_EXTRA}"
+        if [ -n "${PROFILE_POSE}" ]; then
+            echo "     pose   : ${PROFILE_POSE}"
+        else
+            echo "     pose   : <airframe default>"
+        fi
         echo ""
 
         index=$((index + 1))
@@ -109,7 +115,8 @@ find_profile_by_id() {
     local item
 
     for item in "${SITL_PROFILES[@]}"; do
-        IFS='|' read -r PROFILE_ID PROFILE_NAME PROFILE_WORLD PROFILE_TARGET PROFILE_EXTRA <<< "${item}"
+        IFS='|' read -r PROFILE_ID PROFILE_NAME PROFILE_WORLD PROFILE_TARGET PROFILE_EXTRA PROFILE_POSE <<< "${item}"
+        PROFILE_POSE="${PROFILE_POSE:-}"
 
         if [ "${PROFILE_ID}" = "${wanted_id}" ]; then
             SELECTED_ID="${PROFILE_ID}"
@@ -117,6 +124,7 @@ find_profile_by_id() {
             SELECTED_WORLD="${PROFILE_WORLD}"
             SELECTED_TARGET="${PROFILE_TARGET}"
             SELECTED_EXTRA="${PROFILE_EXTRA}"
+            SELECTED_POSE="${PROFILE_POSE}"
             return 0
         fi
     done
@@ -130,7 +138,8 @@ find_profile_by_index() {
     local item
 
     for item in "${SITL_PROFILES[@]}"; do
-        IFS='|' read -r PROFILE_ID PROFILE_NAME PROFILE_WORLD PROFILE_TARGET PROFILE_EXTRA <<< "${item}"
+        IFS='|' read -r PROFILE_ID PROFILE_NAME PROFILE_WORLD PROFILE_TARGET PROFILE_EXTRA PROFILE_POSE <<< "${item}"
+        PROFILE_POSE="${PROFILE_POSE:-}"
 
         if [ "${current_index}" = "${wanted_index}" ]; then
             SELECTED_ID="${PROFILE_ID}"
@@ -138,6 +147,7 @@ find_profile_by_index() {
             SELECTED_WORLD="${PROFILE_WORLD}"
             SELECTED_TARGET="${PROFILE_TARGET}"
             SELECTED_EXTRA="${PROFILE_EXTRA}"
+            SELECTED_POSE="${PROFILE_POSE}"
             return 0
         fi
 
@@ -196,6 +206,11 @@ echo "  name   : ${SELECTED_NAME}"
 echo "  world  : ${SELECTED_WORLD}"
 echo "  target : ${SELECTED_TARGET}"
 echo "  extra  : ${SELECTED_EXTRA}"
+if [ -n "${SELECTED_POSE}" ]; then
+    echo "  pose   : ${SELECTED_POSE}"
+else
+    echo "  pose   : <airframe default>"
+fi
 echo ""
 
 echo "[1/6] Create docker cache directories..."
@@ -230,6 +245,7 @@ docker compose -f docker/compose.yaml run \
     -e PX4_SELECTED_WORLD="${SELECTED_WORLD}" \
     -e PX4_SELECTED_TARGET="${SELECTED_TARGET}" \
     -e PX4_SELECTED_EXTRA_CMAKE_ARGS="${SELECTED_EXTRA}" \
+    -e PX4_SELECTED_MODEL_POSE="${SELECTED_POSE}" \
     px4-humble-gz \
     bash -lc '
         set -e
@@ -241,6 +257,11 @@ docker compose -f docker/compose.yaml run \
         echo "[container] PX4_GZ_WORLD=${PX4_SELECTED_WORLD}"
         echo "[container] PX4 target=${PX4_SELECTED_TARGET}"
         echo "[container] EXTRA_CMAKE_ARGS=${PX4_SELECTED_EXTRA_CMAKE_ARGS}"
+        if [ -n "${PX4_SELECTED_MODEL_POSE}" ]; then
+            echo "[container] PX4_GZ_MODEL_POSE=${PX4_SELECTED_MODEL_POSE}"
+        else
+            echo "[container] PX4_GZ_MODEL_POSE=<airframe default>"
+        fi
 
         build_gamma_arm_control_plugin() {
             local plugin_dir="/workspace/VisionFlow-PX4/windshape_dev/plugins/gamma_arm_control"
@@ -264,9 +285,16 @@ docker compose -f docker/compose.yaml run \
         }
 
         run_px4_make() {
-            PX4_GZ_WORLD="${PX4_SELECTED_WORLD}" \
-            make px4_sitl "${PX4_SELECTED_TARGET}" \
-            EXTRA_CMAKE_ARGS="${PX4_SELECTED_EXTRA_CMAKE_ARGS}"
+            if [ -n "${PX4_SELECTED_MODEL_POSE}" ]; then
+                PX4_GZ_MODEL_POSE="${PX4_SELECTED_MODEL_POSE}" \
+                PX4_GZ_WORLD="${PX4_SELECTED_WORLD}" \
+                make px4_sitl "${PX4_SELECTED_TARGET}" \
+                EXTRA_CMAKE_ARGS="${PX4_SELECTED_EXTRA_CMAKE_ARGS}"
+            else
+                PX4_GZ_WORLD="${PX4_SELECTED_WORLD}" \
+                make px4_sitl "${PX4_SELECTED_TARGET}" \
+                EXTRA_CMAKE_ARGS="${PX4_SELECTED_EXTRA_CMAKE_ARGS}"
+            fi
         }
 
         run_px4_make_with_ucdr_watchdog() {
