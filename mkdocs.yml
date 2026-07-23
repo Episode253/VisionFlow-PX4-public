@@ -194,6 +194,7 @@ nav:
   - 快速开始:
     - getting-started/index.md
     - 环境要求: getting-started/prerequisites.md
+    - 本地安装: getting-started/local-installation.md
     - Docker 启动: getting-started/docker-launch.md
     - 本地启动: getting-started/native-launch.md
     - 快速验证: getting-started/quick-start.md

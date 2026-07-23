@@ -22,6 +22,10 @@
 | PX4 版本 | V1.17.0 |
 | QGC 版本 / 下载地址 | <https://github.com/Renwang-Huang/VisionFlow-PX4/releases/tag/V1.17.0> |
 
+> For a step-by-step local installation guide covering the PX4 toolchain,
+> ROS 2 Humble, repository setup, and WSL2 GPU configuration,
+> see [Local Installation Guide](docs/en/getting-started/local-installation.md).
+
 ## Quick Start
 
 ### Check Available Build Targets
