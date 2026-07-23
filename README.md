@@ -1,5 +1,10 @@
 # VisionFlow-PX4
 
+> **🔄 ACTIVE DEVELOPMENT** — This repository is **actively maintained with daily updates**. Please check this page regularly and pull the latest changes to stay synchronized with the project.
+>
+> - **Last Updated**: See [Commits](https://github.com/Renwang-Huang/VisionFlow-PX4/commits)
+> - **Falling behind?** Run `git pull origin main` to sync with the latest version
+
 > **📖 Documentation: [English](README.md) |  [中文](README_zh.md)**
 
 ## Overview

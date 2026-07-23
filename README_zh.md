@@ -1,5 +1,10 @@
 # VisionFlow-PX4
 
+> **🔄 活跃开发中** — 本仓库**每天持续更新**，请定期关注此页面并拉取最新更改以保持项目同步。
+>
+> - **最后更新**：查看 [提交记录](https://github.com/Renwang-Huang/VisionFlow-PX4/commits)
+> - **版本落后？** 运行 `git pull origin main` 同步到最新版本
+
 > **📖 Documentation: [English](README.md) ·  [中文](README_zh.md)**
 
 ## 概述
