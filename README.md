@@ -71,6 +71,32 @@ bash docker/run_gz_sitl.sh --profile "Entity 1"
 bash docker/run_gz_sitl.sh --build --profile "Entity 4"
 ```
 
+#### ⚠️ When to Use `--build` Flag
+
+The `--build` flag reconstructs the Docker image, which is **slow** but necessary in specific cases:
+
+| Scenario | Need `--build`? | Action |
+|----------|-----------------|--------|
+| **First time launching** | ✅ **YES** | `bash docker/run_gz_sitl.sh --build --profile "Entity 4"` (30-60 min) |
+| **After modifying Dockerfile** | ✅ **YES** | `bash docker/run_gz_sitl.sh --build --profile "Entity 4"` |
+| **Dockerfile or dependencies unchanged** | ❌ **NO** | `bash docker/run_gz_sitl.sh --profile "Entity 4"` (10-30 sec) |
+| **Re-running simulation** | ❌ **NO** | `bash docker/run_gz_sitl.sh --profile "Entity 4"` (fastest) |
+
+#### Quick Reference
+
+```bash
+# First run — must build
+bash docker/run_gz_sitl.sh --build --profile "Entity 4"
+
+# Subsequent runs — skip build (⚡ much faster)
+bash docker/run_gz_sitl.sh --profile "Entity 4"
+
+# After editing Dockerfile or Tools/setup/requirements.txt
+bash docker/run_gz_sitl.sh --build --profile "Entity 4"
+```
+
+**Note**: Build time depends on your internet connection. China-based users benefit from built-in Aliyun mirror acceleration.
+
 ### Additional Nodes
 
 ```bash

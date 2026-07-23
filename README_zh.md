@@ -71,6 +71,32 @@ bash docker/run_gz_sitl.sh --profile "Entity 1"
 bash docker/run_gz_sitl.sh --build --profile "Entity 4"
 ```
 
+#### ⚠️ 何时使用 `--build` 标志
+
+`--build` 标志会重新构建 Docker 镜像，速度**较慢**但在特定情况下是**必需的**：
+
+| 场景 | 需要 `--build` | 操作 |
+|------|----------------|------|
+| **首次启动仿真** | ✅ **需要** | `bash docker/run_gz_sitl.sh --build --profile "Entity 4"` (30-60 分钟) |
+| **修改了 Dockerfile** | ✅ **需要** | `bash docker/run_gz_sitl.sh --build --profile "Entity 4"` |
+| **Dockerfile 和依赖未改变** | ❌ **不需要** | `bash docker/run_gz_sitl.sh --profile "Entity 4"` (10-30 秒) |
+| **重新运行仿真** | ❌ **不需要** | `bash docker/run_gz_sitl.sh --profile "Entity 4"` (最快) |
+
+#### 快速参考
+
+```bash
+# 首次运行 — 必须构建
+bash docker/run_gz_sitl.sh --build --profile "Entity 4"
+
+# 后续运行 — 跳过构建（⚡ 快得多）
+bash docker/run_gz_sitl.sh --profile "Entity 4"
+
+# 编辑 Dockerfile 或 Tools/setup/requirements.txt 之后
+bash docker/run_gz_sitl.sh --build --profile "Entity 4"
+```
+
+**说明**：构建时间取决于网络连接速度。中国用户受益于内置的阿里云镜像加速。
+
 ### 附加节点
 
 ```bash
