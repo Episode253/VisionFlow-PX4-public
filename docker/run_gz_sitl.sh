@@ -230,7 +230,7 @@ xhost +local:docker >/dev/null 2>&1 || true
 
 if [ "${REBUILD}" = "true" ]; then
     echo "[5/6] Build docker image..."
-    docker compose -f docker/compose.yaml build
+    DOCKER_BUILDKIT=0 docker compose -f docker/compose.yaml build
 else
     echo "[5/6] Skip docker build. Use '--build' if Dockerfile changed."
 fi
@@ -262,27 +262,6 @@ docker compose -f docker/compose.yaml run \
         else
             echo "[container] PX4_GZ_MODEL_POSE=<airframe default>"
         fi
-
-        build_gamma_arm_control_plugin() {
-            local plugin_dir="/workspace/VisionFlow-PX4/windshape_dev/plugins/gamma_arm_control"
-            local build_dir="${plugin_dir}/build"
-            local cache_file="${build_dir}/CMakeCache.txt"
-
-            if [ ! -f "${plugin_dir}/CMakeLists.txt" ]; then
-                echo "[container] Gamma arm control plugin source not found: ${plugin_dir}"
-                return 0
-            fi
-
-            if [ -f "${cache_file}" ] && ! grep -q "^CMAKE_HOME_DIRECTORY:INTERNAL=${plugin_dir}$" "${cache_file}"; then
-                echo "[container] Detected stale Gamma arm plugin CMake cache. Remove build/ and reconfigure..."
-                rm -rf "${build_dir}"
-            fi
-
-            echo "[container] Build and install Gamma arm control Gazebo plugin..."
-            cmake -S "${plugin_dir}" -B "${build_dir}"
-            cmake --build "${build_dir}"
-            sudo cmake --install "${build_dir}"
-        }
 
         run_px4_make() {
             if [ -n "${PX4_SELECTED_MODEL_POSE}" ]; then
@@ -378,14 +357,6 @@ docker compose -f docker/compose.yaml run \
             set -e
             return "${build_status}"
         }
-
-        build_gamma_arm_control_plugin
-
-        sudo ldconfig
-        export GZ_SIM_SYSTEM_PLUGIN_PATH="/usr/local/lib:${GZ_SIM_SYSTEM_PLUGIN_PATH:-}"
-        export IGN_GAZEBO_SYSTEM_PLUGIN_PATH="/usr/local/lib:${IGN_GAZEBO_SYSTEM_PLUGIN_PATH:-}"
-        export LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH:-}"
-        export GAMMA_URDF_PATH="/workspace/VisionFlow-PX4/Tools/simulation/gz/models/gamma_arm/gamma_arm.urdf"
 
         BUILD_LOG="$(mktemp)"
         UCDR_RETRIES="${PX4_UCDR_HEADER_RETRIES:-1}"

@@ -135,6 +135,11 @@ endif
 
 CMAKE_ARGS ?=
 
+# Additional arguments passed to the CMake configure step.
+ifdef EXTRA_CMAKE_ARGS
+	override CMAKE_ARGS += $(EXTRA_CMAKE_ARGS)
+endif
+
 # additional config parameters passed to cmake
 ifdef EXTERNAL_MODULES_LOCATION
 	override CMAKE_ARGS += -DEXTERNAL_MODULES_LOCATION:STRING=$(EXTERNAL_MODULES_LOCATION)

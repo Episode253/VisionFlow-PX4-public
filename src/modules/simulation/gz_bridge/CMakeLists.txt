@@ -9,9 +9,8 @@
 # 1. Redistributions of source code must retain the above copyright
 #    notice, this list of conditions and the following disclaimer.
 # 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in
-#    the documentation and/or other materials provided with the
-#    distribution.
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
 # 3. Neither the name PX4 nor the names of its contributors may be
 #    used to endorse or promote products derived from this software
 #    without specific prior written permission.
@@ -25,9 +24,9 @@
 # BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
 # OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
 # AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
 #
 ############################################################################
 
@@ -42,11 +41,39 @@ if (gz-transport_FOUND)
 
 	file(GLOB gz_worlds ${PX4_SOURCE_DIR}/Tools/simulation/gz/worlds/*.sdf)
 	file(GLOB gz_airframes ${PX4_SOURCE_DIR}/ROMFS/px4fmu_common/init.d-posix/airframes/*_gz_*)
-    if (gz-transport_VERSION VERSION_LESS "15")
-        set(GZ_TRANSPORT_TARGET "gz-transport${gz-transport_VERSION_MAJOR}::core")
-    else()
-        set(GZ_TRANSPORT_TARGET "gz-transport::core")
-    endif()
+
+	option(PX4_GZ_BUILD_GAMMA_ARM_PLUGIN
+		"Build the external Gamma arm Gazebo plugin for Gamma SITL targets"
+		ON
+	)
+	set(PX4_GZ_GAMMA_ARM_PLUGIN_SOURCE_DIR
+		"${PX4_SOURCE_DIR}/windshape_dev/plugins/gamma_arm_control"
+		CACHE PATH "Gamma arm Gazebo plugin source directory"
+	)
+	set(PX4_GZ_GAMMA_ARM_PLUGIN_BUILD_DIR
+		"${PX4_BINARY_DIR}/gamma_arm_control/build"
+		CACHE PATH "Gamma arm Gazebo plugin build directory"
+	)
+	set(PX4_GZ_GAMMA_ARM_PLUGIN_INSTALL_DIR
+		"${PX4_BINARY_DIR}/gamma_arm_control/install"
+		CACHE PATH "Gamma arm Gazebo plugin install directory"
+	)
+
+	set(PX4_GZ_GAMMA_ARM_TARGETS_REQUIRED OFF)
+	foreach(gz_airframe IN LISTS gz_airframes)
+		set(_gamma_model_name)
+		string(REGEX REPLACE ".*_gz_" "" _gamma_model_name ${gz_airframe})
+		if(_gamma_model_name MATCHES "^swan_gamma_v[12]$")
+			set(PX4_GZ_GAMMA_ARM_TARGETS_REQUIRED ON)
+		endif()
+	endforeach()
+
+	if (gz-transport_VERSION VERSION_LESS "15")
+		set(GZ_TRANSPORT_TARGET "gz-transport${gz-transport_VERSION_MAJOR}::core")
+	else()
+		set(GZ_TRANSPORT_TARGET "gz-transport::core")
+	endif()
+
 	px4_add_module(
 		MODULE modules__simulation__gz_bridge
 		MAIN gz_bridge
@@ -72,15 +99,49 @@ if (gz-transport_FOUND)
 			parameters.yaml
 	)
 
-    target_include_directories(modules__simulation__gz_bridge
-        PUBLIC
-            ${PX4_GZ_MSGS_BINARY_DIR}
-    )
+	target_include_directories(modules__simulation__gz_bridge
+		PUBLIC
+			${PX4_GZ_MSGS_BINARY_DIR}
+	)
 
 	target_include_directories(modules__simulation__gz_bridge PUBLIC px4_gz_msgs)
 	target_link_libraries(modules__simulation__gz_bridge PUBLIC px4_gz_msgs)
 
 	include(ExternalProject)
+
+	set(PX4_GZ_GAMMA_ARM_PLUGIN_LIB_DIR "")
+	set(PX4_GZ_GAMMA_ARM_URDF "")
+
+	if(PX4_GZ_BUILD_GAMMA_ARM_PLUGIN AND PX4_GZ_GAMMA_ARM_TARGETS_REQUIRED)
+		if(NOT EXISTS "${PX4_GZ_GAMMA_ARM_PLUGIN_SOURCE_DIR}/CMakeLists.txt")
+			message(FATAL_ERROR
+				"Gamma arm Gazebo plugin source not found: "
+				"${PX4_GZ_GAMMA_ARM_PLUGIN_SOURCE_DIR}")
+		endif()
+
+		set(PX4_GZ_GAMMA_ARM_PLUGIN_LIB_DIR
+			"${PX4_GZ_GAMMA_ARM_PLUGIN_INSTALL_DIR}/lib")
+		set(PX4_GZ_GAMMA_ARM_URDF
+			"${PX4_SOURCE_DIR}/Tools/simulation/gz/models/gamma_arm/gamma_arm.urdf")
+		set(PX4_GZ_GAMMA_ARM_PLUGIN_LIB
+			"${PX4_GZ_GAMMA_ARM_PLUGIN_LIB_DIR}/libgamma_arm_control.so")
+
+		ExternalProject_Add(gamma_arm_control_plugin
+			SOURCE_DIR "${PX4_GZ_GAMMA_ARM_PLUGIN_SOURCE_DIR}"
+			BINARY_DIR "${PX4_GZ_GAMMA_ARM_PLUGIN_BUILD_DIR}"
+			CMAKE_ARGS
+				-DCMAKE_INSTALL_PREFIX:PATH=${PX4_GZ_GAMMA_ARM_PLUGIN_INSTALL_DIR}
+				-DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+			BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --target GammaArmControlPlugin
+			INSTALL_COMMAND ${CMAKE_COMMAND} --install <BINARY_DIR>
+			BUILD_BYPRODUCTS "${PX4_GZ_GAMMA_ARM_PLUGIN_LIB}"
+			USES_TERMINAL_CONFIGURE true
+			USES_TERMINAL_BUILD true
+			USES_TERMINAL_INSTALL true
+			EXCLUDE_FROM_ALL true
+		)
+	endif()
+
 	ExternalProject_Add(gz
 		SOURCE_DIR ${PX4_SOURCE_DIR}/Tools/simulation/gz
 		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
@@ -92,7 +153,7 @@ if (gz-transport_FOUND)
 		EXCLUDE_FROM_ALL true
 	)
 
-	# Below we setup the build targets for our worlds and models
+	# Below we setup the build targets for our worlds and models.
 	# Syntax: gz_<model_name>_<world_name>
 	# Example: gz_x500_flow_forest
 	foreach(gz_airframe IN LISTS gz_airframes)
@@ -102,19 +163,24 @@ if (gz-transport_FOUND)
 		foreach(world ${gz_worlds})
 			get_filename_component("world_name" ${world} NAME_WE)
 
+			set(gamma_arm_dependencies px4 px4_gz_plugins)
+			if(model_name MATCHES "^swan_gamma_v[12]$" AND TARGET gamma_arm_control_plugin)
+				list(APPEND gamma_arm_dependencies gamma_arm_control_plugin)
+			endif()
+
 			if(world_name STREQUAL "default")
 				add_custom_target(gz_${model_name}
 					COMMAND ${CMAKE_COMMAND} -E env PX4_SIM_MODEL=gz_${model_name} GZ_IP=127.0.0.1 $<TARGET_FILE:px4>
 					WORKING_DIRECTORY ${SITL_WORKING_DIR}
 					USES_TERMINAL
-					DEPENDS px4 px4_gz_plugins
+					DEPENDS ${gamma_arm_dependencies}
 				)
 			else()
 				add_custom_target(gz_${model_name}_${world_name}
 					COMMAND ${CMAKE_COMMAND} -E env PX4_SIM_MODEL=gz_${model_name} PX4_GZ_WORLD=${world_name} GZ_IP=127.0.0.1 $<TARGET_FILE:px4>
 					WORKING_DIRECTORY ${SITL_WORKING_DIR}
 					USES_TERMINAL
-					DEPENDS px4 px4_gz_plugins
+					DEPENDS ${gamma_arm_dependencies}
 				)
 			endif()
 		endforeach()
@@ -126,7 +192,7 @@ if (gz-transport_FOUND)
 	configure_file(gz_env.sh.in ${PX4_BINARY_DIR}/rootfs/gz_env.sh @ONLY)
 
 else()
-	# Create fallback targets that provide helpful error messages when Gazebo dependencies are missing
+	# Create fallback targets that provide helpful error messages when Gazebo dependencies are missing.
 	foreach(gz_airframe IN LISTS gz_airframes)
 		set(model_name)
 		string(REGEX REPLACE ".*_gz_" "" model_name ${gz_airframe})
