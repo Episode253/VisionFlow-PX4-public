@@ -9,4 +9,5 @@
 - [编译指南](building.md)
 - [添加模块](adding-modules.md)
 - [贡献指南](contributing.md)
+- [维护指南](maintenance.md)
 - [系统架构](../architecture/index.md)

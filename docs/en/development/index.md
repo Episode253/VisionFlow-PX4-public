@@ -9,4 +9,5 @@ This page provides an overview of the VisionFlow-PX4 development guide, includin
 - [Build Guide](building.md)
 - [Adding Modules](adding-modules.md)
 - [Contributing Guide](contributing.md)
+- [Maintenance Guide](maintenance.md)
 - [System Architecture](../architecture/index.md)

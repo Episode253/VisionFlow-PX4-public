@@ -71,6 +71,10 @@ PX4_GZ_MODEL_POSE="0,0,0.5,0,0,0" \
   EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"
 ```
 
+Swan Gamma v1 和 v2 目标会自动编译独立的 Gazebo 机械臂插件，插件构建和安装目录位于当前 PX4 构建目录下。宿主机构建需要 Gazebo 开发包、Orocos KDL、ROS 2 `kdl_parser`，并应先加载 ROS 2 Humble 环境；Docker 使用独立的 `build/docker` 构建目录。
+
+重新编译插件后必须重启 Gazebo。仅重启 PX4 不能让已经运行的 Gazebo 服务器加载新插件。
+
 ## 启动额外节点
 
 ### 数据桥接（Gazebo ↔ ROS2）

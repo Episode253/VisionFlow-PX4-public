@@ -71,6 +71,14 @@ PX4_GZ_MODEL_POSE="0,0,0.5,0,0,0" \
   EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"
 ```
 
+For Swan Gamma v1 and v2 targets, PX4 automatically builds the standalone
+Gazebo arm plugin under the selected PX4 build directory. Native builds require
+Gazebo development packages, Orocos KDL, ROS 2 `kdl_parser`, and a sourced ROS
+2 Humble environment. Docker builds use a separate `build/docker` tree.
+
+Restart Gazebo after rebuilding the plugin. A running Gazebo server cannot load
+a newly built system plugin merely by restarting PX4.
+
 ## Launch Additional Nodes
 
 ### Data Bridge (Gazebo ↔ ROS2)
