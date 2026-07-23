@@ -1,5 +1,7 @@
 # VisionFlow-PX4
 
+> **📖 Documentation: [English](README.md) |  [中文](README_zh.md)**
+
 ## Overview
 
 > A customized PX4 Autopilot fork developed by **WindyLab**, integrating UAVs with robotic arms (Gamma series) for manipulation tasks in Gazebo simulation, featuring Prescribed Performance Guidance and Management Estimator (PreGME) control and ROS2 integration.
@@ -11,53 +13,54 @@
 
 ## Prerequisites
 
-> 本地部署需要以下环境与组件支持
-
-| 环境 / 组件 | 版本或信息 |
-|-------------|-----------|
-| 操作系统 | Ubuntu 22.04 |
-| ROS 2 版本 | Humble |
-| Gazebo Sim 版本 | Harmonic V8.11.0 |
-| Ros-GZ Bridge 版本 | `ros-humble-ros-gz-harmonic` |
-| PX4 版本 | V1.17.0 |
-| QGC 版本 / 下载地址 | <https://github.com/Renwang-Huang/VisionFlow-PX4/releases/tag/V1.17.0> |
+| Component | Version / Info |
+|-----------|---------------|
+| OS | Ubuntu 22.04 |
+| ROS 2 | Humble |
+| Gazebo Sim | Harmonic V8.11.0 |
+| Ros-GZ Bridge | `ros-humble-ros-gz-harmonic` |
+| PX4 | V1.17.0 |
+| QGC Download | <https://github.com/Renwang-Huang/VisionFlow-PX4/releases/tag/V1.17.0> |
 
 ## Quick Start
 
 ### Check Available Build Targets
 
-> `ninja -t targets` 列出所有可构建目标，用 `grep` 过滤特定关键词即可查找，以 `gz_q940_ti` 为例：
+Use `ninja -t targets` to list all available build targets, and filter with `grep`:
 
 ```bash
-# 查看所有 gz_ 开头的仿真目标
+# List all gz_ simulation targets
 ninja -C build/px4_sitl_default -t targets | grep "^gz_"
 
-# 按关键词筛选，例如查找 q940_ti 相关目标
+# Filter by keyword, e.g. q940_ti
 ninja -C build/px4_sitl_default -t targets | grep gz_q940_ti
 
-# 查找所有 swan_gamma 相关目标
+# Find all swan_gamma targets
 ninja -C build/px4_sitl_default -t targets | grep gz_swan_gamma
 ```
 
 ### Native Launch (Local Deployment)
 
-> 以下命令直接在本地宿主机上运行 PX4 SITL + Gazebo
+The following commands run PX4 SITL + Gazebo directly on the host machine:
 
 | Profile | Description | Command |
 |---------|-------------|---------|
 | Entity 1 | PreGME q940_ti with landing box (季梦玉) | `PX4_GZ_WORLD=laboratory_landingbox make px4_sitl gz_q940_ti_gripper4_laboratory_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
 | Entity 2 | PreGME q940_ti with VLA task | `PX4_GZ_WORLD=laboratory_landingbox_vla_task0 make px4_sitl gz_q940_ti_gripper4_laboratory_landingbox_vla_task0 EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
 | Entity 3 | Swan gamma v1 (company legacy) | `PX4_GZ_WORLD=laboratory_no_landingbox make px4_sitl gz_swan_gamma_v1_laboratory_no_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
-| Entity 4 | Swan gamma v2 (company new) | `PX4_GZ_WORLD=laboratory_no_landingbox make px4_sitl gz_swan_gamma_v2_laboratory_no_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
+| Entity 4 | Swan gamma v2 (company new) | `PX4_GZ_MODEL_POSE="0,0,1.15392,0,0,0" PX4_GZ_WORLD=laboratory_no_landingbox make px4_sitl gz_swan_gamma_v2_laboratory_no_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
 | Entity 5 | Swan gamma v2 with VLA task | `PX4_GZ_WORLD=laboratory_no_landingbox_vla_task0 make px4_sitl gz_swan_gamma_v2_laboratory_no_landingbox_vla_task0 EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
 | Entity 6 | X500 with gimbal | `PX4_GZ_WORLD=laboratory_no_landingbox make px4_sitl gz_x500_gimbal_laboratory_no_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
 | Entity 7 | Differential drive rover | `PX4_GZ_MODEL_POSE="0,0,0.5,0,0,0" make px4_sitl gz_differential_rover_laboratory_no_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
 
 ### Docker-Based Launch (Recommended)
 
-> Docker 方式封装了完整的 ROS2 Humble + Gazebo 环境，推荐首次使用或需要隔离开发环境的场景
+Docker wraps a complete ROS2 Humble + Gazebo environment. Recommended for first-time use or when an isolated dev environment is needed:
 
 ```bash
+# Interactive mode — select a profile from the menu
+bash docker/run_gz_sitl.sh
+
 # List available profiles
 bash docker/run_gz_sitl.sh --list
 
@@ -72,10 +75,10 @@ bash docker/run_gz_sitl.sh --build --profile "Entity 4"
 
 ```bash
 # Data bridge (Gazebo ↔ ROS2)
-bash windshape_dev/data_stream/gz_bridge/bridge_gz_ros.sh
+bash windshape_dev/image_stream/bridge_gz_ros.sh
 
 # Camera stream visualization
-bash windshape_dev/data_stream/image_stream/camera_stream.sh
+bash windshape_dev/image_stream/camera_stream.sh
 
 # Arm web control
 bash docker/into_gz_sitl.sh
@@ -87,55 +90,180 @@ source thirdparty/install/setup.bash && ros2 launch mavros px4.launch fcu_url:=u
 gz sim -r Tools/simulation/gz/worlds/laboratory_landingbox_hitl.sdf
 ```
 
+## Maintenance & Troubleshooting
+
+Having issues? Check the maintenance guide: [中文](docs/development/maintenance.md) | [English](docs/en/development/maintenance.md)
+
+| Topic | Description |
+|-------|-------------|
+| Contact Maintainer | Channels for reporting issues or seeking support |
+| Issue & PR Workflow | Full workflow from bug report to merged fix |
+| Troubleshooting | Build / Docker / Gazebo / PX4 runtime / ROS2 communication |
+| Debug & Recovery | Log analysis, debugging tips, cache cleanup, git rollback |
+
 ## Repository Structure
+
+The trees below show tracked source/configuration directories and the main
+maintained project components. Local build, cache, log, IDE, and runtime
+artifacts are not expanded as source trees; generated content is identified
+where it is relevant.
+
+### Main Directory Tree
 
 ```
 VisionFlow-PX4/
-├── boards/                    # Board configs (HKUST nxt-dual, nxt-v1 + 10 vendors)
-├── build/                     # Build artifacts (px4_sitl_default, px4_fmu-v6x_default)
-├── cmake/                     # Custom CMake helpers
-├── docs/references/           # PreGME research papers (Parameter reference, PPC theory)
-├── docker/                    # Docker SITL workflow (ROS2 Humble + Gazebo)
-│   ├── run_gz_sitl.sh         # Profile-based launcher with 7 entities
-│   ├── compose.yaml           # Docker Compose setup
-│   └── gz_sitl_profiles.conf  # SITL profile definitions
-├── msg/                       # uORB messages (~180 files, incl. custom arm/collision/NN msgs)
-├── platforms/                 # NuttX/POSIX platform support
-├── posix-configs/             # POSIX/SITL configurations
-├── ROMFS/                     # Root filesystem (init scripts, airframes, rcS)
-├── src/                       # PX4 source
-│   ├── modules/               # Flight control modules
-│   │   ├── pregme_att_control/    # PreGME attitude controller (sliding-mode PPC)
-│   │   ├── pregme_pos_control/    # PreGME position controller
-│   │   ├── mc_nn_control/         # Neural network control (TensorFlow Lite Micro)
-│   │   ├── camera_feedback/       # Camera trigger processing
-│   │   ├── gimbal/                # Gimbal manager
-│   │   ├── local_position_estimator/  # Block-based LPE
-│   │   ├── rover_differential/    # Differential rover controller
-│   │   ├── zenoh/                 # DDS alternative middleware
-│   │   ├── muorb/                 # micro-ORB aggregator
-│   │   ├── temperature_compensation/  # Per-sensor temp calibration
-│   │   └── simulation/            # Gazebo bridge, plugins, sensor sims
-│   ├── lib/
-│   │   ├── gamma_arm_dynamics/  # Gamma robotic arm dynamics library
-│   │   └── controllib/          # Extended control library (PID, blocks)
-│   └── drivers/               # Sensor drivers
-├── thirdparty/                # External deps (MAVROS, ROS2 msgs)
-├── Tools/
-│   └── simulation/
-│       ├── gz/worlds/         # Gazebo worlds (lab, dining, coast)
-│       └── gz/models/         # Gazebo models (q940_ti, swan_gamma, rover, ...)
-├── validation/                # Module schema validation
-└── windshape_dev/             # Project-specific code
-    ├── arm_control/           # Gamma arm control GUI & web scripts
-    ├── uav_control/           # Keyboard/joystick control, offboard flight
-    ├── plugins/               # Gazebo C++ plugins (gamma_arm_control, px4_gzsim_bridge)
-    ├── code_reference/        # Reference ROS2/catkin packages (moveit2, acados, pinocchio)
-    ├── flight_review/         # Web-based flight log review (PID analysis, 3D plots)
-    ├── data_plotting/         # Local position odometer plotting
-    ├── image_stream/          # Camera stream & Gazebo-ROS bridge scripts
-    └── parameter/             # Parameter management tools
+├── .github/                  # CI workflows, repository instructions, and templates
+├── boards/                   # 10 vendor namespaces; 45 board targets
+├── cmake/                    # PX4 CMake helpers
+├── docker/                   # ROS 2 Humble + Gazebo workflow
+├── docs/                     # Documentation source; see documentation tree below
+├── msg/                      # uORB messages and ROS 2 message tooling
+├── platforms/                # Common, NuttX, POSIX, QURT, and ROS 2 support
+├── posix-configs/            # POSIX/SITL configurations
+├── ROMFS/                    # PX4 runtime files, init scripts, and airframes
+├── site/                     # Tracked generated MkDocs static site
+├── src/                      # PX4 source; see PX4 source tree below
+├── thirdparty/               # Vendored MAVROS Humble workspace
+├── Tools/                    # Build, analysis, messaging, simulation, and utility tools
+├── validation/               # Module configuration schema
+└── windshape_dev/            # WindyLab tools and integrations; see project tree below
 ```
+
+`build/`, `docker/cache/`, `thirdparty/build/`, `thirdparty/install/`,
+`thirdparty/log/`, and plugin `build/` directories are local generated or
+runtime content. The current local PX4 artifacts are
+`build/px4_sitl_default/` and `build/docker/px4_sitl_default/`.
+
+### PX4 Source Tree
+
+The `src/` tree includes upstream PX4 areas in addition to the selected
+project-specific modules and libraries shown here:
+
+```
+src/
+├── drivers/                 # Sensor and peripheral drivers
+├── examples/                # Example applications
+├── include/                 # Shared PX4 headers
+├── lib/                     # PX4 libraries; selected project additions:
+│   ├── gamma_arm_dynamics/  # Gamma robotic arm dynamics library
+│   └── controllib/           # Extended control library (PID, blocks)
+├── modules/                 # Control, estimation, middleware, system, and simulation modules:
+│   ├── pregme_att_control/  # PreGME attitude controller (sliding-mode PPC)
+│   ├── pregme_pos_control/  # PreGME position controller
+│   ├── mc_nn_control/       # Neural network control (TensorFlow Lite Micro)
+│   ├── camera_feedback/     # Camera trigger processing
+│   ├── gimbal/              # Gimbal manager
+│   ├── local_position_estimator/ # Block-based LPE
+│   ├── rover_differential/  # Differential rover controller
+│   ├── zenoh/               # DDS alternative middleware
+│   ├── muorb/               # micro-ORB aggregator
+│   ├── temperature_compensation/ # Per-sensor temperature calibration
+│   └── simulation/          # Gazebo bridge, plugins, and sensor simulators
+├── systemcmds/              # System command modules
+└── templates/               # Module templates
+```
+
+### Message and Interface Tree
+
+```
+msg/
+├── *.msg                    # 212 current top-level message definitions
+├── versioned/               # 37 versioned message definitions
+├── px4_msgs_old/msg/        # 18 legacy message definitions
+└── translation_node/        # ROS 2 message translation package
+```
+
+There are currently about 267 `.msg` files across the current, versioned,
+and legacy message trees. `translation_node/` is a ROS 2 package and does not
+belong to the `.msg` file count.
+
+### Tools and Simulation Tree
+
+`Tools/` contains more than simulation assets. The following is a focused
+navigation tree for its main utility and simulation areas:
+
+```
+Tools/
+├── ci/                       # CI helpers
+├── ecl_ekf/                  # EKF analysis tools
+├── filepaths/                # File path utilities
+├── HIL/                      # Hardware-in-the-loop tools
+├── kconfig/                  # Kconfig tooling
+├── log_encryption/           # Log encryption tools
+├── module_config/            # Module configuration tooling
+├── msg/                      # Message tooling
+├── px4airframes/             # Airframe tooling
+├── px4events/                # Event tooling
+├── python_scripts/           # General PX4 Python utilities
+├── serial/                   # Serial utilities
+├── setup/                    # Setup helpers
+└── simulation/
+    ├── gz/
+    │   ├── worlds/           # Gazebo worlds
+    │   ├── models/            # Gazebo models
+    │   ├── sdf_parsing/       # SDF parsing utilities
+    │   └── server.config      # Gazebo server configuration
+    └── iscca_model/           # ISCCA URDF, meshes, and RViz assets
+```
+
+### Documentation and Container Trees
+
+```
+docs/
+├── architecture/             # System architecture
+├── development/              # Development guides
+├── getting-started/          # Setup and launch guides
+├── hardware/                 # Board and hardware documentation
+├── messages/                 # Message documentation
+├── modules/                  # Module documentation
+├── references/               # Papers and reference pages
+├── simulation/               # Simulation documentation
+├── tools/                    # Tool documentation
+└── en/                       # English documentation tree
+
+docker/
+├── Dockerfile.humble-gz      # ROS 2 Humble + Gazebo image
+├── compose.yaml              # Docker Compose setup
+├── entrypoint.sh             # Container entrypoint
+├── gz_sitl_profiles.conf     # SITL profile definitions
+├── into_gz_sitl.sh           # Enter the SITL container
+├── run_flight_review.sh      # Launch flight review
+└── run_gz_sitl.sh            # Profile-based SITL launcher
+```
+
+### WindyLab Project Tree
+
+```
+windshape_dev/
+├── arm_control/
+│   └── gamma_arm/            # Gamma arm GUI and web control
+├── code_reference/            # ROS 2/ament reference projects and packages
+│   ├── pregme_v1_13/          # PreGME reference project snapshot
+│   └── windylab_gamma_arm_01_v2/ # Gamma arm reference project snapshot
+├── data_plotting/
+│   └── local_position/        # Local-position and odometry plotting
+├── flight_review/
+│   ├── app/                   # Web log-review server, plotting, and 3D handlers
+│   └── data/                  # Flight-review data, logs, and cache
+├── image_stream/              # Gazebo-ROS bridge and camera streaming
+│   ├── bridge_gz_ros.sh       # Gazebo to ROS 2 topic bridge
+│   └── camera_stream.sh       # Camera stream visualization
+├── parameter/                 # Static Gazebo, PX4 parameter, and RViz configs
+├── plugins/                   # Custom Gazebo plugins
+│   ├── gamma_arm_control/
+│   ├── joint_position_controller/
+│   └── px4_gzsim_bridge/
+├── px4_original_tools/        # PX4 utility scripts for MAVLink, logs, and calibration
+└── uav_control/               # Keyboard, joystick, and offboard control
+    ├── keyboard/
+    └── offboard/
+```
+
+`code_reference/` contains ROS 2/ament packages and robotics reference code;
+MoveIt-related launch files, acados-generated MPC code, and Pinocchio-based
+components are inside those snapshots rather than being direct child
+directories. `validation/module_schema.yaml` is the Cerberus schema for
+module configuration files.
 
 ## Custom Modules
 
@@ -215,14 +343,17 @@ Custom posix airframes in `ROMFS/px4fmu_common/init.d-posix/airframes/`:
 |-------|-----|-------------|
 | `hkust/nxt-dual` | STM32 | Dual-IMU custom board |
 | `hkust/nxt-v1` | STM32 | Single board variant |
-| *(+ 10 other vendors)* | — | Stock PX4 boards |
+| 10 vendor namespaces (including HKUST) | — | 45 board targets across stock and custom families |
 
 ## Firmware Builds
 
+The table below lists supported build targets; it does not imply that every
+target already has a generated directory in the current workspace.
+
 | Build Target | Platform | Description |
 |-------------|----------|-------------|
-| `px4_sitl_default` | POSIX | Gazebo SITL (primary development target) |
-| `px4_fmu-v6x_default` | NuttX | STM32H7 firmware (FMUv6X) |
+| `px4_sitl_default` | POSIX | Current primary Gazebo SITL build artifact/target |
+| `px4_fmu-v6x_default` | NuttX | Supported STM32H7 FMUv6X target, generated on demand |
 
 ## Key Differences from Stock PX4
 
