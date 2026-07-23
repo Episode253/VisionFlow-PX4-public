@@ -67,12 +67,15 @@ echo "deb [arch=$(dpkg --print-architecture) \
 sudo apt update
 sudo apt install -y ros-humble-desktop-full
 
-# 2d. Install Gazebo-ROS bridge
-sudo apt install -y ros-humble-ros-gz-harmonic
+# 2d. Install Gazebo-ROS bridge and related packages
+sudo apt install -y ros-humble-ros-gz
 
 # 2e. Source ROS 2 automatically
 echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc
 source ~/.bashrc
+
+# note: if you are running on WSL, you may need to start the daemon manually
+ros2 daemon start
 ```
 
 Verify the installation:
@@ -106,21 +109,63 @@ make px4_sitl gz_q940_ti_gripper4_laboratory_landingbox
 
 ---
 
-## 4. (WSL2 Only) Force NVIDIA Driver for Gazebo
+## 4. Install MicroXRCE-DDS Agent
+
+The MicroXRCE-DDS Agent acts as a bridge between the PX4 uXRCE-DDS client
+and the ROS 2 DDS network, enabling message passing between the flight
+controller and ROS 2 nodes over UDP (or other transports).
+
+```bash
+# 4a. Clone the agent repository
+git clone https://github.com/eProsima/Micro-XRCE-DDS-Agent.git
+cd Micro-XRCE-DDS-Agent
+
+# 4b. Build from source
+mkdir build && cd build
+cmake ..
+make
+
+# 4c. Install system-wide
+sudo make install
+sudo ldconfig /usr/local/lib/
+
+# 4d. Return to the project root
+cd ../..
+```
+
+Verify the installation:
+
+```bash
+MicroXRCEAgent --help
+```
+
+The agent can then be started in a terminal (e.g. UDP on port 8888):
+
+```bash
+MicroXRCEAgent udp4 -p 8888
+```
+
+> **Note:** The agent must be running before launching PX4 SITL if you are
+> using the uXRCE-DDS bridge (`uxrce_dds_client` module). The default PX4
+> SITL configuration connects to `127.0.0.1:8888` over UDP.
+
+---
+
+## 5. (WSL2 Only) Force NVIDIA Driver for Gazebo
 
 If you are running inside **WSL2 (Windows Subsystem for Linux)**, Gazebo
 requires hardware-accelerated OpenGL through D3D12 translation.
 Install the `kisak` Mesa PPA to get compatible Vulkan/OpenGL drivers.
 
 ```bash
-# 4a. Add the Mesa PPA
+# 5a. Add the Mesa PPA
 sudo add-apt-repository -y ppa:kisak/turtle
 sudo apt update
 
-# 4b. Install Mesa Vulkan and OpenGL drivers
+# 5b. Install Mesa Vulkan and OpenGL drivers
 sudo apt install -y mesa-vulkan-drivers libgl1-mesa-dri
 
-# 4c. Reinstall Mesa libraries to ensure correct versions
+# 5c. Reinstall Mesa libraries to ensure correct versions
 sudo apt install --reinstall -y \
   libgl1-mesa-dri \
   libglx-mesa0 \
@@ -128,7 +173,7 @@ sudo apt install --reinstall -y \
   libglapi-mesa \
   mesa-vulkan-drivers
 
-# 4d. Set environment variables to force D3D12 with NVIDIA adapter
+# 5d. Set environment variables to force D3D12 with NVIDIA adapter
 echo 'export GALLIUM_DRIVER=d3d12' >> ~/.bashrc
 echo 'export MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA' >> ~/.bashrc
 source ~/.bashrc
