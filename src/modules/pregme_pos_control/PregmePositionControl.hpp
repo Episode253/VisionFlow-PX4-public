@@ -143,7 +143,7 @@ private:
 		(ParamFloat<px4::params::PREGME_XYVALL>) _param_pregme_xy_vel_all,
 		(ParamFloat<px4::params::PREGME_ZVALL>) _param_pregme_z_vel_all,
 		(ParamFloat<px4::params::PREGME_VELD_LP>) _param_pregme_veld_lp,
-		(ParamBool<px4::params::PREGME_COM_COMP_EN>) _param_pregme_com_comp_en
+		(ParamBool<px4::params::PREGME_COMCP_EN>) _param_pregme_com_comp_en
 	);
 
 	struct VelocityDerivativeFilter {

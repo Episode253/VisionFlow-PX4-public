@@ -521,7 +521,7 @@ parameters:
       max: 10.0
       decimal: 1
       increment: 0.1
-    PREGME_COM_COMP_EN:
+    PREGME_COMCP_EN:
       description:
         short: Enable CoM coupling compensation
         long: Enable the center-of-mass (CoM) coupling compensation from the robotic arm. When enabled, the position controller
