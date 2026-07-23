@@ -63,6 +63,9 @@ public:
 	/** Pull latest system COM from ArmJointSubscriber and compute coupling compensation. */
 	void updateCouplingCompensation();
 
+	/** Enable or disable CoM coupling compensation. */
+	void setCoMCompensationEnabled(bool enabled) { _com_comp_enabled = enabled; }
+
 	void getRateControlStatus(rate_ctrl_status_s &rate_ctrl_status) const;
 
 private:
@@ -111,6 +114,7 @@ private:
 	matrix::Vector3f _p_c_b{};                     // 系统总质心 (机体系 NED), 从 ArmJointSubscriber 读取
 	matrix::Vector3f _delta_omega_comp{};          // Δω = I⁻¹[m_total·p_C^B × R^T·g]
 	float _coupling_total_mass{0.f};               // 缓存的总质量
+	bool _com_comp_enabled{true};                  // 质心补偿开关
 
 	struct preset_traj {
 		float l{1.f};

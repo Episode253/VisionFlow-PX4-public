@@ -490,6 +490,11 @@ void Att_Control::getRateControlStatus(rate_ctrl_status_s &rate_ctrl_status) con
 
 void Att_Control::updateCouplingCompensation()
 {
+	if (!_com_comp_enabled) {
+		zeroVector3(_delta_omega_comp);
+		return;
+	}
+
 	auto *arm = ArmJointSubscriber::instance();
 
 	_p_c_b = arm->getSystemCom();

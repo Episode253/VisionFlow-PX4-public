@@ -176,6 +176,7 @@ private:
 		(ParamFloat<px4::params::USR_THR_HOVER>) _param_usr_thr_hover,
 		(ParamInt<px4::params::USR_THR_CURVE>) _param_usr_thr_curve,
 		(ParamBool<px4::params::USR_BAT_SCALE_EN>) _param_usr_bat_scale_en,
+		(ParamBool<px4::params::USR_COM_COMP_EN>) _param_usr_com_comp_en,
 
 		(ParamFloat<px4::params::COM_SPOOLUP_TIME>) _param_com_spoolup_time,
 		(ParamInt<px4::params::CBRK_RATE_CTRL>) _param_cbrk_rate_ctrl

@@ -379,6 +379,14 @@ parameters:
       default: 0
       min: 0
       max: 2
+    USR_COM_COMP_EN:
+      description:
+        short: Enable CoM coupling compensation
+        long: Enable the center-of-mass (CoM) coupling compensation from the robotic arm. When enabled, the attitude controller
+          computes gravity-torque compensation from the arm's CoM offset and adds it to the ESO disturbance estimate.
+          Disable to run without arm coupling compensation.
+      type: boolean
+      default: true
     CBRK_RATE_CTRL:
       description:
         short: Rate-control output circuit breaker

@@ -337,6 +337,12 @@ parameters:
       default: 0
       min: 0
       max: 2
+    USR_COM_COMP_EN:
+      description:
+        short: 启用质心耦合补偿
+        long: 启用机械臂质心耦合补偿。启用后，姿态控制器会根据机械臂质心偏移计算重力矩补偿，并叠加到 ESO 扰动估计中。关闭后不进行机械臂耦合补偿。
+      type: boolean
+      default: true
     CBRK_RATE_CTRL:
       description:
         short: 角速度控制输出断路器

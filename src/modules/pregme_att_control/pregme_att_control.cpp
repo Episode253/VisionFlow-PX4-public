@@ -64,6 +64,8 @@ void UserAttitudeControl::parameters_updated()
 		_param_PresetTraj_epsilon.get(),
 		_param_PresetTraj_k.get());
 
+	_attitude_control.setCoMCompensationEnabled(_param_usr_com_comp_en.get());
+
         //     | Ixx  -Ixy  -Ixz |
         // I = | -Ixy  Iyy  -Iyz |
         //     | -Ixz  -Iyz  Izz |
