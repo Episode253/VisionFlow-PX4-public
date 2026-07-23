@@ -219,6 +219,8 @@ int PregmePositionControl::parameters_update(bool force)
 		_control.setPresetTrajParas(_param_PresetTraj_l.get(), _param_PresetTraj_w.get(),
 					    _param_PresetTraj_epsilon.get(), _param_PresetTraj_k.get());
 
+		_control.setCoMCompensationEnabled(_param_pregme_com_comp_en.get());
+
 		if (_param_pregme_xy_cruise.get() > _param_pregme_xy_vel_max.get()) {
 			_param_pregme_xy_cruise.set(_param_pregme_xy_vel_max.get());
 			_param_pregme_xy_cruise.commit();

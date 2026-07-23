@@ -75,6 +75,9 @@ public:
 	/** 设置机体状态 (位姿 + 角速度), 用于机械臂耦合补偿。 */
 	void setBodyState(const matrix::Dcmf &R_body_to_world, const matrix::Vector3f &omega_body);
 
+	/** 启用/禁用质心耦合补偿。 */
+	void setCoMCompensationEnabled(bool enabled) { _com_comp_enabled = enabled; }
+
 	bool update(const float dt);
 
 	void resetIntegral() { _autopilot.pos_err_integ.setZero(); }
@@ -122,6 +125,7 @@ private:
 	matrix::Vector3f _omega_body{};            // 机体角速度 [rad/s]
 	matrix::Vector3f _p_c_b{};                 // 系统总质心 (机体系 NED), 从 ArmJointSubscriber 读取
 	matrix::Vector3f _delta_v_comp{};          // Δv = -R·[ω×(ω×p_C^B)]
+	bool _com_comp_enabled{true};              // 质心补偿开关
 
 	struct pregme_ESO {
 		float EPSI{1.f};

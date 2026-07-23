@@ -455,3 +455,9 @@ parameters:
       max: 10.0
       decimal: 1
       increment: 0.1
+    PREGME_COM_COMP_EN:
+      description:
+        short: 启用质心耦合补偿
+        long: 启用机械臂质心耦合补偿。启用后，位置控制器会根据机械臂质心偏移计算向心加速度补偿，并叠加到 ESO 扰动估计中。关闭后不进行机械臂耦合补偿。
+      type: boolean
+      default: true

@@ -521,3 +521,11 @@ parameters:
       max: 10.0
       decimal: 1
       increment: 0.1
+    PREGME_COM_COMP_EN:
+      description:
+        short: Enable CoM coupling compensation
+        long: Enable the center-of-mass (CoM) coupling compensation from the robotic arm. When enabled, the position controller
+          computes centripetal acceleration compensation from the arm's CoM offset and adds it to the ESO disturbance estimate.
+          Disable to run without arm coupling compensation.
+      type: boolean
+      default: true
