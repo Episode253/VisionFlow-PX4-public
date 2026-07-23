@@ -22,3 +22,6 @@ param set-default MNT_RANGE_ROLL 180
 param set-default MNT_MAX_PITCH 45
 param set-default MNT_MIN_PITCH -135
 param set-default MNT_RANGE_YAW 720
+
+param set-default USR_LAMBDA_Q_X 10.00
+param set-default USR_LAMBDA_Q_Y 8.00
