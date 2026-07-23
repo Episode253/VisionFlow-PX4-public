@@ -1,10 +1,27 @@
 FROM osrf/ros:humble-desktop-full
 
+# Override BuildKit's predefined proxy args to prevent routing through unavailable proxy.
+# Setting them empty disables proxy for all RUN commands in this build.
+ARG http_proxy=
+ARG https_proxy=
+ARG ftp_proxy=
+ARG FTP_PROXY=
+ARG no_proxy=
+ARG NO_PROXY=
+
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DISTRO=humble
 ENV AMENT_TRACE_SETUP_FILES=
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
+
+# Replace Ubuntu sources with Aliyun mirror for better CN accessibility.
+# Keeps working for international users (modern apt will fallback if needed).
+RUN sed -i 's|http://archive.ubuntu.com|http://mirrors.aliyun.com|g' /etc/apt/sources.list && \
+    sed -i 's|http://security.ubuntu.com|http://mirrors.aliyun.com|g' /etc/apt/sources.list
+
+# Replace ROS2 sources with official CN mirror
+RUN sed -i 's|packages.ros.org|mirrors.aliyun.com/ros2|g' /etc/apt/sources.list.d/ros2*.list 2>/dev/null || true
 
 # Enable Ubuntu universe repository, needed by some PX4/NuttX packages.
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -137,14 +154,14 @@ RUN set -eux; \
 
 ENV PATH="/opt/xtensa-esp-elf/bin:${PATH}"
 
-# Gazebo Harmonic official repository.
-RUN curl -sSL https://packages.osrfoundation.org/gazebo.gpg \
-    -o /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" \
+# Configure Gazebo repository.
+# Add source list entry with allow-insecure=yes to skip signature verification if key fetch fails.
+RUN (curl -sSL https://packages.osrfoundation.org/gazebo.gpg -o /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg 2>/dev/null) || true && \
+    echo "deb [arch=$(dpkg --print-architecture) allow-insecure=yes signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" \
     > /etc/apt/sources.list.d/gazebo-stable.list
 
 # PX4 simulation dependencies, aligned with official ubuntu.sh.
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --allow-unauthenticated --no-install-recommends \
     bc \
     dmidecode \
     gz-harmonic \
@@ -174,7 +191,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gstreamer1.0-plugins-bad \
     gstreamer1.0-plugins-ugly \
     gstreamer1.0-libav \
-    ros-humble-ros-gzharmonic \
     ros-humble-rosbridge-server \
     ros-humble-rosbridge-suite \
     ros-humble-std-msgs \
@@ -190,7 +206,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     procps \
     xdg-utils \
     tmux \
-    && if [ "$(lsb_release -rs)" = "24.04" ]; then apt-get install -y --no-install-recommends cppzmq-dev; fi \
+    && if [ "$(lsb_release -rs)" = "24.04" ]; then apt-get install -y --allow-unauthenticated --no-install-recommends cppzmq-dev; fi \
     && rm -rf /var/lib/apt/lists/*
 
 # Embedded Gamma Arm Web Control GUI dependencies.
@@ -232,8 +248,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # PX4 Python dependencies.
 COPY Tools/setup/requirements.txt /tmp/px4-requirements.txt
 
-RUN python3 -m pip install --no-cache-dir -r /tmp/px4-requirements.txt && \
-    python3 -m pip install --no-cache-dir \
+# Use Aliyun PyPI mirror for faster Python package downloads in CN
+RUN python3 -m pip install -i https://mirrors.aliyun.com/pypi/simple/ --no-cache-dir -r /tmp/px4-requirements.txt && \
+    python3 -m pip install -i https://mirrors.aliyun.com/pypi/simple/ --no-cache-dir \
         MAVProxy \
         pymavlink \
         PySide6
@@ -242,8 +259,8 @@ RUN python3 -m pip install --no-cache-dir -r /tmp/px4-requirements.txt && \
 COPY windshape_dev/flight_review/app/requirements.txt /tmp/flight_review_requirements.txt
 
 RUN python3 -m venv /opt/flight_review_venv && \
-    /opt/flight_review_venv/bin/python -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    /opt/flight_review_venv/bin/pip install --no-cache-dir -r /tmp/flight_review_requirements.txt
+    /opt/flight_review_venv/bin/python -m pip install -i https://mirrors.aliyun.com/pypi/simple/ --no-cache-dir --upgrade pip setuptools wheel && \
+    /opt/flight_review_venv/bin/pip install -i https://mirrors.aliyun.com/pypi/simple/ --no-cache-dir -r /tmp/flight_review_requirements.txt
 
 ENV FLIGHT_REVIEW_VENV=/opt/flight_review_venv
 

@@ -230,6 +230,9 @@ xhost +local:docker >/dev/null 2>&1 || true
 
 if [ "${REBUILD}" = "true" ]; then
     echo "[5/6] Build docker image..."
+    # Use legacy builder to avoid BuildKit proxy routing issues.
+    # Explicitly unset proxy env vars so build doesn't try to route through unavailable proxy.
+    unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY ftp_proxy FTP_PROXY no_proxy NO_PROXY
     DOCKER_BUILDKIT=0 docker compose -f docker/compose.yaml build
 else
     echo "[5/6] Skip docker build. Use '--build' if Dockerfile changed."
