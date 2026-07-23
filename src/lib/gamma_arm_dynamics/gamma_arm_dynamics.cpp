@@ -22,25 +22,25 @@ ArmUavParam makeDefaultParam()
 		I(2,0)=0.f;     I(2,1)=0.f;     I(2,2)=0.5488f;
 	}
 
-	// ── 安装位姿 (swan_gamma_v2/model.sdf) ──
 	// <pose>0.405 -0.015 -0.0295 -2.6443 0 0</pose>
-	p.p_mount = matrix::Vector3f(0.405f, -0.015f, -0.0295f);
-	{
-		const float roll = -2.6443f, pitch = 0.f, yaw = 0.f;
-		const float cr = cosf(roll), sr = sinf(roll);
-		const float cp = cosf(pitch), sp = sinf(pitch);
-		const float cy = cosf(yaw), sy = sinf(yaw);
-	// Mount rotation
+	p.p_mount = matrix::Vector3f(0.405f, 0.f, 0.f);
 	{
 		auto &R = p.R_mount;
-		R(0,0)=cp*cy;  R(0,1)=sr*sp*cy-cr*sy;  R(0,2)=cr*sp*cy+sr*sy;
-		R(1,0)=cp*sy;  R(1,1)=sr*sp*sy+cr*cy;  R(1,2)=cr*sp*sy-sr*cy;
-		R(2,0)=-sp;    R(2,1)=sr*cp;            R(2,2)=cr*cp;
-	}
+		R.setZero();
+		R(0,0)=0.0f;  R(0,1)= 0.0f;  R(0,2)= 1.0f;
+		R(1,0)=0.0f;  R(1,1)=-1.0f;  R(1,2)= 0.0f;
+		R(2,0)=1.0f;  R(2,1)= 0.0f;  R(2,2)= 0.0f;
 	}
 
 	// ── DH (零位: A=-π, B=C=D=E=F=0) ──
-	p.dh[0] = {0.06407f, -kPi/2.f,   0.10429f,  0.f};
+	// p.dh[0] = {0.06407f, -kPi/2.f,   0.10429f,  0.f};
+	// p.dh[1] = {0.24873f,  0.f,       0.02305f,  0.f};
+	// p.dh[2] = {0.06301f,  kPi/2.f,  -0.025f,    0.f};
+	// p.dh[3] = {0.f,       kPi/2.f,   0.165f,    kPi/2.f};
+	// p.dh[4] = {0.f,       kPi/2.f,  -0.0015f,   kPi};
+	// p.dh[5] = {0.f,       0.f,       0.084f,    kPi};
+
+	p.dh[0] = {0.06407f, -kPi/2.f,   0.10429f,  kPi};
 	p.dh[1] = {0.24873f,  0.f,       0.02305f,  0.f};
 	p.dh[2] = {0.06301f,  kPi/2.f,  -0.025f,    0.f};
 	p.dh[3] = {0.f,       kPi/2.f,   0.165f,    kPi/2.f};
