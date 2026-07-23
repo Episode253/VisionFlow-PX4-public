@@ -289,10 +289,12 @@ docker compose -f docker/compose.yaml run \
                 PX4_GZ_MODEL_POSE="${PX4_SELECTED_MODEL_POSE}" \
                 PX4_GZ_WORLD="${PX4_SELECTED_WORLD}" \
                 make px4_sitl "${PX4_SELECTED_TARGET}" \
+                BUILD_BASE_DIR=build/docker \
                 EXTRA_CMAKE_ARGS="${PX4_SELECTED_EXTRA_CMAKE_ARGS}"
             else
                 PX4_GZ_WORLD="${PX4_SELECTED_WORLD}" \
                 make px4_sitl "${PX4_SELECTED_TARGET}" \
+                BUILD_BASE_DIR=build/docker \
                 EXTRA_CMAKE_ARGS="${PX4_SELECTED_EXTRA_CMAKE_ARGS}"
             fi
         }
@@ -407,8 +409,8 @@ docker compose -f docker/compose.yaml run \
 
             if [ "${STALE_CACHE_RETRIED}" = "false" ] && grep -Eq "CMakeCache.txt.*is different than the directory|needed by .* missing and no known rule to make it" "${BUILD_LOG}"; then
                 echo ""
-                echo "[container] Detected stale PX4 SITL build cache. Remove build/px4_sitl_default and retry..."
-                rm -rf /workspace/VisionFlow-PX4/build/px4_sitl_default
+                echo "[container] Detected stale PX4 SITL build cache. Remove build/docker/px4_sitl_default and retry..."
+                rm -rf /workspace/VisionFlow-PX4/build/docker/px4_sitl_default
                 STALE_CACHE_RETRIED="true"
                 BUILD_ATTEMPT=$((BUILD_ATTEMPT + 1))
                 continue

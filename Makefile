@@ -122,6 +122,10 @@ endif
 
 SRC_DIR := $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))")
 
+# Allow overriding the build base directory to isolate different build environments
+# (e.g. Docker builds use build/docker/ to avoid clashing with local builds).
+BUILD_BASE_DIR ?= build
+
 # check if replay env variable is set & set build dir accordingly
 ifdef replay
 	BUILD_DIR_SUFFIX := _replay
@@ -178,7 +182,7 @@ endif
 # describe how to build a cmake config
 define cmake-build
 	$(eval override CMAKE_ARGS += -DCONFIG=$(1))
-	@$(eval BUILD_DIR = "$(SRC_DIR)/build/$(1)")
+	@$(eval BUILD_DIR = "$(SRC_DIR)/$(BUILD_BASE_DIR)/$(1)")
 	@# check if the desired cmake configuration matches the cache then CMAKE_CACHE_CHECK stays empty
 	@$(call cmake-cache-check)
 	@# make sure to start from scratch when switching from GNU Make to Ninja
@@ -246,7 +250,7 @@ all_default_targets: $(CONFIG_TARGETS_DEFAULT)
 # via existing cmake prerequisites.
 %_deb:
 	@$(call cmake-build,$(subst _deb,_default,$@)$(BUILD_DIR_SUFFIX))
-	@cd "$(SRC_DIR)/build/$(subst _deb,_default,$@)" && cpack -G DEB
+	@cd "$(SRC_DIR)/$(BUILD_BASE_DIR)/$(subst _deb,_default,$@)" && cpack -G DEB
 
 updateconfig:
 	@./Tools/kconfig/updateconfig.py
@@ -322,21 +326,21 @@ px4io_update:
 	@$(MAKE) --no-print-directory px4_io-v2_default
 	@$(MAKE) --no-print-directory cubepilot_io-v2_default
 	# px4_io-v2_default
-	cp build/px4_io-v2_default/px4_io-v2_default.bin boards/ark/fmu-v6x/extras/px4_io-v2_default.bin
-	cp build/px4_io-v2_default/px4_io-v2_default.bin boards/holybro/durandal-v1/extras/px4_io-v2_default.bin
-	cp build/px4_io-v2_default/px4_io-v2_default.bin boards/holybro/pix32v5/extras/px4_io-v2_default.bin
-	cp build/px4_io-v2_default/px4_io-v2_default.bin boards/mro/x21/extras/px4_io-v2_default.bin
-	cp build/px4_io-v2_default/px4_io-v2_default.bin boards/mro/x21-777/extras/px4_io-v2_default.bin
-	cp build/px4_io-v2_default/px4_io-v2_default.bin boards/px4/fmu-v2/extras/px4_io-v2_default.bin
-	cp build/px4_io-v2_default/px4_io-v2_default.bin boards/px4/fmu-v3/extras/px4_io-v2_default.bin
-	cp build/px4_io-v2_default/px4_io-v2_default.bin boards/px4/fmu-v4pro/extras/px4_io-v2_default.bin
-	cp build/px4_io-v2_default/px4_io-v2_default.bin boards/px4/fmu-v5/extras/px4_io-v2_default.bin
-	cp build/px4_io-v2_default/px4_io-v2_default.bin boards/px4/fmu-v5x/extras/px4_io-v2_default.bin
-	cp build/px4_io-v2_default/px4_io-v2_default.bin boards/px4/fmu-v6x/extras/px4_io-v2_default.bin
-	cp build/px4_io-v2_default/px4_io-v2_default.bin boards/px4/fmu-v6c/extras/px4_io-v2_default.bin
+	cp $(BUILD_BASE_DIR)/px4_io-v2_default/px4_io-v2_default.bin boards/ark/fmu-v6x/extras/px4_io-v2_default.bin
+	cp $(BUILD_BASE_DIR)/px4_io-v2_default/px4_io-v2_default.bin boards/holybro/durandal-v1/extras/px4_io-v2_default.bin
+	cp $(BUILD_BASE_DIR)/px4_io-v2_default/px4_io-v2_default.bin boards/holybro/pix32v5/extras/px4_io-v2_default.bin
+	cp $(BUILD_BASE_DIR)/px4_io-v2_default/px4_io-v2_default.bin boards/mro/x21/extras/px4_io-v2_default.bin
+	cp $(BUILD_BASE_DIR)/px4_io-v2_default/px4_io-v2_default.bin boards/mro/x21-777/extras/px4_io-v2_default.bin
+	cp $(BUILD_BASE_DIR)/px4_io-v2_default/px4_io-v2_default.bin boards/px4/fmu-v2/extras/px4_io-v2_default.bin
+	cp $(BUILD_BASE_DIR)/px4_io-v2_default/px4_io-v2_default.bin boards/px4/fmu-v3/extras/px4_io-v2_default.bin
+	cp $(BUILD_BASE_DIR)/px4_io-v2_default/px4_io-v2_default.bin boards/px4/fmu-v4pro/extras/px4_io-v2_default.bin
+	cp $(BUILD_BASE_DIR)/px4_io-v2_default/px4_io-v2_default.bin boards/px4/fmu-v5/extras/px4_io-v2_default.bin
+	cp $(BUILD_BASE_DIR)/px4_io-v2_default/px4_io-v2_default.bin boards/px4/fmu-v5x/extras/px4_io-v2_default.bin
+	cp $(BUILD_BASE_DIR)/px4_io-v2_default/px4_io-v2_default.bin boards/px4/fmu-v6x/extras/px4_io-v2_default.bin
+	cp $(BUILD_BASE_DIR)/px4_io-v2_default/px4_io-v2_default.bin boards/px4/fmu-v6c/extras/px4_io-v2_default.bin
 	# cubepilot_io-v2_default
-	cp build/cubepilot_io-v2_default/cubepilot_io-v2_default.bin boards/cubepilot/cubeorange/extras/cubepilot_io-v2_default.bin
-	cp build/cubepilot_io-v2_default/cubepilot_io-v2_default.bin boards/cubepilot/cubeyellow/extras/cubepilot_io-v2_default.bin
+	cp $(BUILD_BASE_DIR)/cubepilot_io-v2_default/cubepilot_io-v2_default.bin boards/cubepilot/cubeorange/extras/cubepilot_io-v2_default.bin
+	cp $(BUILD_BASE_DIR)/cubepilot_io-v2_default/cubepilot_io-v2_default.bin boards/cubepilot/cubeyellow/extras/cubepilot_io-v2_default.bin
 	git status
 
 bootloaders_update: \
@@ -441,8 +445,8 @@ tests_coverage:
 	@$(MAKE) clean
 	@$(MAKE) --no-print-directory tests PX4_CMAKE_BUILD_TYPE=Coverage
 	@mkdir -p coverage
-	@lcov --directory build/px4_sitl_test \
-		--base-directory build/px4_sitl_test \
+	@lcov --directory $(BUILD_BASE_DIR)/px4_sitl_test \
+		--base-directory $(BUILD_BASE_DIR)/px4_sitl_test \
 		--gcov-tool gcov \
 		--capture \
 		$(LCOBUG) \
@@ -464,7 +468,7 @@ tests_integration_coverage:
 	@$(MAKE) --no-print-directory px4_sitl_default mavsdk_tests
 	@"$(SRC_DIR)"/test/mavsdk_tests/mavsdk_test_runner.py --speed-factor 20 test/mavsdk_tests/configs/sitl.json
 	@mkdir -p coverage
-	@lcov --directory build/px4_sitl_default --base-directory build/px4_sitl_default --gcov-tool gcov --capture -o coverage/lcov.info
+	@lcov --directory $(BUILD_BASE_DIR)/px4_sitl_default --base-directory $(BUILD_BASE_DIR)/px4_sitl_default --gcov-tool gcov --capture -o coverage/lcov.info
 
 tests_mission: rostest
 	@"$(SRC_DIR)"/test/rostest_px4_run.sh mavros_posix_tests_missions.test
@@ -486,12 +490,12 @@ tests_offboard: rostest
 	@"$(SRC_DIR)"/test/rostest_px4_run.sh mavros_posix_tests_offboard_rpyrt_ctl.test
 
 python_coverage:
-	@mkdir -p "$(SRC_DIR)"/build/python_coverage
-	@cd "$(SRC_DIR)"/build/python_coverage && cmake "$(SRC_DIR)" $(CMAKE_ARGS) -G"$(PX4_CMAKE_GENERATOR)" -DCONFIG=px4_sitl_default -DPYTHON_COVERAGE=ON
-	@$(PX4_MAKE) -C "$(SRC_DIR)"/build/python_coverage
-	@$(PX4_MAKE) -C "$(SRC_DIR)"/build/python_coverage metadata_airframes
-	@$(PX4_MAKE) -C "$(SRC_DIR)"/build/python_coverage metadata_parameters
-	#@$(PX4_MAKE) -C "$(SRC_DIR)"/build/python_coverage module_documentation # TODO: fix within coverage.py
+	@mkdir -p "$(SRC_DIR)"/$(BUILD_BASE_DIR)/python_coverage
+	@cd "$(SRC_DIR)"/$(BUILD_BASE_DIR)/python_coverage && cmake "$(SRC_DIR)" $(CMAKE_ARGS) -G"$(PX4_CMAKE_GENERATOR)" -DCONFIG=px4_sitl_default -DPYTHON_COVERAGE=ON
+	@$(PX4_MAKE) -C "$(SRC_DIR)"/$(BUILD_BASE_DIR)/python_coverage
+	@$(PX4_MAKE) -C "$(SRC_DIR)"/$(BUILD_BASE_DIR)/python_coverage metadata_airframes
+	@$(PX4_MAKE) -C "$(SRC_DIR)"/$(BUILD_BASE_DIR)/python_coverage metadata_parameters
+	#@$(PX4_MAKE) -C "$(SRC_DIR)"/$(BUILD_BASE_DIR)/python_coverage module_documentation # TODO: fix within coverage.py
 	@coverage combine `find . -name .coverage\*`
 	@coverage report -m
 
@@ -504,17 +508,17 @@ python_coverage:
 scan-build:
 	@export CCC_CC=clang
 	@export CCC_CXX=clang++
-	@rm -rf "$(SRC_DIR)"/build/px4_sitl_default-scan-build
-	@rm -rf "$(SRC_DIR)"/build/scan-build/report_latest
-	@mkdir -p "$(SRC_DIR)"/build/px4_sitl_default-scan-build
-	@cd "$(SRC_DIR)"/build/px4_sitl_default-scan-build && scan-build cmake "$(SRC_DIR)" -GNinja -DCONFIG=px4_sitl_default
-	@scan-build -o "$(SRC_DIR)"/build/scan-build cmake --build "$(SRC_DIR)"/build/px4_sitl_default-scan-build
-	@find "$(SRC_DIR)"/build/scan-build -maxdepth 1 -mindepth 1 -type d -exec cp -r "{}" "$(SRC_DIR)"/build/scan-build/report_latest \;
+	@rm -rf "$(SRC_DIR)"/$(BUILD_BASE_DIR)/px4_sitl_default-scan-build
+	@rm -rf "$(SRC_DIR)"/$(BUILD_BASE_DIR)/scan-build/report_latest
+	@mkdir -p "$(SRC_DIR)"/$(BUILD_BASE_DIR)/px4_sitl_default-scan-build
+	@cd "$(SRC_DIR)"/$(BUILD_BASE_DIR)/px4_sitl_default-scan-build && scan-build cmake "$(SRC_DIR)" -GNinja -DCONFIG=px4_sitl_default
+	@scan-build -o "$(SRC_DIR)"/$(BUILD_BASE_DIR)/scan-build cmake --build "$(SRC_DIR)"/$(BUILD_BASE_DIR)/px4_sitl_default-scan-build
+	@find "$(SRC_DIR)"/$(BUILD_BASE_DIR)/scan-build -maxdepth 1 -mindepth 1 -type d -exec cp -r "{}" "$(SRC_DIR)"/$(BUILD_BASE_DIR)/scan-build/report_latest \;
 
 px4_sitl_default-clang:
-	@mkdir -p "$(SRC_DIR)"/build/px4_sitl_default-clang
-	@cd "$(SRC_DIR)"/build/px4_sitl_default-clang && cmake "$(SRC_DIR)" $(CMAKE_ARGS) -G"$(PX4_CMAKE_GENERATOR)" -DCONFIG=px4_sitl_default -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
-	@$(PX4_MAKE) -C "$(SRC_DIR)"/build/px4_sitl_default-clang
+	@mkdir -p "$(SRC_DIR)"/$(BUILD_BASE_DIR)/px4_sitl_default-clang
+	@cd "$(SRC_DIR)"/$(BUILD_BASE_DIR)/px4_sitl_default-clang && cmake "$(SRC_DIR)" $(CMAKE_ARGS) -G"$(PX4_CMAKE_GENERATOR)" -DCONFIG=px4_sitl_default -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+	@$(PX4_MAKE) -C "$(SRC_DIR)"/$(BUILD_BASE_DIR)/px4_sitl_default-clang
 
 # Clang SITL configure with BUILD_TESTING=ON so test files land in
 # compile_commands.json with resolved gtest/fuzztest includes. Used by CI
@@ -522,8 +526,8 @@ px4_sitl_default-clang:
 # lint test files. Configure only: we don't build the test binaries here,
 # just generate the database.
 px4_sitl_default-clang-test:
-	@mkdir -p "$(SRC_DIR)"/build/px4_sitl_default-clang-test
-	@cd "$(SRC_DIR)"/build/px4_sitl_default-clang-test && cmake "$(SRC_DIR)" $(CMAKE_ARGS) -G"$(PX4_CMAKE_GENERATOR)" -DCONFIG=px4_sitl_default -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_TESTING=ON
+	@mkdir -p "$(SRC_DIR)"/$(BUILD_BASE_DIR)/px4_sitl_default-clang-test
+	@cd "$(SRC_DIR)"/$(BUILD_BASE_DIR)/px4_sitl_default-clang-test && cmake "$(SRC_DIR)" $(CMAKE_ARGS) -G"$(PX4_CMAKE_GENERATOR)" -DCONFIG=px4_sitl_default -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_TESTING=ON
 
 # CI-oriented target that prepares both clang build directories used by
 # the Static Analysis workflow:
@@ -553,18 +557,18 @@ CLANG_TIDY_EXCLUDE_EXTRA := src/systemcmds/tests|src/examples|src/modules/gyro_f
 CLANG_TIDY_EXCLUDE := $(CLANG_TIDY_SUBMODULES)|$(CLANG_TIDY_EXCLUDE_EXTRA)
 
 clang-tidy: px4_sitl_default-clang
-	@cd "$(SRC_DIR)"/build/px4_sitl_default-clang && "$(SRC_DIR)"/Tools/run-clang-tidy.py -header-filter=".*\.hpp" -j$(j_clang_tidy) -exclude="$(CLANG_TIDY_EXCLUDE)" -p .
+	@cd "$(SRC_DIR)"/$(BUILD_BASE_DIR)/px4_sitl_default-clang && "$(SRC_DIR)"/Tools/run-clang-tidy.py -header-filter=".*\.hpp" -j$(j_clang_tidy) -exclude="$(CLANG_TIDY_EXCLUDE)" -p .
 
 # to automatically fix a single check at a time, eg modernize-redundant-void-arg
 #  % run-clang-tidy-4.0.py -fix -j4 -checks=-\*,modernize-redundant-void-arg -p .
 clang-tidy-fix: px4_sitl_default-clang
-	@cd "$(SRC_DIR)"/build/px4_sitl_default-clang && "$(SRC_DIR)"/Tools/run-clang-tidy.py -header-filter=".*\.hpp" -j$(j_clang_tidy) -exclude="$(CLANG_TIDY_EXCLUDE)" -fix -p .
+	@cd "$(SRC_DIR)"/$(BUILD_BASE_DIR)/px4_sitl_default-clang && "$(SRC_DIR)"/Tools/run-clang-tidy.py -header-filter=".*\.hpp" -j$(j_clang_tidy) -exclude="$(CLANG_TIDY_EXCLUDE)" -fix -p .
 
 # TODO: Fix cppcheck errors then try --enable=warning,performance,portability,style,unusedFunction or --enable=all
 cppcheck: px4_sitl_default
-	@mkdir -p "$(SRC_DIR)"/build/cppcheck
-	@cppcheck -i"$(SRC_DIR)"/src/examples --enable=performance --std=c++14 --std=c99 --std=posix --project="$(SRC_DIR)"/build/px4_sitl_default/compile_commands.json --xml-version=2 2> "$(SRC_DIR)"/build/cppcheck/cppcheck-result.xml > /dev/null
-	@cppcheck-htmlreport --source-encoding=ascii --file="$(SRC_DIR)"/build/cppcheck/cppcheck-result.xml --report-dir="$(SRC_DIR)"/build/cppcheck --source-dir="$(SRC_DIR)"/src/
+	@mkdir -p "$(SRC_DIR)"/$(BUILD_BASE_DIR)/cppcheck
+	@cppcheck -i"$(SRC_DIR)"/src/examples --enable=performance --std=c++14 --std=c99 --std=posix --project="$(SRC_DIR)"/$(BUILD_BASE_DIR)/px4_sitl_default/compile_commands.json --xml-version=2 2> "$(SRC_DIR)"/$(BUILD_BASE_DIR)/cppcheck/cppcheck-result.xml > /dev/null
+	@cppcheck-htmlreport --source-encoding=ascii --file="$(SRC_DIR)"/$(BUILD_BASE_DIR)/cppcheck/cppcheck-result.xml --report-dir="$(SRC_DIR)"/$(BUILD_BASE_DIR)/cppcheck --source-dir="$(SRC_DIR)"/src/
 
 shellcheck_all:
 	@"$(SRC_DIR)"/Tools/run-shellcheck.sh "$(SRC_DIR)"/ROMFS/px4fmu_common/
@@ -657,12 +661,12 @@ failsafe_web:
 		PX4_CMAKE_BUILD_TYPE=Release BUILD_DIR_SUFFIX=_failsafe_web \
 		CMAKE_ARGS="-DCMAKE_CXX_COMPILER=em++ -DCMAKE_C_COMPILER=emcc"
 run_failsafe_web_server: failsafe_web
-	@cd build/px4_sitl_default_failsafe_web && \
+	@cd $(BUILD_BASE_DIR)/px4_sitl_default_failsafe_web && \
 		python3 -m http.server
 
 # Generate reference documentation for uORB messages
 .PHONY: msg_docs
 msg_docs:
 	$(call colorecho,'Generating uORB message reference docs')
-	@mkdir -p build/msg_docs
-	@./Tools/msg/generate_msg_docs.py -d build/msg_docs
+	@mkdir -p $(BUILD_BASE_DIR)/msg_docs
+	@./Tools/msg/generate_msg_docs.py -d $(BUILD_BASE_DIR)/msg_docs
