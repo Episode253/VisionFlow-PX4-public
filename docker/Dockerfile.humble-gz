@@ -37,19 +37,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # PX4 general dependencies, aligned with Tools/setup/ubuntu.sh.
+# Note: CI-only tools (astyle/cppcheck/lcov/shellcheck) are intentionally
+# omitted here; they are used by `make check_format`/coverage in CI, never by
+# a firmware or SITL build. Re-add them if you run those targets locally.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    astyle \
     bash-completion \
     build-essential \
     ccache \
     cmake \
-    cppcheck \
     file \
     g++ \
     gcc \
     gdb \
     git \
-    lcov \
     libssl-dev \
     libxml2-dev \
     libxml2-utils \
@@ -78,7 +78,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-serial \
     python3-kconfiglib \
     rsync \
-    shellcheck \
     unzip \
     zip \
     && rm -rf /var/lib/apt/lists/*
@@ -88,10 +87,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     automake \
     binutils-dev \
     bison \
-    build-essential \
     clang \
-    clang-tidy \
-    clang-format \
     flex \
     gdb-multiarch \
     genromfs \
@@ -165,7 +161,6 @@ RUN apt-get update && apt-get install -y --allow-unauthenticated --no-install-re
     bc \
     dmidecode \
     gz-harmonic \
-    libunwind-dev \
     libeigen3-dev \
     libgstreamer-plugins-base1.0-dev \
     libgstreamer-plugins-bad1.0-dev \

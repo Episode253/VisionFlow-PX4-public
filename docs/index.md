@@ -1,46 +1,53 @@
-# VisionFlow-PX4 开发手册
+---
+# https://vitepress.dev/reference/default-theme-home-page
+layout: home
 
-> 定制化 PX4 Autopilot 分支，由 **WindyLab** 开发。将无人机与机械臂（Gamma 系列）在 Gazebo 仿真中集成用于操作任务，具备 Prescribed Performance Guidance and Management Estimator (PreGME) 控制和 ROS2 集成能力。
+title: VisionFlow-PX4
+titleTemplate: 无人机-机械臂协同操作仿真与控制
 
-## 核心特性
+hero:
+  name: "VisionFlow-PX4"
+  text: "无人机-机械臂协同操作平台"
+  tagline: 定制化 PX4 Autopilot 分支，集成 PreGME 控制器、Gamma 机械臂动力学与 ROS2 生态。由 WindyLab 开发。
+  image:
+    src: /logo.svg
+    alt: VisionFlow-PX4
+  actions:
+    - theme: brand
+      text: 阅读文档
+      link: /zh/
+    - theme: alt
+      text: English Docs
+      link: /en/
+    - theme: alt
+      text: GitHub 源码
+      link: https://github.com/Renwang-Huang/VisionFlow-PX4
 
-- **PreGME 控制器** — 以滑模预设性能控制 (PPC) 算法完全替代标准 `mc_att_control` 和 `mc_pos_control`，包含质心补偿和复合误差状态观测器 (CESO)
-- **Gamma 机械臂集成** — 通过 `gamma_arm_dynamics` 库实现 PX4 飞行控制与 Gamma 系列机械臂动力学的深度耦合
-- **丰富的 Gazebo 仿真** — 定制世界、模型和插件，用于室内实验室操作场景（降落箱、VLA 任务、硬件在环）
-- **ROS2 生态系统** — Zenoh 中间件、uXRCE-DDS 客户端以及完整的 ROS2 Humble Docker 环境
+features:
+  - title: PreGME 控制器
+    details: 以滑模预设性能控制 (PPC) 完全替代标准 mc_att_control 与 mc_pos_control，包含变增益扩张状态观测器 (CESO) 与质心耦合补偿。核心研究贡献。
+    link: /zh/modules/pregme-controllers/
+    linkText: 了解控制器
+  - title: Gamma 机械臂集成
+    details: gamma_arm_dynamics 库根据 6-DOF 关节角计算 UAV+机械臂组合质心，并将质心耦合补偿注入姿态与位置控制器。
+    link: /zh/modules/gamma-arm-integration/
+    linkText: 机械臂动力学
+  - title: 丰富的 Gazebo 仿真
+    details: 定制实验室世界、swan_gamma / q940 模型与 C++ Gazebo 插件，覆盖室内操作、降落箱、VLA 任务与硬件在环场景。
+    link: /zh/simulation/
+    linkText: 仿真资产
+  - title: ROS2 生态系统
+    details: Zenoh 中间件、uXRCE-DDS 客户端、完整 ROS2 Humble Docker 环境与 MAVROS，开箱即用的 SITL 工作流。
+    link: /zh/architecture/communication-stack
+    linkText: 通信栈
+  - title: 神经 / RL 控制器
+    details: 实验性 mc_raptor (RL 策略) 与 mc_nn_control (神经网络) 控制器，由 rl_tools 与 tensorflow_lite_micro 库支撑。
+    link: /zh/modules/neural-network-control/
+    linkText: 神经网络控制
+  - title: Docker SITL 工作流
+    details: 一条命令启动 7 种实体配置的 Gazebo SITL 仿真，内置机械臂插件构建、uORB 头文件构建停滞看门狗与自动重试。
+    link: /zh/getting-started/docker-launch
+    linkText: Docker 启动
 
-## 与标准 PX4 的关键区别
-
-1. **PreGME 控制器** — 滑模 PPC 取代标准 MC 控制器（核心研究贡献）
-2. **机械臂集成** — `gamma_arm_dynamics` 桥接飞行控制与机械臂动力学
-3. **Gazebo 仿真** — 定制世界、模型、插件，专为室内实验室操作设计
-4. **ROS2 集成** — Zenoh 中间件、uXRCE-DDS、Gazebo-ROS 桥接、完整 ROS2 Humble Docker
-5. **相机反馈管道** — OAK-D 和 Intel RealSense 支持，具备地理标记功能
-6. **差动小车支持** — 完整的差动小车控制栈
-
-## 快速导航
-
-| 章节 | 内容 |
-|------|------|
-| [快速开始](getting-started/index.md) | 环境搭建、Docker 启动、本地启动 |
-| [系统架构](architecture/overview.md) | 控制栈、仿真栈、通信栈 |
-| [核心模块](modules/index.md) | PreGME 控制器、机械臂集成、神经网络控制等 |
-| [仿真资产](simulation/index.md) | 世界场景、模型、资产使用指南 |
-| [工具链](tools/index.md) | Docker 工作流、飞行日志审查、控制面板 |
-| [硬件支持](hardware/index.md) | HKUST 定制板、支持板卡列表 |
-| [通信协议](messages/index.md) | 自定义 uORB 消息、消息参考 |
-| [开发指南](development/index.md) | 编译流程、模块开发、贡献指南 |
-| [参考资料](references/index.md) | 机架配置、参数参考、引用文献 |
-
-## 引用
-
-如果您在研究中使用此代码库，请引用相关论文：
-
-```bibtex
-@article{ji2025pregme,
-  title={PreGME: Prescribed Performance Control of Aerial Manipulators based on Variable-Gain ESO},
-  author={Ji, Mengyu and Guo, Shiliang and Li, Zhengzhen and Shen, Jiahao and Cao, Huazi and Zhao, Shiyu},
-  journal={arXiv preprint arXiv:2512.22957},
-  year={2025}
-}
-```
+search: false
+---

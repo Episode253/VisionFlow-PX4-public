@@ -1,0 +1,23 @@
+{
+  "nav": [
+    {
+      "text": "相关项目",
+      "items": [
+        { "text": "PX4 Autopilot", "link": "https://px4.io/" },
+        { "text": "PX4 官方文档", "link": "https://docs.px4.io/main/en/" },
+        { "text": "QGroundControl", "link": "http://qgroundcontrol.com/" },
+        { "text": "MAVLink", "link": "https://mavlink.io/en/" },
+        { "text": "ROS 2 Humble", "link": "https://docs.ros.org/en/humble/" },
+        { "text": "Gazebo Harmonic", "link": "https://gazebosim.org/" }
+      ]
+    },
+    {
+      "text": "论文",
+      "items": [
+        { "text": "PreGME (arXiv:2512.22957)", "link": "https://arxiv.org/abs/2512.22957" },
+        { "text": "理论论文 (PDF)", "link": "/references/pregme-paper.pdf" },
+        { "text": "参数参考 (PDF)", "link": "/references/pregme-parameter-reference.pdf" }
+      ]
+    }
+  ]
+}

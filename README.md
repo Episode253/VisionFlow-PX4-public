@@ -25,7 +25,7 @@
 | Gazebo Sim | Harmonic V8.11.0 |
 | Ros-GZ Bridge | `ros-humble-ros-gz-harmonic` |
 | PX4 | V1.17.0 |
-| QGC Download | <https://github.com/Renwang-Huang/VisionFlow-PX4/releases/tag/V1.17.0> |
+| QGC Download | <https://docs.qgroundcontrol.com/master/en/qgc-user-guide/getting_started/download_and_install.html> |
 
 ## Quick Start
 
