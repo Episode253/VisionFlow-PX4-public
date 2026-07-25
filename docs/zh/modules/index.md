@@ -22,9 +22,6 @@ VisionFlow-PX4 包含 51 个 PX4 模块，分为标准模块和自定义模块�
 |------|------|
 | `pregme_att_control` | PreGME 滑模预设性能姿态控制 |
 | `pregme_pos_control` | PreGME 滑模预设性能位置控制 |
-| `mc_nn_control` | 基于 TensorFlow Lite Micro 的神经网络控制 |
-| `rover_differential` | 差动驱动小车控制器 |
-| `zenoh` | Zenoh DDS 替代中间件 |
 | `uxrce_dds_client` | uXRCE-DDS 客户端 |
 | `muorb` | micro-ORB 聚合器 |
 | `camera_feedback` | 相机反馈处理 |
@@ -41,10 +38,6 @@ VisionFlow-PX4 包含 51 个 PX4 模块，分为标准模块和自定义模块�
 | `logger` | ULog 数据记录 |
 | `mavlink` | MAVLink 协议处理 |
 
-## 详细文档
+---
 
-- [PreGME 控制器](pregme-controllers/index.md) — 预设性能控制详解
-- [Gamma 机械臂集成](gamma-arm-integration/index.md) — 机械臂动力学与插件
-- [神经网络控制](neural-network-control/index.md) — TFLite 集成
-- [差动小车控制](rover-controller/index.md) — 地面机器人控制
-- [Zenoh 中间件](zenoh-middleware/index.md) — 轻量级 DDS 替代
+*注：PreGME 控制器和 Gamma 机械臂集成文档已移至主侧边栏，可直接从导航进入。

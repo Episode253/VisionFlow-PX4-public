@@ -48,7 +48,6 @@ uORB（micro Object Request Broker）是 PX4 的内部消息总线，采用发�
 |------|------|--------|
 | `ArmJointState.msg` | 机械臂关节状态 | gamma_arm_dynamics |
 | `CollisionConstraints.msg` | 碰撞避免约束 | pregme_pos_control |
-| `NeuralControl.msg` | 神经网络控制调试 | mc_nn_control |
 | `TrajectorySetpoint6dof.msg` | 6-DOF 轨迹设定值 | 位置控制器 |
 | `Rover*` 系列 | 小车专用控制消息 | rover_differential |
 

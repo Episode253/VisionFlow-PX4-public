@@ -29,8 +29,7 @@ graph TB
         C2[PreGME 姿态控制]
         C3[标准 MC 位置控制]
         C4[标准 MC 姿态控制]
-        C5[神经网络增强控制]
-        C6[差动小车控制]
+        C5[相机反馈管道]
     end
 
     subgraph "执行器分配"
@@ -74,9 +73,6 @@ graph TB
 
     C3 --> C4
     C4 --> A1
-
-    C1 -.-> C5
-    C2 -.-> C5
 
     A1 --> M1
     A1 --> M2
@@ -123,5 +119,4 @@ graph TB
 2. **Gamma 机械臂集成** — `gamma_arm_dynamics` 桥接飞控与机械臂
 3. **增强仿真栈** — 自定义世界、模型、插件
 4. **ROS2 原生集成** — Zenoh、uXRCE-DDS、Gazebo-ROS Bridge
-5. **神经网络控制** — TensorFlow Lite Micro 集成
-6. **差动小车支持** — 完整的地面机器人控制栈
+5. **相机反馈管道** — OAK-D 与 Intel RealSense，支持实时目标检测与地理标记

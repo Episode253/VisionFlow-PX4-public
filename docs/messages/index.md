@@ -9,4 +9,3 @@ This page provides an overview of the communication protocols and messaging syst
 - [Custom Messages](custom-messages.md)
 - [Message Reference](message-reference.md)
 - [Communication Stack](../architecture/communication-stack.md)
-- [Zenoh Middleware](../modules/zenoh-middleware/index.md)

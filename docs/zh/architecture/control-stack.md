@@ -20,7 +20,6 @@ graph TD
     end
 
     subgraph "增强功能"
-        NN[神经网络控制]
         CESO[复合误差状态观测器]
         Lim[速率限制]
     end
@@ -36,9 +35,6 @@ graph TD
 
     AttCtrl --> PregmeAtt
     AttCtrl --> StdAtt
-
-    PregmePos -.-> NN
-    PregmeAtt -.-> NN
 
     PregmeAtt --> CESO
     PregmeAtt --> Lim

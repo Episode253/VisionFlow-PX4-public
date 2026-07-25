@@ -9,4 +9,3 @@
 - [自定义消息](custom-messages.md)
 - [消息参考](message-reference.md)
 - [通信栈](../architecture/communication-stack.md)
-- [Zenoh 中间件](../modules/zenoh-middleware/index.md)

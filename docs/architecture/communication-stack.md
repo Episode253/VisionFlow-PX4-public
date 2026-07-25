@@ -48,7 +48,6 @@ uORB (micro Object Request Broker) is PX4's internal message bus, using a publis
 |------|------|--------|
 | `ArmJointState.msg` | Arm joint state | gamma_arm_dynamics |
 | `CollisionConstraints.msg` | Collision avoidance constraints | pregme_pos_control |
-| `NeuralControl.msg` | Neural network control debugging | mc_nn_control |
 | `TrajectorySetpoint6dof.msg` | 6-DOF trajectory setpoint | position controller |
 | `Rover*` series | Rover-specific control messages | rover_differential |
 

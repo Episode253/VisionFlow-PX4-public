@@ -22,9 +22,6 @@ The following modules are the core contributions of this project:
 |------|------|
 | `pregme_att_control` | PreGME sliding mode prescribed performance attitude control |
 | `pregme_pos_control` | PreGME sliding mode prescribed performance position control |
-| `mc_nn_control` | Neural network control based on TensorFlow Lite Micro |
-| `rover_differential` | Differential drive rover controller |
-| `zenoh` | Zenoh DDS alternative middleware |
 | `uxrce_dds_client` | uXRCE-DDS client |
 | `muorb` | micro-ORB aggregator |
 | `camera_feedback` | Camera feedback processing |
@@ -41,10 +38,6 @@ The following modules are the core contributions of this project:
 | `logger` | ULog data logging |
 | `mavlink` | MAVLink protocol processing |
 
-## Detailed Documentation
+---
 
-- [PreGME Controllers](pregme-controllers/index.md) — Prescribed performance control details
-- [Gamma Arm Integration](gamma-arm-integration/index.md) — Arm dynamics and plugins
-- [Neural Network Control](neural-network-control/index.md) — TFLite integration
-- [Rover Controller](rover-controller/index.md) — Ground robot control
-- [Zenoh Middleware](zenoh-middleware/index.md) — Lightweight DDS alternative
+*Note: PreGME Controllers and Gamma Arm Integration docs have been moved to the top-level sidebar for direct access.

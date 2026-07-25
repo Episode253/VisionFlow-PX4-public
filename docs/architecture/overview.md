@@ -29,8 +29,7 @@ graph TB
         C2[PreGME Attitude Control]
         C3[Standard MC Position Control]
         C4[Standard MC Attitude Control]
-        C5[Neural Network Enhanced Control]
-        C6[Differential Drive Control]
+        C5[Standard MC Attitude Control]
     end
 
     subgraph "Actuator Allocation"
@@ -74,9 +73,6 @@ graph TB
 
     C3 --> C4
     C4 --> A1
-
-    C1 -.-> C5
-    C2 -.-> C5
 
     A1 --> M1
     A1 --> M2
@@ -123,5 +119,4 @@ Each control function is implemented as an independent PX4 module, communicating
 2. **Gamma Arm Integration** — `gamma_arm_dynamics` bridges flight controller and arm
 3. **Enhanced Simulation Stack** — Custom worlds, models, plugins
 4. **Native ROS2 Integration** — Zenoh, uXRCE-DDS, Gazebo-ROS Bridge
-5. **Neural Network Control** — TensorFlow Lite Micro integration
-6. **Differential Drive Support** — Complete ground robot control stack
+5. **Camera Feedback Pipeline** — OAK-D and Intel RealSense with geotagging

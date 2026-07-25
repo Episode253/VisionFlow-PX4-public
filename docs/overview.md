@@ -1,6 +1,6 @@
 # VisionFlow-PX4 Developer Manual
 
-> A customized PX4 Autopilot fork developed by **WindyLab**, integrating UAVs with robotic arms (Gamma series) for manipulation tasks in Gazebo simulation, featuring Prescribed Performance Guidance and Management Estimator (PreGME) control and ROS2 integration.
+> A customized PX4 Autopilot fork integrating UAVs with robotic arms (Gamma series) for manipulation tasks in Gazebo simulation, featuring Prescribed Performance Guidance and Management Estimator (PreGME) control and ROS2 integration.
 
 ## Core Features
 
@@ -16,17 +16,14 @@
 3. **Heavy Gazebo Simulation** — Custom worlds, models, plugins for indoor lab manipulation
 4. **ROS2 Integration** — Zenoh middleware, uXRCE-DDS, Gazebo-ROS bridge, complete ROS2 Humble Docker
 5. **Camera Feedback Pipeline** — OAK-D and Intel RealSense support with geotagging
-6. **Differential Rover Support** — Full rover control stack alongside quadcopter
 
 ## Quick Navigation
 
 | Section | Content |
 |------|------|
-| [Getting Started](getting-started/index.md) | Environment setup, Docker launch, native launch |
+| [Quick Deployment Toolchain](getting-started/index.md) | Environment setup, Docker launch, native launch |
 | [System Architecture](architecture/overview.md) | Control stack, simulation stack, communication stack |
-| [Core Modules](modules/index.md) | PreGME controllers, arm integration, NN control, etc. |
 | [Simulation Assets](simulation/index.md) | World scenes, models, asset usage guide |
-| [Toolchain](tools/index.md) | Docker workflow, flight review, control panels |
 | [Hardware Support](hardware/index.md) | HKUST boards, supported boards list |
 | [Communication Protocols](messages/index.md) | Custom uORB messages, message reference |
 | [Development Guide](development/index.md) | Build workflow, module development, contributing |

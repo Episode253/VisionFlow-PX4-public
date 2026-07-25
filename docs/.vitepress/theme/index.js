@@ -6,6 +6,7 @@ import "./style.css";
 import { onMounted, watch, nextTick } from "vue";
 import { useRoute, inBrowser } from "vitepress";
 import mediumZoom from "medium-zoom";
+import { setupMermaidZoom } from "./mermaid-zoom.js";
 
 /** @type {import('vitepress').Theme} */
 export default {
@@ -22,8 +23,18 @@ export default {
     const initZoom = () => {
       mediumZoom(".main img", { background: "var(--vp-c-bg)" });
     };
+    // Mermaid renders SVG asynchronously; retry so late diagrams get wired up.
+    const initMermaidZoom = () => {
+      let tries = 0;
+      const tick = () => {
+        setupMermaidZoom();
+        if (++tries < 10) setTimeout(tick, 300);
+      };
+      tick();
+    };
     onMounted(() => {
       initZoom();
+      initMermaidZoom();
       // Re-scroll to hash after fonts/layout settle (large pages).
       if (inBrowser && location.hash) {
         const id = decodeURIComponent(location.hash.slice(1));
@@ -46,7 +57,11 @@ export default {
     });
     watch(
       () => route.path,
-      () => nextTick(() => initZoom())
+      () =>
+        nextTick(() => {
+          initZoom();
+          initMermaidZoom();
+        })
     );
   },
 };
