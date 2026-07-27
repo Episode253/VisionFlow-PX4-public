@@ -237,6 +237,140 @@ Custom posix airframes in `ROMFS/px4fmu_common/init.d-posix/airframes/`:
 5. **Camera Feedback Pipeline** — OAK-D and Intel RealSense support with geotagging
 6. **Differential Rover Support** — Full rover control stack alongside quadcopter
 
+## ROS2 Usage
+
+This project uses **ROS2 Humble** as the middleware layer for simulation, offboard control, arm manipulation, visualization, and data streaming. Below are common workflows.
+
+### Prerequisites
+
+Ensure ROS2 Humble is sourced:
+
+```bash
+source /opt/ros/humble/setup.bash
+```
+
+Or using the Docker environment (recommended):
+
+```bash
+bash docker/run_gz_sitl.sh --profile "Entity 1"
+```
+
+### Basic ROS2 Commands
+
+```bash
+# List active topics
+ros2 topic list
+
+# Echo a specific topic (e.g., drone odometry)
+ros2 topic echo /model/q940_ti_0/odometry
+
+# List active nodes
+ros2 node list
+
+# Get node info
+ros2 node info <node_name>
+
+# Call a service (e.g., arm the drone via MAVROS)
+ros2 service call /mavros/cmd/arming mavros_msgs/srv/CommandBool "{value: true}"
+
+# Set OFFBOARD mode
+ros2 service call /mavros/set_mode mavros_msgs/srv/SetMode "{custom_mode: 'OFFBOARD'}"
+
+# List all services
+ros2 service list
+
+# Get parameter from a node
+ros2 param get <node_name> <param_name>
+```
+
+### Offboard Control
+
+Fly the drone via MAVROS:
+
+```bash
+python3 windshape_dev/uav_control/offboard/official_offboard.py
+```
+
+Other offboard scripts:
+
+| Script | Description |
+|--------|-------------|
+| `windshape_dev/uav_control/offboard/official_offboard.py` | Takeoff & hover |
+| `windshape_dev/uav_control/offboard/circular_tracking.py` | Circular trajectory |
+| `windshape_dev/uav_control/offboard/figure-eight_tracking.py` | Figure-8 path with yaw blending |
+
+### Keyboard Control
+
+```bash
+python3 windshape_dev/uav_control/keyboard/keyboard_control.py
+```
+
+### Gazebo ↔ ROS2 Bridge
+
+Bridge simulation data to ROS2 topics:
+
+```bash
+bash windshape_dev/image_stream/bridge_gz_ros.sh
+```
+
+This publishes arm joint states, gripper states, drone odometry, and more to ROS2 topics (see [Topics & Services](#topics--services) below).
+
+### Camera Stream
+
+```bash
+# Start bridge then camera stream
+bash windshape_dev/image_stream/bridge_gz_ros.sh
+bash windshape_dev/image_stream/camera_stream.sh
+```
+
+View at: `http://localhost:8080/`
+
+### Arm Control
+
+Launch the Gamma arm web control interface:
+
+```bash
+bash windshape_dev/arm_control/gamma_arm/gamma_arm_web_control.sh
+```
+
+### Odometry Plotting
+
+Real-time position dashboard:
+
+```bash
+python3 windshape_dev/data_plotting/local_position/odom_plotter.py
+```
+
+### Topics & Services
+
+Key ROS2 topics used in the project:
+
+| Topic | Type | Description |
+|-------|------|-------------|
+| `/mavros/state` | `mavros_msgs/msg/State` | MAVLink connection state |
+| `/mavros/local_position/odom` | `nav_msgs/msg/Odometry` | UAV local odometry |
+| `/mavros/local_position/pose` | `geometry_msgs/msg/PoseStamped` | UAV local pose |
+| `/mavros/setpoint_position/local` | `geometry_msgs/msg/PoseStamped` | OFFBOARD position setpoint |
+| `/mavros/setpoint_velocity/cmd_vel_unstamped` | `geometry_msgs/msg/Twist` | OFFBOARD velocity setpoint |
+| `/mavros/rc/override` | `mavros_msgs/msg/OverrideRCIn` | RC override commands |
+| `/model/q940_ti_0/odometry` | `nav_msgs/msg/Odometry` | Gazebo drone ground truth |
+| `/gamma_arm/joint_states` | `sensor_msgs/msg/JointState` | Gamma arm joint states |
+| `/gripper3/joint_state` | `sensor_msgs/msg/JointState` | Gripper joint state |
+
+Key services:
+
+| Service | Type | Purpose |
+|---------|------|---------|
+| `/mavros/cmd/arming` | `mavros_msgs/srv/CommandBool` | Arm / disarm |
+| `/mavros/set_mode` | `mavros_msgs/srv/SetMode` | Flight mode (e.g., OFFBOARD) |
+
+### Visualizing with RViz2
+
+```bash
+# Load a preconfigured RViz2 setup from the SUPER planner
+rviz2 -d windshape_dev/yungu/src/SUPER/super_planner/rviz/super_planner.rviz
+```
+
 ## Citation
 
 If you use this codebase in your research, please cite the associated paper:
