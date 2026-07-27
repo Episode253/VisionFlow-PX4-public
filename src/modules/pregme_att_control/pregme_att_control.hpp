@@ -31,7 +31,6 @@
 #include <uORB/topics/vehicle_angular_velocity.h>
 #include <uORB/topics/vehicle_torque_setpoint.h>
 #include <uORB/topics/vehicle_thrust_setpoint.h>
-#include <uORB/topics/vehicle_local_position.h>
 
 #include <lib/mathlib/math/filter/AlphaFilter.hpp>
 
@@ -80,7 +79,6 @@ private:
 
 	uORB::SubscriptionCallbackWorkItem _vehicle_attitude_sub{this, ORB_ID(vehicle_attitude)};
 
-	uORB::Subscription _local_pos_sub{ORB_ID(vehicle_local_position)};
 	uORB::Subscription _vehicle_angular_velocity_sub{ORB_ID(vehicle_angular_velocity)};
 
 	uORB::PublicationMulti<rate_ctrl_status_s> _controller_status_pub{ORB_ID(rate_ctrl_status)};
@@ -130,7 +128,6 @@ private:
 	// 表示机体坐标系下的 Roll、Pitch、Yaw 三个轴上的控制力矩
 	matrix::Vector3f _torque{0.f, 0.f, 0.f};
 
-	float pos_z{0.f};
 
 	DEFINE_PARAMETERS(
 		(ParamFloat<px4::params::USR_TAU_COE>) _param_usr_tau_coe,

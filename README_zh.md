@@ -1,20 +1,23 @@
+<div align="center">
+
 # VisionFlow-PX4
 
-> **🔄 活跃开发中** — 本仓库**每天持续更新**，请定期关注此页面并拉取最新更改以保持项目同步。
->
-> - **最后更新**：查看 [提交记录](https://github.com/Renwang-Huang/VisionFlow-PX4/commits)
-> - **版本落后？** 运行 `git pull origin main` 同步到最新版本
+<a href="https://github.com/Renwang-Huang/VisionFlow-PX4/commits"><img src="https://img.shields.io/badge/Development-Active-22C55E?style=flat-square" alt="Development Status"></a><!--
+--> <a href="https://github.com/Renwang-Huang/VisionFlow-PX4/tree/simulation"><img src="https://img.shields.io/badge/Default%20Branch-simulation-2563EB?style=flat-square" alt="Default Branch"></a><!--
+--> <a href="README_zh.md"><img src="https://img.shields.io/badge/English-中文-E5E7EB?style=flat-square&labelColor=111827" alt="切换至中文"></a>
 
-> **📖 Documentation: [English](README.md) ·  [中文](README_zh.md)**
+</div>
+
+> 新功能、性能优化与问题修复会持续合并进 `simulation` 分支，建议定期同步仓库，以保持本地代码与最新版本一致
 
 ## 概述
 
-> 由 **WindyLab** 开发的 PX4 Autopilot 定制版，将无人机与机械臂（Gamma 系列）集成，用于 Gazebo 仿真中的操控任务，具备预设性能制导与管理估计器（PreGME）控制及 ROS2 集成。
+> PX4 Autopilot 定制版，将无人机与机械臂（Gamma 系列）集成，用于 Gazebo 仿真中的操控任务，具备预设性能制导与管理估计器控制（PreGME）及 ROS2 集成，具备如下特性：
 
-- **PreGME 控制器** — 以滑模预设性能控制（PPC）算法全面替代标准 `mc_att_control` 和 `mc_pos_control`，包含质心补偿和组合误差状态观测器（CESO）。
-- **Gamma 机械臂集成** — 通过 `gamma_arm_dynamics` 库实现 PX4 飞控与 Gamma 系列机械臂动力学的紧耦合。
-- **丰富 Gazebo 仿真** — 自定义世界、模型和插件，用于室内实验室操控场景（降落箱、VLA 任务、硬件在环）。
-- **ROS2 生态** — Zenoh 中间件、uXRCE-DDS 客户端以及完整的 ROS2 Humble Docker 环境。
+- **PreGME 控制器** — 以滑模预设性能控制（PPC）算法全面替代标准 `mc_rate_control`、`mc_att_control` 和 `mc_pos_control`，包含质心补偿和组合误差状态观测器（CESO）
+- **Gamma 机械臂集成** — 通过 `gamma_arm_dynamics` 库实现 PX4 飞控与 Gamma 系列机械臂动力学的紧耦合
+- **丰富的 Gazebo 资源** — 自定义世界、模型和插件，用于室内实验室操控场景（VLA 任务、软件在环仿真、硬件在环仿真等）
+- **ROS2 生态** — uXRCE-DDS 客户端以及完整的 ROS2 Humble Docker 环境
 
 ## 环境要求
 
@@ -23,11 +26,11 @@
 | 操作系统 | Ubuntu 22.04 |
 | ROS 2 版本 | Humble |
 | Gazebo Sim 版本 | Harmonic V8.11.0 |
-| Ros-GZ Bridge 版本 | `ros-humble-ros-gz-harmonic` |
-| PX4 版本 | V1.17.0 |
-| QGC 版本 / 下载地址 | <https://docs.qgroundcontrol.com/master/en/qgc-user-guide/getting_started/download_and_install.html> |
+| ros-gz-bridge 版本 | `ros-humble-ros-gz-harmonic` |
+| PX4-Autopilot 版本 | V1.17.0 |
+| QGroundControl 下载地址 | <https://docs.qgroundcontrol.com/master/en/qgc-user-guide/getting_started/download_and_install.html> |
 
-## 快速开始
+## 快速部署
 
 ### 查看可用构建目标
 

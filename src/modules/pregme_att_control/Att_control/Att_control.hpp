@@ -49,16 +49,13 @@ public:
 	 * @param landed true when vehicle is landed; controller outputs are reset to zero
 	 * @param torque output body torque command [N*m before external normalization]
 	 * @param rates_sp output body rate setpoint for logging/compatibility [rad/s]
-	 * @param pos_z local position z in PX4 NED frame [m]
-	 * @param R_body_to_world rotation from body to world frame
 	 */
 	void update(const matrix::Quatf &q,
 		    const matrix::Vector3f &rate,
 		    float dt,
 		    bool landed,
 		    matrix::Vector3f &torque,
-		    matrix::Vector3f &rates_sp,
-		    float pos_z);
+		    matrix::Vector3f &rates_sp);
 
 	/** Pull latest system COM from ArmJointSubscriber and compute coupling compensation. */
 	void updateCouplingCompensation();
@@ -74,8 +71,9 @@ private:
 				float dt,
 				matrix::Vector3f &torque,
 				matrix::Vector3f &rates_sp,
-				float pos_z);
+				bool eso_enabled);
 
+	void initializeESO(const matrix::Vector3f &rate);
 	void UsrAttitudeESO(matrix::Vector3f bm_omega, matrix::Vector3f u, float dt);
 
 	using Vector4f = matrix::Vector<float, 4>;
@@ -99,6 +97,9 @@ private:
 		float c1{0.3f};
 		float c2{0.5f};
 	} _usr_eso;
+
+	// False after reset; initialized from measured body rate on the first airborne cycle.
+	bool _eso_initialized{false};
 
 	struct usr_att_controller {
 		Matrix3f lambda_q;

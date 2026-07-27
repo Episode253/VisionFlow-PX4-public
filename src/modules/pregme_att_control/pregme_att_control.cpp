@@ -329,12 +329,6 @@ void UserAttitudeControl::Run()
 		return;
 	}
 
-	vehicle_local_position_s local_pos{};
-
-	if (_local_pos_sub.update(&local_pos) && PX4_ISFINITE(local_pos.z)) {
-		pos_z = local_pos.z;
-	}
-
 	_manual_control_setpoint_sub.update(&_manual_control_setpoint);
 	_v_control_mode_sub.update(&_vehicle_control_mode);
 
@@ -426,7 +420,7 @@ void UserAttitudeControl::Run()
 	const Vector3f rates{angular_velocity.xyz};
 	Vector3f rates_sp{0.f, 0.f, 0.f};
 
-	_attitude_control.update(q, rates, dt, _landed, _torque, rates_sp, pos_z);
+	_attitude_control.update(q, rates, dt, _landed, _torque, rates_sp);
 
 	rate_ctrl_status_s rate_ctrl_status{};
 	_attitude_control.getRateControlStatus(rate_ctrl_status);

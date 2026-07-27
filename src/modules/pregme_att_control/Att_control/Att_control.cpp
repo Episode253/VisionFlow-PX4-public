@@ -15,7 +15,6 @@ constexpr float kMinEsoEpsilon = 1.0e-3f;
 constexpr float kMinEsoDenominator = 1.0e-6f;
 constexpr float kMinPresetEpsilon = 1.0e-4f;
 constexpr float kMinQuatScalarForInverse = 1.0e-3f;
-constexpr float kEsoEnableZ = -1.0f; // PX4 local position is NED: z < -1 means above roughly 1 m.
 
 using Matrix3fLocal = SquareMatrix<float, 3>;
 
@@ -279,15 +278,21 @@ void Att_Control::update(const Quatf &q,
 				 float dt,
 				 bool landed,
 				 Vector3f &torque,
-				 Vector3f &rates_sp,
-				 float pos_z)
+				 Vector3f &rates_sp)
 {
 	if (landed) {
+		// Keep the observer reset while the vehicle is on the ground.
 		resetESO();
 		resetPresetTraj();
+
+	} else if (!_eso_initialized) {
+		// First airborne cycle: initialize the observer with the measured body rate
+		// so that bm_omega - xi starts near zero.
+		initializeESO(rate);
 	}
 
-	runAttitudeControl(q, rate, dt, torque, rates_sp, pos_z);
+	// ESO is enabled at every altitude once the vehicle is airborne.
+	runAttitudeControl(q, rate, dt, torque, rates_sp, !landed);
 }
 
 void Att_Control::runAttitudeControl(const Quatf &q,
@@ -295,7 +300,7 @@ void Att_Control::runAttitudeControl(const Quatf &q,
 					     float dt,
 					     Vector3f &torque,
 					     Vector3f &rates_sp,
-					     float pos_z)
+					     bool eso_enabled)
 {
 	zeroVector3(torque);
 	zeroVector3(rates_sp);
@@ -369,11 +374,12 @@ void Att_Control::runAttitudeControl(const Quatf &q,
 	Vector3f zq_dot = qv_error_dot - _preset_traj.k * _preset_traj.ed_dot;
 	const Vector3f slide_mode_q = zq_dot + _controller_param.lambda_q * zq;
 
-	if (PX4_ISFINITE(pos_z) && pos_z < kEsoEnableZ) {
-		sanitizeVector3(_usr_eso.delta_esti);
+	Vector3f eso_delta;
+	zeroVector3(eso_delta);
 
-	} else {
-		zeroVector3(_usr_eso.delta_esti);
+	if (eso_enabled) {
+		sanitizeVector3(_usr_eso.delta_esti);
+		eso_delta = _usr_eso.delta_esti;
 	}
 
 	// 机械臂质心耦合补偿 (从 ArmJointSubscriber 读取最新 CoM)
@@ -388,7 +394,7 @@ void Att_Control::runAttitudeControl(const Quatf &q,
 
 	// 机械臂质心偏移补偿: Δω_comp = I⁻¹[m_total · p_C^B × R^T·g]
 	// ESO 只估计残余未知扰动, 控制端显式加上已知 Δω_comp
-	const Vector3f delta_omega_total = _usr_eso.delta_esti + _delta_omega_comp;
+	const Vector3f delta_omega_total = eso_delta + _delta_omega_comp;
 
 	torque = 2.f * (_I_b * (Q_inv * control_vec)) + gyro_comp - _I_b * delta_omega_total;
 
@@ -404,12 +410,28 @@ void Att_Control::runAttitudeControl(const Quatf &q,
 
 	// 把已知耦合补偿项并入系统输入, ESO 只估计残差
 	const Vector3f u_w_for_eso = u_w + _delta_omega_comp;
-	UsrAttitudeESO(current_rate, u_w_for_eso, dt);
 
-	for (int i = 0; i < 3; i++) {
-		_usr_eso.delta_esti(i) = PX4_ISFINITE(_usr_eso.delta_esti(i)) ?
-					 math::constrain(_usr_eso.delta_esti(i), -20.f, 20.f) : 0.f;
+	if (eso_enabled) {
+		UsrAttitudeESO(current_rate, u_w_for_eso, dt);
+
+		for (int i = 0; i < 3; i++) {
+			_usr_eso.delta_esti(i) = PX4_ISFINITE(_usr_eso.delta_esti(i)) ?
+						 math::constrain(_usr_eso.delta_esti(i), -20.f, 20.f) : 0.f;
+		}
 	}
+}
+
+void Att_Control::initializeESO(const Vector3f &rate)
+{
+	Vector3f initial_rate = rate;
+	sanitizeVector3(initial_rate);
+
+	_usr_eso.xi = initial_rate;
+	zeroVector3(_usr_eso.xi_dot);
+	zeroVector3(_usr_eso.delta_esti);
+	zeroVector3(_usr_eso.delta_esti_dot);
+	zeroVector3(_tau);
+	_eso_initialized = true;
 }
 
 void Att_Control::UsrAttitudeESO(Vector3f bm_omega, Vector3f u, float dt)
@@ -435,6 +457,7 @@ void Att_Control::UsrAttitudeESO(Vector3f bm_omega, Vector3f u, float dt)
 
 void Att_Control::resetESO()
 {
+	_eso_initialized = false;
 	zeroVector3(_usr_eso.delta_esti);
 	zeroVector3(_usr_eso.xi);
 	zeroVector3(_usr_eso.xi_dot);
