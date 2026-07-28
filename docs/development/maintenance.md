@@ -9,6 +9,13 @@ This page provides the maintenance guide for the VisionFlow-PX4 project, includi
 | Lead Maintainer | Renwang Huang | RenwangHuangX@gmail.com |
 | Repository | <https://github.com/Renwang-Huang/VisionFlow-PX4> | |
 
+| Role | Name | Contact |
+|------|------|---------|
+| Lead Maintainer | Hangan Xu | 1509797189@qq.com |
+| Repository | <https://github.com/Renwang-Huang/VisionFlow-PX4> | |
+
+---
+
 To report issues or suggest improvements:
 
 - **GitHub Issues**: Submit to [VisionFlow-PX4 Issues](https://github.com/Renwang-Huang/VisionFlow-PX4/issues)

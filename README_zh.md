@@ -10,14 +10,14 @@
 
 > 新功能、性能优化与问题修复会持续合并进 `simulation` 分支，建议定期同步仓库，以保持本地代码与最新版本一致
 
-## 概述
+## 项目概述
 
 > PX4 Autopilot 定制版，将无人机与机械臂（Gamma 系列）集成，用于 Gazebo 仿真中的操控任务，具备预设性能制导与管理估计器控制（PreGME）及 ROS2 集成，具备如下特性：
 
 - **PreGME 控制器** — 以滑模预设性能控制（PPC）算法全面替代标准 `mc_rate_control`、`mc_att_control` 和 `mc_pos_control`，包含质心补偿和组合误差状态观测器（CESO）
 - **Gamma 机械臂集成** — 通过 `gamma_arm_dynamics` 库实现 PX4 飞控与 Gamma 系列机械臂动力学的紧耦合
 - **丰富的 Gazebo 资源** — 自定义世界、模型和插件，用于室内实验室操控场景（VLA 任务、软件在环仿真、硬件在环仿真等）
-- **ROS2 生态** — uXRCE-DDS 客户端以及完整的 ROS2 Humble Docker 环境
+- **ROS2 生态** — uXRCE-DDS 客户端、Mavros以及完整的 ROS2 Humble Docker 环境
 
 ## 环境要求
 
@@ -26,7 +26,7 @@
 | 操作系统 | Ubuntu 22.04 |
 | ROS 2 版本 | Humble |
 | Gazebo Sim 版本 | Harmonic V8.11.0 |
-| ros-gz-bridge 版本 | `ros-humble-ros-gz-harmonic` |
+| ros-gz-bridge 版本 | `ros-humble-ros-gzharmonic` |
 | PX4-Autopilot 版本 | V1.17.0 |
 | QGroundControl 下载地址 | <https://docs.qgroundcontrol.com/master/en/qgc-user-guide/getting_started/download_and_install.html> |
 
@@ -47,26 +47,76 @@ ninja -C build/px4_sitl_default -t targets | grep gz_q940_ti
 ninja -C build/px4_sitl_default -t targets | grep gz_swan_gamma
 ```
 
-### 本地启动
+### 本地启动（非Docker环境）
 
-以下命令直接在本地宿主机上运行 PX4 SITL + Gazebo：
+建议使用下面的指令执行一键安装`ros2 humble`：
 
-| Profile | 描述 | 命令 |
+```bash
+wget http://fishros.com/install -O fishros && . fishros
+```
+
+---
+
+建议使用下面的指令安装`Gazebo Sim Harmonic`：
+
+```bash
+sudo apt update
+
+sudo apt install -y curl lsb-release gnupg
+
+sudo curl https://packages.osrfoundation.org/gazebo.gpg \
+  --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] https://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" \
+  | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
+
+sudo apt update
+
+sudo apt install -y gz-harmonic
+```
+
+---
+
+建议使用下面的指令执行安装`ros-humble-ros-gzharmonic`：
+
+```bash
+sudo apt update
+
+sudo apt install ros-humble-ros-gzharmonic
+
+sudo apt install -y ros-humble-ros-gzharmonic-bridge
+```
+
+---
+
+最后建议执行官方的环境安装脚本，避免环境依赖组件的缺失：
+
+```bash
+sudo chmod +x Tools/setup/ubuntu.sh
+
+bash Tools/setup/ubuntu.sh
+```
+
+---
+
+以下命令直接在本地宿主机上运行 `PX4 SITL + Gazebo`：
+
+| 实例 | 描述 | 仿真启动命令 |
 |---------|------|------|
-| Entity 1 | PreGME q940_ti 带降落箱（季梦玉） | `PX4_GZ_WORLD=laboratory_landingbox make px4_sitl gz_q940_ti_gripper4_laboratory_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
-| Entity 2 | PreGME q940_ti VLA 任务 | `PX4_GZ_WORLD=laboratory_landingbox_vla_task0 make px4_sitl gz_q940_ti_gripper4_laboratory_landingbox_vla_task0 EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
-| Entity 3 | Swan gamma v1（公司旧版） | `PX4_GZ_WORLD=laboratory_no_landingbox make px4_sitl gz_swan_gamma_v1_laboratory_no_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
-| Entity 4 | Swan gamma v2（公司新版） | `PX4_GZ_MODEL_POSE="0,0,1.15392,0,0,0" PX4_GZ_WORLD=laboratory_no_landingbox make px4_sitl gz_swan_gamma_v2_laboratory_no_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
-| Entity 5 | Swan gamma v2 VLA 任务 | `PX4_GZ_WORLD=laboratory_no_landingbox_vla_task0 make px4_sitl gz_swan_gamma_v2_laboratory_no_landingbox_vla_task0 EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
-| Entity 6 | X500 带云台 | `PX4_GZ_WORLD=laboratory_no_landingbox make px4_sitl gz_x500_gimbal_laboratory_no_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
-| Entity 7 | 差速小车 | `PX4_GZ_MODEL_POSE="0,0,0.5,0,0,0" make px4_sitl gz_differential_rover_laboratory_no_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
+| Entity 1 | PreGME q940_ti机型 带降落架场景 | `PX4_GZ_WORLD=laboratory_landingbox make px4_sitl gz_q940_ti_gripper4_laboratory_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
+| Entity 2 | PreGME q940_ti机型 VLA任务场景 | `PX4_GZ_WORLD=laboratory_landingbox_vla_task0 make px4_sitl gz_q940_ti_gripper4_laboratory_landingbox_vla_task0 EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
+| Entity 3 | Swan gamma v1（公司旧版机型，已弃用不再维护）| `PX4_GZ_WORLD=laboratory_no_landingbox make px4_sitl gz_swan_gamma_v1_laboratory_no_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
+| Entity 4 | Swan gamma v2（公司新版机型，仿真首选）实验室场景 | `PX4_GZ_MODEL_POSE="0,0,1.15392,0,0,0" PX4_GZ_WORLD=laboratory_no_landingbox make px4_sitl gz_swan_gamma_v2_laboratory_no_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
+| Entity 5 | Swan gamma v2 VLA任务场景 | `PX4_GZ_WORLD=laboratory_no_landingbox_vla_task0 make px4_sitl gz_swan_gamma_v2_laboratory_no_landingbox_vla_task0 EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
+| Entity 6 | X500 带云台 官方支持的机型 | `PX4_GZ_WORLD=laboratory_no_landingbox make px4_sitl gz_x500_gimbal_laboratory_no_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
+| Entity 7 | 差速小车 后期将不再维护 | `PX4_GZ_MODEL_POSE="0,0,0.5,0,0,0" make px4_sitl gz_differential_rover_laboratory_no_landingbox EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"` |
 
 ### Docker 启动（推荐）
 
 Docker 方式封装了完整的 ROS2 Humble + Gazebo 环境，推荐首次使用或需要隔离开发环境的场景：
 
 ```bash
-# 交互式选择 — 从菜单中选取 Profile
+# 交互式选择 — 从菜单中选取需要构建的目标实例
 bash docker/run_gz_sitl.sh
 
 # 列出可用 Profile
@@ -103,30 +153,24 @@ bash docker/run_gz_sitl.sh --profile "Entity 4"
 bash docker/run_gz_sitl.sh --build --profile "Entity 4"
 ```
 
-**说明**：构建时间取决于网络连接速度。中国用户受益于内置的阿里云镜像加速。
+**说明**：构建时间一定程度上取决于网络连接速度，国内用户受益于内置的阿里云镜像加速
 
 ### 附加节点
 
+## TODO
+
+- [x] 实现机械臂Web面板控制
+- [ ] 实现视觉数据流获取与前端可视化
+- [ ] 构建一次自动化任务执行脚本（例如一次性抓取与放置任务）
+
 ```bash
-# 数据桥接（Gazebo ↔ ROS2）
-bash windshape_dev/image_stream/bridge_gz_ros.sh
-
-# 相机流可视化
-bash windshape_dev/image_stream/camera_stream.sh
-
-# 机械臂 Web 控制
+# 机械臂 Web 控制（开启机械臂控制面板的同时进入Docker容器终端）
 bash docker/into_gz_sitl.sh
-
-# MAVROS 节点
-source thirdparty/install/setup.bash && ros2 launch mavros px4.launch fcu_url:=udp://:14540@localhost:14557
-
-# HITL 仿真
-gz sim -r Tools/simulation/gz/worlds/laboratory_landingbox_hitl.sdf
 ```
 
-## 维护与故障排查
+## 项目维护与问题排查
 
-遇到问题？查阅维护指南获取帮助：[中文](docs/development/maintenance.md) ｜ [English](docs/en/development/maintenance.md)
+若遇到问题，请查阅维护指南获取帮助：[中文](docs/development/maintenance.md) ｜ [English](docs/en/development/maintenance.md)
 
 | 内容 | 说明 |
 |------|------|
@@ -137,7 +181,7 @@ gz sim -r Tools/simulation/gz/worlds/laboratory_landingbox_hitl.sdf
 
 ## 仓库结构
 
-以下目录树展示已跟踪的源码/配置目录及主要维护的项目组件。本地构建、缓存、日志、IDE 和运行时产物不在此展示。
+> 以下目录树展示已跟踪的源码/配置目录及主要维护的项目组件，本地构建、缓存、日志、IDE 和运行时产物不在此展示
 
 ### 主目录
 
@@ -197,7 +241,7 @@ msg/
 └── translation_node/        # ROS 2 消息翻译包
 ```
 
-当前共约 267 个 `.msg` 文件，分布于 current、versioned 和 legacy 消息树中。
+当前共约 267 个 `.msg` 文件，分布于 current、versioned 和 legacy 消息树中
 
 ### 工具与仿真
 
@@ -361,11 +405,11 @@ windshape_dev/
 
 ## 与原版 PX4 的主要差异
 
-1. **PreGME 控制器** — 滑模 PPC 替代标准多旋翼控制器（核心研究贡献）
+1. **PreGME 控制器** — 滑模 PPC 替代标准多旋翼控制器
 2. **机械臂集成** — `gamma_arm_dynamics` 桥接 PX4 飞控与 Gamma 系列机械臂动力学
 3. **重度 Gazebo 仿真** — 自定义世界、模型、插件，面向室内实验室操控
-4. **ROS2 集成** — Zenoh 中间件、uXRCE-DDS、Gazebo-ROS 桥接、完整 ROS2 Humble Docker
-5. **相机反馈管线** — OAK-D 和 Intel RealSense 支持，带地理标记
+4. **ROS2 集成** — uXRCE-DDS、Mavros、Gazebo-ROS 桥接、完整 ROS2 Humble Docker
+5. **相机反馈管线** — OAK-D 和 Intel RealSense 支持
 6. **差速小车支持** — 与四旋翼并行的完整小车控制栈
 
 ## 引用
