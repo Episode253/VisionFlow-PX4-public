@@ -19,44 +19,7 @@ unset(_deps)
 enable_language(C)
 enable_language(CXX)
 
-# Micro CDR.
-unset(microcdr_DIR CACHE)
-
-if(NOT UCLIENT_BUILD_MICROCDR)
-    find_package(microcdr ${_microcdr_version} EXACT QUIET)
-endif()
-
-if(NOT microcdr_FOUND)
-    ExternalProject_Add(microcdr
-        SOURCE_DIR
-            ${CMAKE_CURRENT_LIST_DIR}/../../third_party/Micro-CDR
-        DOWNLOAD_COMMAND
-            ""
-        UPDATE_COMMAND
-            ""
-        PREFIX
-            ${PROJECT_BINARY_DIR}/microcdr
-        INSTALL_DIR
-            ${PROJECT_BINARY_DIR}/temp_install
-        CMAKE_CACHE_ARGS
-            -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
-            -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-        CMAKE_ARGS
-            -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-            -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
-            -DCMAKE_SYSROOT:PATH=${CMAKE_SYSROOT}
-            -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
-            -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-            -DCMAKE_EXE_LINKER_FLAGS:STRING=${CMAKE_EXE_LINKER_FLAGS}
-            -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-            -DCONFIG_BIG_ENDIANNESS=${UCLIENT_BIG_ENDIANNESS}
-            -DUCDR_PIC=${UCLIENT_PIC}
-        )
-    list(APPEND _deps microcdr)
-endif()
-
-if(UCLIENT_BUILD_TESTS)
+if(UCDR_BUILD_TESTS)
     unset(googletest_DIR CACHE)
     enable_language(CXX)
     find_package(GTest QUIET)
@@ -86,16 +49,42 @@ if(UCLIENT_BUILD_TESTS)
         set(GMOCK_ROOT ${PROJECT_BINARY_DIR}/temp_install/googletest CACHE PATH "" FORCE)
         list(APPEND _deps googletest)
     endif()
+
+    unset(fastcdr_DIR CACHE)
+    enable_language(CXX)
+    unset(FASTCDR_ROOT CACHE)
+    ExternalProject_Add(fastcdr
+        GIT_REPOSITORY
+            https://github.com/eProsima/Fast-CDR
+        GIT_TAG
+        v1.0.13
+        PREFIX
+            ${PROJECT_BINARY_DIR}/fastcdr
+        INSTALL_DIR
+            ${PROJECT_BINARY_DIR}/temp_install/fastcdr
+        CMAKE_ARGS
+            -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+            -DCMAKE_BUILD_TYPE=${DCMAKE_BUILD_TYPE}
+        BUILD_COMMAND
+            COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config Release --target install
+            COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config Debug --target install
+        INSTALL_COMMAND
+            ""
+        )
+    set(FASTCDR_ROOT ${PROJECT_BINARY_DIR}/temp_install/fastcdr CACHE PATH "" FORCE)
+    set(FASTCDR_INCLUDE_DIRS ${PROJECT_BINARY_DIR}/temp_install/fastcdr/include CACHE PATH "" FORCE)
+
+    list(APPEND _deps fastcdr)
 endif()
 
 # Client project.
-ExternalProject_Add(uclient
+ExternalProject_Add(ucdr
     SOURCE_DIR
         ${PROJECT_SOURCE_DIR}
     BINARY_DIR
         ${CMAKE_CURRENT_BINARY_DIR}
     CMAKE_CACHE_ARGS
-        -DUCLIENT_SUPERBUILD:BOOL=OFF
+        -DUCDR_SUPERBUILD:BOOL=OFF
     INSTALL_COMMAND
         ""
     DEPENDS
