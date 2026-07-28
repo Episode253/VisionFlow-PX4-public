@@ -3,12 +3,12 @@
 # VisionFlow-PX4
 
 <a href="https://github.com/Renwang-Huang/VisionFlow-PX4/commits"><img src="https://img.shields.io/badge/Development-Active-22C55E?style=flat-square" alt="Development Status"></a><!--
--->&nbsp;<a href="https://github.com/Renwang-Huang/VisionFlow-PX4/tree/simulation"><img src="https://img.shields.io/badge/Default%20Branch-simulation-2563EB?style=flat-square" alt="Default Branch"></a><!--
+-->&nbsp;<a href="https://github.com/Renwang-Huang/VisionFlow-PX4/tree/main"><img src="https://img.shields.io/badge/Default%20Branch-main-2563EB?style=flat-square" alt="Default Branch"></a><!--
 -->&nbsp;<a href="README_zh.md"><img src="https://img.shields.io/badge/English-中文-E5E7EB?style=flat-square&labelColor=111827" alt="Switch to Chinese"></a>
 
 </div>
 
-> New features, performance improvements, and bug fixes are continuously merged into the `simulation` branch. Pull the repository regularly to keep your local checkout synchronized with the latest version.
+> New features, performance improvements, and bug fixes are continuously merged into the `main` branch. Pull the repository regularly to keep your local checkout synchronized with the latest version.
 
 ## Overview
 

@@ -3,12 +3,12 @@
 # VisionFlow-PX4
 
 <a href="https://github.com/Renwang-Huang/VisionFlow-PX4/commits"><img src="https://img.shields.io/badge/Development-Active-22C55E?style=flat-square" alt="Development Status"></a><!--
---> <a href="https://github.com/Renwang-Huang/VisionFlow-PX4/tree/simulation"><img src="https://img.shields.io/badge/Default%20Branch-simulation-2563EB?style=flat-square" alt="Default Branch"></a><!--
+--> <a href="https://github.com/Renwang-Huang/VisionFlow-PX4/tree/main"><img src="https://img.shields.io/badge/Default%20Branch-main-2563EB?style=flat-square" alt="Default Branch"></a><!--
 --> <a href="README_zh.md"><img src="https://img.shields.io/badge/English-中文-E5E7EB?style=flat-square&labelColor=111827" alt="切换至中文"></a>
 
 </div>
 
-> 新功能、性能优化与问题修复会持续合并进 `simulation` 分支，建议定期同步仓库，以保持本地代码与最新版本一致
+> 新功能、性能优化与问题修复会持续合并进 `main` 分支，建议定期同步仓库，以保持本地代码与最新版本一致
 
 ## 项目概述
 
