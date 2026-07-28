@@ -170,7 +170,7 @@ bash docker/into_gz_sitl.sh
 
 ## Maintenance and Troubleshooting
 
-For help with project issues, refer to the maintenance guides: [中文](docs/development/maintenance.md) | [English](docs/en/development/maintenance.md)
+For help with project issues, refer to the maintenance guides: [English](docs/development/maintenance.md) | [中文](docs/zh/development/maintenance.md)
 
 | Topic | Description |
 |-------|-------------|

@@ -170,7 +170,7 @@ bash docker/into_gz_sitl.sh
 
 ## 项目维护与问题排查
 
-若遇到问题，请查阅维护指南获取帮助：[中文](docs/development/maintenance.md) ｜ [English](docs/en/development/maintenance.md)
+若遇到问题，请查阅维护指南获取帮助：[English](docs/development/maintenance.md) ｜ [中文](docs/zh/development/maintenance.md)
 
 | 内容 | 说明 |
 |------|------|

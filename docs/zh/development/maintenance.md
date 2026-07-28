@@ -1,12 +1,17 @@
 # 维护指南
 
-本页提供 VisionFlow-PX4 项目的维护指南，包括项目维护者信息、问题报告流程、BUG 定位与修复流程以及常见故障排查方法。
+本页提供 VisionFlow-PX4 项目的维护指南，包括项目维护者信息、问题报告流程、BUG 定位与修复流程以及常见问题排查方法
 
 ## 项目维护者
 
 | 角色 | 姓名 | 联系方式 |
 |------|------|---------|
 | 主要维护人 | Renwang Huang | RenwangHuangX@gmail.com |
+| 仓库地址 | <https://github.com/Renwang-Huang/VisionFlow-PX4> | |
+
+| 角色 | 姓名 | 联系方式 |
+|------|------|---------|
+| 主要维护人 | Hangan Xu | 1509797189@qq.com |
 | 仓库地址 | <https://github.com/Renwang-Huang/VisionFlow-PX4> | |
 
 如有问题或建议，欢迎通过以下方式联系：
@@ -109,9 +114,9 @@ rm -rf build/px4_sitl_default
 
 #### uORB ucdr 头文件生成卡死
 
-**现象：** 编译过程中卡在 `Generating uORB topic ucdr headers` 步骤。
+**现象：** 编译过程中卡在 `Generating uORB topic ucdr headers` 步骤
 
-**原因：** 头文件生成脚本在输出稳定后未及时退出。
+**原因：** 头文件生成脚本在输出稳定后未及时退出
 
 **解决：** 系统已内置 watchdog 机制（`PX4_UCDR_HEADER_STALL_TIMEOUT`，默认 5 秒），会自动检测并重试。如果持续失败：
 
