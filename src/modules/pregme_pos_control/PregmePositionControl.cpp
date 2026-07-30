@@ -536,6 +536,7 @@ void PregmePositionControl::Run()
 				}
 
 				vehicle_local_position_setpoint_s failsafe_setpoint{};
+				reset_setpoint_to_nan(failsafe_setpoint);
 				failsafe(time_stamp_now, failsafe_setpoint, states, !was_in_failsafe);
 
 				_vehicle_constraints.timestamp = 0;
