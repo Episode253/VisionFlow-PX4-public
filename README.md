@@ -428,5 +428,5 @@ If you use this codebase in your research, please cite the associated paper:
 
 ## Documentation
 
-- [`docs/references/PreGME: Prescribed Performance Control of Aerial Manipulators based on Variable-Gain ESO.pdf`](docs/references/PreGME:%20Prescribed%20Performance%20Control%20of%20Aerial%20Manipulators%20based%20on%20Variable-Gain%20ESO.pdf) — Theoretical foundation of PreGME
-- [`docs/references/PreGME:Parameter Reference.pdf`](docs/references/PreGME:Parameter%20Reference.pdf) — Parameter reference manual
+- [`Prescribed Performance Control of Aerial Manipulators based on Variable-Gain ESO.pdf`](docs/references/PreGME:%20Prescribed%20Performance%20Control%20of%20Aerial%20Manipulators%20based%20on%20Variable-Gain%20ESO.pdf) — Theoretical foundation of PreGME
+- [`Parameter Reference.pdf`](docs/references/PreGME:Parameter%20Reference.pdf) — Parameter reference manual

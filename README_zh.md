@@ -403,7 +403,7 @@ windshape_dev/
 | `px4_sitl_default` | POSIX | 当前主要 Gazebo SITL 构建目标 |
 | `px4_fmu-v6x_default` | NuttX | 支持的 STM32H7 FMUv6X 目标，按需生成 |
 
-## 与原版 PX4 的主要差异
+## 与原版 PX4-Autopilot 的主要差异
 
 1. **PreGME 控制器** — 滑模 PPC 替代标准多旋翼控制器
 2. **机械臂集成** — `gamma_arm_dynamics` 桥接 PX4 飞控与 Gamma 系列机械臂动力学
@@ -412,7 +412,7 @@ windshape_dev/
 5. **相机反馈管线** — OAK-D 和 Intel RealSense 支持
 6. **差速小车支持** — 与四旋翼并行的完整小车控制栈
 
-## 引用
+## 论文引用
 
 如果你在研究中使用了本代码库，请引用相关论文：
 
@@ -425,7 +425,8 @@ windshape_dev/
 }
 ```
 
-## 文档
+## 文档参考
 
-- [`docs/references/PreGME: Prescribed Performance Control of Aerial Manipulators based on Variable-Gain ESO.pdf`](docs/references/PreGME:%20Prescribed%20Performance%20Control%20of%20Aerial%20Manipulators%20based%20on%20Variable-Gain%20ESO.pdf) — PreGME 理论基础
-- [`docs/references/PreGME:Parameter Reference.pdf`](docs/references/PreGME:Parameter%20Reference.pdf) — 参数参考手册
+- [`Prescribed Performance Control of Aerial Manipulators based on Variable-Gain ESO.pdf`](docs/references/PreGME:%20Prescribed%20Performance%20Control%20of%20Aerial%20Manipulators%20based%20on%20Variable-Gain%20ESO.pdf) — PreGME 理论基础
+- [`Parameter Reference.pdf`](docs/references/PreGME:Parameter%20Reference.pdf) — 参数参考手册
+
