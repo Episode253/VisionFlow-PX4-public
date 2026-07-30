@@ -1,3 +1,9 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Lead Developer       : Renwang Huang
+// Other Contributors   : Hangan Xu
+// Created              : 2026-07-29
+// ─────────────────────────────────────────────────────────────────────────────
+
 #include "Att_control.hpp"
 
 #include <drivers/drv_hrt.h>
@@ -319,7 +325,7 @@ void Att_Control::runAttitudeControl(const Quatf &q,
 	Quatf q_current = q;
 	q_current.normalize();
 
-	// 缓存 body→world 旋转矩阵, 供 updateCouplingCompensation 使用
+	// Caches the body-to-world rotation matrix for use by `updateCouplingCompensation`
 	_R_body_to_world = Dcmf(q_current);
 
 	Quatf q_error = _attitude_setpoint_q.inversed() * q_current;

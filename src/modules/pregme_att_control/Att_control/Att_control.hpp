@@ -1,3 +1,9 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Lead Developer       : Renwang Huang
+// Other Contributors   : Hangan Xu
+// Created              : 2026-07-29
+// ─────────────────────────────────────────────────────────────────────────────
+
 #pragma once
 
 #include <matrix/matrix/math.hpp>

@@ -1,3 +1,9 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Lead Developer       : Renwang Huang
+// Other Contributors   : Hangan Xu
+// Created              : 2026-07-29
+// ─────────────────────────────────────────────────────────────────────────────
+
 #include "pregme_att_control.hpp"
 
 #include <circuit_breaker/circuit_breaker.h>
@@ -14,7 +20,8 @@ using namespace matrix;
 
 ModuleBase::Descriptor UserAttitudeControl::desc{task_spawn, custom_command, print_usage};
 
-// 模块设计的初衷是针对四旋翼无人机的，保留 VTOL 相关的代码结构，但禁用 VTOL 的生效逻辑以确保专注于旋翼机控制
+// The module was originally designed for quadrotors, retaining the VTOL-related code structure
+// while disabling the VTOL activation logic to ensure a focus on rotorcraft control.
 UserAttitudeControl::UserAttitudeControl() :
 	ModuleParams(nullptr),
 	WorkItem(MODULE_NAME, px4::wq_configurations::rate_ctrl),
@@ -38,8 +45,8 @@ UserAttitudeControl::~UserAttitudeControl()
 
 bool UserAttitudeControl::init()
 {
-	if (!_vehicle_attitude_sub.registerCallback()) {
-		PX4_ERR("vehicle_attitude callback registration failed");
+	if (!_vehicle_angular_velocity_sub.registerCallback()) {
+		PX4_ERR("vehicle_angular_velocity callback registration failed");
 		return false;
 	}
 
@@ -89,7 +96,8 @@ void UserAttitudeControl::parameters_updated()
 
 	_man_tilt_max = math::radians(_param_usr_man_tilt_max.get());
 
-	// 其他 PX4 版本中使用的参数是 CBRK_RATE_CTRL_KEY ,但是该参数不适用于 PX4 V1.17 架构所以给定默认固定值
+	// The parameter used in other PX4 versions is CBRK_RATE_CTRL_KEY, but this parameter
+	// is not applicable to the PX4 v1.17 architecture, so a default fixed value is assigned.
 	_actuators_0_circuit_breaker_enabled = (_param_cbrk_rate_ctrl.get() == 121212);
 }
 
@@ -116,7 +124,7 @@ float UserAttitudeControl::throttle_curve(float throttle_stick_input)
 		break;
 	}
 
-	// 缺少油门自动估计的逻辑
+	// Missing logic for automatic throttle estimation
 	return math::constrain(thrust, 0.f, _param_usr_thr_max.get());
 }
 
@@ -176,10 +184,72 @@ void UserAttitudeControl::generate_attitude_setpoint(const Quatf &q, float dt, b
 
 	_vehicle_attitude_setpoint_pub.publish(attitude_setpoint);
 
-	// Update variables in real-time without transmitting via uORB messages.
-	_attitude_control.setAttitudeSetpoint(q_sp, attitude_setpoint.yaw_sp_move_rate);
+	// Apply attitude and thrust atomically only after the complete setpoint passes validation.
+	if (!apply_attitude_setpoint_if_valid(attitude_setpoint)) {
+		invalidate_attitude_setpoint();
+	}
+}
+
+bool UserAttitudeControl::apply_attitude_setpoint_if_valid(
+	const vehicle_attitude_setpoint_s &attitude_setpoint)
+{
+	if (attitude_setpoint.timestamp == 0) {
+		return false;
+	}
+
+	float quaternion_norm_squared = 0.f;
+
+	for (int i = 0; i < 4; i++) {
+		if (!PX4_ISFINITE(attitude_setpoint.q_d[i])) {
+			return false;
+		}
+
+		quaternion_norm_squared += attitude_setpoint.q_d[i] * attitude_setpoint.q_d[i];
+	}
+
+	constexpr float kMinQuaternionNormSquared = 1.0e-6f;
+
+	if (!PX4_ISFINITE(quaternion_norm_squared)
+	    || quaternion_norm_squared < kMinQuaternionNormSquared) {
+		return false;
+	}
+
+	for (int i = 0; i < 3; i++) {
+		if (!PX4_ISFINITE(attitude_setpoint.thrust_body[i])) {
+			return false;
+		}
+	}
+
+	Quatf attitude_setpoint_q(attitude_setpoint.q_d);
+	attitude_setpoint_q.normalize();
+
+	for (int i = 0; i < 4; i++) {
+		if (!PX4_ISFINITE(attitude_setpoint_q(i))) {
+			return false;
+		}
+	}
+
+	// Update the attitude target and thrust together so an invalid message cannot
+	// create an old-attitude/new-thrust or new-attitude/old-thrust combination.
+	_attitude_control.setAttitudeSetpoint(
+		attitude_setpoint_q,
+		attitude_setpoint.yaw_sp_move_rate);
+
 	_thrust_setpoint_body = Vector3f(attitude_setpoint.thrust_body);
 	_last_attitude_setpoint = attitude_setpoint.timestamp;
+	_attitude_setpoint_valid = true;
+
+	return true;
+}
+
+void UserAttitudeControl::invalidate_attitude_setpoint()
+{
+	_attitude_setpoint_valid = false;
+	_thrust_setpoint_body.zero();
+	_torque.zero();
+
+	_attitude_control.resetESO();
+	_attitude_control.resetPresetTraj();
 }
 
 void UserAttitudeControl::update_vehicle_status()
@@ -215,9 +285,8 @@ void UserAttitudeControl::update_landed_state()
 	}
 }
 
-void UserAttitudeControl::publish_torque_thrust_setpoint(const vehicle_attitude_s &v_att)
+void UserAttitudeControl::publish_torque_thrust_setpoint(hrt_abstime timestamp_sample)
 {
-	(void)v_att;
 
 	if (_actuators_0_circuit_breaker_enabled) {
 		return;
@@ -271,12 +340,14 @@ void UserAttitudeControl::publish_torque_thrust_setpoint(const vehicle_attitude_
 	torque_sp.xyz[0] = torque_normalized(0);
 	torque_sp.xyz[1] = torque_normalized(1);
 	torque_sp.xyz[2] = torque_normalized(2);
+	torque_sp.timestamp_sample = timestamp_sample;
 	torque_sp.timestamp = now;
 
 	vehicle_thrust_setpoint_s thrust_sp{};
 	thrust_sp.xyz[0] = 0.f;
 	thrust_sp.xyz[1] = 0.f;
 	thrust_sp.xyz[2] = -_thrust_sp;
+	thrust_sp.timestamp_sample = timestamp_sample;
 	thrust_sp.timestamp = now;
 
 	_vehicle_torque_setpoint_pub.publish(torque_sp);
@@ -286,7 +357,7 @@ void UserAttitudeControl::publish_torque_thrust_setpoint(const vehicle_attitude_
 void UserAttitudeControl::Run()
 {
 	if (should_exit()) {
-		_vehicle_attitude_sub.unregisterCallback();
+		_vehicle_angular_velocity_sub.unregisterCallback();
 		exit_and_cleanup(desc);
 		return;
 	}
@@ -309,7 +380,7 @@ void UserAttitudeControl::Run()
 
 	float dt = 0.004f;
 
-	if (_last_run != 0) {
+	if (_last_run != 0 && angular_velocity.timestamp_sample > _last_run) {
 		dt = math::constrain(
 			(angular_velocity.timestamp_sample - _last_run) * 1e-6f,
 			0.0002f,
@@ -335,7 +406,7 @@ void UserAttitudeControl::Run()
 	update_vehicle_status();
 	update_landed_state();
 
-	// 机械臂质心更新
+	// Center of mass update for the robotic arm
 	ArmJointSubscriber::instance()->update();
 
 	const bool is_hovering = _vehicle_type_rotary_wing && !_vtol_in_transition_mode;
@@ -346,17 +417,15 @@ void UserAttitudeControl::Run()
 		_man_x_input_filter.reset(0.f);
 		_man_y_input_filter.reset(0.f);
 		_reset_yaw_sp = true;
-		_thrust_setpoint_body.zero();
-		_torque.zero();
-
-		_attitude_control.resetESO();
-		_attitude_control.resetPresetTraj();
+		invalidate_attitude_setpoint();
 
 		if (_vehicle_control_mode.flag_control_termination_enabled) {
 			vehicle_torque_setpoint_s torque_sp{};
 			vehicle_thrust_setpoint_s thrust_sp{};
 
 			const hrt_abstime now = hrt_absolute_time();
+			torque_sp.timestamp_sample = angular_velocity.timestamp_sample;
+			thrust_sp.timestamp_sample = angular_velocity.timestamp_sample;
 			torque_sp.timestamp = now;
 			thrust_sp.timestamp = now;
 
@@ -389,17 +458,29 @@ void UserAttitudeControl::Run()
 		if (_vehicle_attitude_setpoint_sub.updated()) {
 			vehicle_attitude_setpoint_s vehicle_attitude_setpoint{};
 
-			if (_vehicle_attitude_setpoint_sub.copy(&vehicle_attitude_setpoint)
-			    && vehicle_attitude_setpoint.timestamp > _last_attitude_setpoint) {
+			if (_vehicle_attitude_setpoint_sub.copy(&vehicle_attitude_setpoint)) {
+				if (vehicle_attitude_setpoint.timestamp > _last_attitude_setpoint) {
+					if (!apply_attitude_setpoint_if_valid(vehicle_attitude_setpoint)) {
+						invalidate_attitude_setpoint();
+					}
 
-				_attitude_control.setAttitudeSetpoint(
-					Quatf(vehicle_attitude_setpoint.q_d),
-					vehicle_attitude_setpoint.yaw_sp_move_rate);
-
-				_thrust_setpoint_body = Vector3f(vehicle_attitude_setpoint.thrust_body);
-				_last_attitude_setpoint = vehicle_attitude_setpoint.timestamp;
+				} else if (vehicle_attitude_setpoint.timestamp == 0) {
+					// A newly received setpoint without a valid timestamp must not leave
+					// the controller running on a previously accepted target.
+					invalidate_attitude_setpoint();
+				}
 			}
 		}
+	}
+
+	// Do not execute the attitude controller until one complete, valid setpoint
+	// has been accepted. Publish explicit zero outputs so no previous command remains active.
+	if (!_attitude_setpoint_valid) {
+		invalidate_attitude_setpoint();
+		_reset_yaw_sp = true;
+		publish_torque_thrust_setpoint(angular_velocity.timestamp_sample);
+		perf_end(_loop_perf);
+		return;
 	}
 
 	if (_quat_reset_counter != v_att.quat_reset_counter) {
@@ -410,7 +491,7 @@ void UserAttitudeControl::Run()
 			_man_yaw_sp = wrap_pi(_man_yaw_sp + delta_psi);
 		}
 
-		if (v_att.timestamp > _last_attitude_setpoint) {
+		if (_attitude_setpoint_valid && v_att.timestamp > _last_attitude_setpoint) {
 			_attitude_control.adaptAttitudeSetpoint(delta_q_reset);
 		}
 
@@ -427,7 +508,7 @@ void UserAttitudeControl::Run()
 	rate_ctrl_status.timestamp = hrt_absolute_time();
 	_controller_status_pub.publish(rate_ctrl_status);
 
-	publish_torque_thrust_setpoint(v_att);
+	publish_torque_thrust_setpoint(angular_velocity.timestamp_sample);
 
 	_reset_yaw_sp = !attitude_setpoint_generated || _landed;
 
