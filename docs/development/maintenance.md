@@ -36,9 +36,9 @@ The repository provides the following issue templates. Choose based on the type 
 
 | Template | Use Case | File |
 |----------|---------|------|
-| 🐛 Bug Report | Abnormal code or simulation behavior | `.github/ISSUE_TEMPLATE/bug_report.yml` |
-| 📑 Documentation Bug | Documentation errors or omissions | `.github/ISSUE_TEMPLATE/docs_bug_report.yml` |
-| 🚀 Feature Request | New feature suggestions | `.github/ISSUE_TEMPLATE/feature_request.yml` |
+| 🐛 Bug Report | Abnormal code or simulation behavior | `.github/issue_template/bug_report.yml` |
+| 📑 Documentation Bug | Documentation errors or omissions | `.github/issue_template/docs_bug_report.yml` |
+| 🚀 Feature Request | New feature suggestions | `.github/issue_template/feature_request.yml` |
 
 ### High-Quality Report Checklist
 

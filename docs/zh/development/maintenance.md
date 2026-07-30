@@ -34,9 +34,9 @@
 
 | 模板 | 适用场景 | 文件 |
 |------|---------|------|
-| 🐛 Bug Report | 代码或仿真行为异常 | `.github/ISSUE_TEMPLATE/bug_report.yml` |
-| 📑 Documentation Bug | 文档错误或缺失 | `.github/ISSUE_TEMPLATE/docs_bug_report.yml` |
-| 🚀 Feature Request | 新功能建议 | `.github/ISSUE_TEMPLATE/feature_request.yml` |
+| 🐛 Bug Report | 代码或仿真行为异常 | `.github/issue_template/bug_report.yml` |
+| 📑 Documentation Bug | 文档错误或缺失 | `.github/issue_template/docs_bug_report.yml` |
+| 🚀 Feature Request | 新功能建议 | `.github/issue_template/feature_request.yml` |
 
 ### 高质量报告 Checklist
 
