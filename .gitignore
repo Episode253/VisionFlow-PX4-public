@@ -153,3 +153,5 @@ TODO.md
 .playwright-mcp/*
 
 windshape_dev/yungu
+*.glb
+*.sdf

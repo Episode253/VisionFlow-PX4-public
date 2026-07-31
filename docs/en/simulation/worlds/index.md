@@ -1,6 +1,6 @@
 # 场景世界
 
-VisionFlow-PX4 提供 7 个 Gazebo 仿真场景，覆盖从室内实验室到户外海岸的多种环境。
+VisionFlow-PX4 提供 8 个 Gazebo 仿真场景，覆盖从室内实验室到户外海岸的多种环境。
 
 ## 场景列表
 
@@ -13,6 +13,7 @@ VisionFlow-PX4 提供 7 个 Gazebo 仿真场景，覆盖从室内实验室到户
 | `indoor_dining.sdf` | 室内餐厅环境 | 通用 |
 | `baylands_coast.sdf` | 湾区海岸户外环境 | 通用 |
 | `laboratory_landingbox_hitl.sdf` | 硬件在环版本 | q940_ti_hitl |
+| `yungu.sdf` | Yungu 环境（glb 视觉 + STL 碰撞体） | 通用 |
 
 ## 实验室场景结构
 
@@ -50,6 +51,7 @@ graph TB
 ```bash
 bash docker/run_gz_sitl.sh --profile "Entity 1"  # laboratory_landingbox
 bash docker/run_gz_sitl.sh --profile "Entity 4"  # laboratory_no_landingbox
+bash docker/run_gz_sitl.sh --profile "Entity 8"  # yungu
 ```
 
 ### 通过本地命令
@@ -57,6 +59,11 @@ bash docker/run_gz_sitl.sh --profile "Entity 4"  # laboratory_no_landingbox
 ```bash
 PX4_GZ_WORLD=laboratory_landingbox \
   make px4_sitl gz_q940_ti_gripper4_laboratory_landingbox \
+  EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"
+
+# Yungu 环境
+PX4_GZ_WORLD=yungu \
+  make px4_sitl gz_q940_ti_gripper4_yungu \
   EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"
 ```
 
