@@ -6,4 +6,5 @@ px4_add_romfs_files(
 	4005_gz_swan_gamma_v1
 	4006_gz_q940_ti_gripper4
 	4007_gz_swan_gamma_v2
+	4008_gz_x500_lidar
 )

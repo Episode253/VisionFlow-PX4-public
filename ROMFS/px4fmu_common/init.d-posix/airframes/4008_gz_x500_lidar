@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+# @name Gazebo x500 lidar
+#
+# @type Quadrotor
+#
+
+PX4_SIM_MODEL=${PX4_SIM_MODEL:=x500_lidar}
+
+. ${R}etc/init.d-posix/airframes/4001_gz_x500
+
+# X500 with a roof-mounted solid-state 3D LiDAR and an odometry publisher.
+# Model SDF: Tools/simulation/gz/models/x500_lidar/model.sdf
+# The LiDAR cloud is published by the model on /x500_lidar/scan.
