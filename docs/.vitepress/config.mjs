@@ -47,6 +47,7 @@ const config = defineConfig({
           { text: "Home", link: "/" },
           { text: "Getting Started", link: "/getting-started/" },
           { text: "Architecture", link: "/architecture/overview" },
+          { text: "Tools", link: "/tools/" },
           {
             text: "Related",
             items: [
@@ -90,6 +91,7 @@ const config = defineConfig({
           { text: "首页", link: "/zh/" },
           { text: "快速开始", link: "/zh/getting-started/" },
           { text: "系统架构", link: "/zh/architecture/overview" },
+          { text: "工具链", link: "/zh/tools/" },
           ...navbarData.nav,
         ],
         outline: { level: [2, 3], label: "本页目录" },
