@@ -1,27 +1,65 @@
 FROM osrf/ros:humble-desktop-full
 
-# Override BuildKit's predefined proxy args to prevent routing through unavailable proxy.
-# Setting them empty disables proxy for all RUN commands in this build.
+# Override BuildKit's predefined proxy args to prevent routing through
+# unavailable proxies during image build.
 ARG http_proxy=
+ARG HTTP_PROXY=
 ARG https_proxy=
+ARG HTTPS_PROXY=
 ARG ftp_proxy=
 ARG FTP_PROXY=
+ARG all_proxy=
+ARG ALL_PROXY=
 ARG no_proxy=
 ARG NO_PROXY=
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBCONF_NOWARNINGS=yes
 ENV ROS_DISTRO=humble
 ENV AMENT_TRACE_SETUP_FILES=
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
-# Replace Ubuntu sources with Aliyun mirror for better CN accessibility.
-# Keeps working for international users (modern apt will fallback if needed).
-RUN sed -i 's|http://archive.ubuntu.com|http://mirrors.aliyun.com|g' /etc/apt/sources.list && \
-    sed -i 's|http://security.ubuntu.com|http://mirrors.aliyun.com|g' /etc/apt/sources.list
+# Use a PEP 503-compatible domestic PyPI mirror.
+# This avoids the malformed-HTML deprecation warning emitted by the Aliyun
+# pyside6-addons index while retaining good connectivity in mainland China.
+ARG PYPI_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Replace ROS2 sources with official CN mirror
-RUN sed -i 's|packages.ros.org|mirrors.aliyun.com/ros2|g' /etc/apt/sources.list.d/ros2*.list 2>/dev/null || true
+# Configure APT network reliability for all later apt-get operations.
+# Retries transient failures and prevents an unreachable mirror from hanging forever.
+RUN printf '%s\n' \
+        'Acquire::Retries "5";' \
+        'Acquire::http::Timeout "30";' \
+        'Acquire::https::Timeout "30";' \
+        > /etc/apt/apt.conf.d/80-visionflow-network
+
+# Replace Ubuntu and ROS 2 sources with Aliyun mirrors.
+# The ROS base image may expose ros2.sources as a symbolic link, so
+# --follow-symlinks is required; find -type f alone would skip that entry.
+RUN set -eu; \
+    for source_file in \
+        /etc/apt/sources.list \
+        /etc/apt/sources.list.d/*.list \
+        /etc/apt/sources.list.d/*.sources; \
+    do \
+        [ -e "${source_file}" ] || continue; \
+        sed --follow-symlinks -i \
+            -e 's|http://archive.ubuntu.com/ubuntu|http://mirrors.aliyun.com/ubuntu|g' \
+            -e 's|https://archive.ubuntu.com/ubuntu|https://mirrors.aliyun.com/ubuntu|g' \
+            -e 's|http://security.ubuntu.com/ubuntu|http://mirrors.aliyun.com/ubuntu|g' \
+            -e 's|https://security.ubuntu.com/ubuntu|https://mirrors.aliyun.com/ubuntu|g' \
+            -e 's|http://packages.ros.org/ros2/ubuntu|https://mirrors.aliyun.com/ros2/ubuntu|g' \
+            -e 's|https://packages.ros.org/ros2/ubuntu|https://mirrors.aliyun.com/ros2/ubuntu|g' \
+            "${source_file}"; \
+    done; \
+    echo "[APT] Active Aliyun source entries:"; \
+    grep -RnsE 'mirrors\.aliyun\.com/(ubuntu|ros2/ubuntu)' /etc/apt 2>/dev/null || true; \
+    if grep -RqsE 'https?://packages\.ros\.org/ros2/ubuntu' /etc/apt 2>/dev/null; then \
+        echo "[ERROR] ROS 2 source replacement failed: packages.ros.org is still present." >&2; \
+        grep -RnsE 'packages\.ros\.org/ros2/ubuntu' /etc/apt 2>/dev/null || true; \
+        exit 1; \
+    fi
 
 # Enable Ubuntu universe repository, needed by some PX4/NuttX packages.
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -37,9 +75,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # PX4 general dependencies, aligned with Tools/setup/ubuntu.sh.
-# Note: CI-only tools (astyle/cppcheck/lcov/shellcheck) are intentionally
-# omitted here; they are used by `make check_format`/coverage in CI, never by
-# a firmware or SITL build. Re-add them if you run those targets locally.
+# CI-only tools such as astyle, cppcheck, lcov and shellcheck are omitted.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash-completion \
     build-essential \
@@ -118,7 +154,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Architecture-specific NuttX toolchain dependencies.
 ARG INSTALL_XTENSA_ESP=0
-RUN set -eux; \
+
+RUN set -eu; \
     ARCH="$(uname -m)"; \
     if [ "${ARCH}" = "x86_64" ]; then \
         apt-get update; \
@@ -129,14 +166,22 @@ RUN set -eux; \
         if apt-cache show esptool >/dev/null 2>&1; then \
             apt-get install -y --no-install-recommends esptool; \
         else \
-            python3 -m pip install --no-cache-dir esptool; \
+            python3 -m pip install \
+                --index-url "${PYPI_INDEX_URL}" \
+                --no-cache-dir \
+                esptool; \
         fi; \
         rm -rf /var/lib/apt/lists/*; \
         if [ "${INSTALL_XTENSA_ESP}" = "1" ]; then \
             XTENSA_FILE_NAME="xtensa-esp-elf-13.2.0_20240530-x86_64-linux-gnu.tar.xz"; \
-            wget --progress=dot:giga --tries=3 --timeout=30 -P /tmp "https://github.com/espressif/crosstool-NG/releases/download/esp-13.2.0_20240530/${XTENSA_FILE_NAME}"; \
+            wget \
+                --progress=dot:giga \
+                --tries=3 \
+                --timeout=30 \
+                -P /tmp \
+                "https://github.com/espressif/crosstool-NG/releases/download/esp-13.2.0_20240530/${XTENSA_FILE_NAME}"; \
             tar -xf "/tmp/${XTENSA_FILE_NAME}" -C /opt; \
-            rm "/tmp/${XTENSA_FILE_NAME}"; \
+            rm -f "/tmp/${XTENSA_FILE_NAME}"; \
         else \
             echo "Skipping optional Xtensa ESP compiler download. Set INSTALL_XTENSA_ESP=1 if needed."; \
         fi; \
@@ -146,62 +191,110 @@ RUN set -eux; \
             g++-aarch64-linux-gnu \
             g++-arm-linux-gnueabihf; \
         rm -rf /var/lib/apt/lists/*; \
+    else \
+        echo "No additional architecture-specific compiler packages required for ${ARCH}."; \
     fi
 
 ENV PATH="/opt/xtensa-esp-elf/bin:${PATH}"
 
-# Configure Gazebo repository.
-# Add source list entry with allow-insecure=yes to skip signature verification if key fetch fails.
-RUN (curl -sSL https://packages.osrfoundation.org/gazebo.gpg -o /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg 2>/dev/null) || true && \
-    echo "deb [arch=$(dpkg --print-architecture) allow-insecure=yes signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" \
-    > /etc/apt/sources.list.d/gazebo-stable.list
+# Configure the official Gazebo repository with strict signature verification.
+#
+# Download to a temporary file first, verify that it is a valid OpenPGP key,
+# and only then install it atomically. Any download or validation failure stops
+# the build instead of silently continuing with an unsigned repository.
+RUN set -eu; \
+    install -d -m 0755 /usr/share/keyrings; \
+    rm -f \
+        /tmp/gazebo-archive-keyring.gpg \
+        /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg \
+        /etc/apt/sources.list.d/gazebo-stable.list; \
+    curl -fL \
+        --retry 5 \
+        --retry-delay 3 \
+        --connect-timeout 30 \
+        --max-time 180 \
+        https://packages.osrfoundation.org/gazebo.gpg \
+        -o /tmp/gazebo-archive-keyring.gpg; \
+    test -s /tmp/gazebo-archive-keyring.gpg; \
+    gpg --batch --show-keys /tmp/gazebo-archive-keyring.gpg >/dev/null 2>&1; \
+    install -m 0644 \
+        /tmp/gazebo-archive-keyring.gpg \
+        /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg; \
+    rm -f /tmp/gazebo-archive-keyring.gpg; \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] https://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" \
+        > /etc/apt/sources.list.d/gazebo-stable.list; \
+    grep -F "signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg" \
+        /etc/apt/sources.list.d/gazebo-stable.list
 
-# PX4 simulation dependencies, aligned with official ubuntu.sh.
-RUN apt-get update && apt-get install -y --allow-unauthenticated --no-install-recommends \
-    bc \
-    dmidecode \
-    gz-harmonic \
-    libeigen3-dev \
-    libgstreamer-plugins-base1.0-dev \
-    libgstreamer-plugins-bad1.0-dev \
-    libgstreamer1.0-dev \
-    libgstrtspserver-1.0-dev \
-    libimage-exiftool-perl \
-    libopencv-dev \
-    libprotobuf-dev \
-    libtinyxml2-dev \
-    libasio-dev \
-    libbullet-dev \
-    libgl1-mesa-dri \
-    libglx-mesa0 \
-    libglu1-mesa \
-    mesa-utils \
-    x11-apps \
-    dbus-x11 \
-    protobuf-compiler \
-    geographiclib-tools \
-    gstreamer1.0-tools \
-    gstreamer1.0-plugins-base \
-    gstreamer1.0-plugins-good \
-    gstreamer1.0-plugins-bad \
-    gstreamer1.0-plugins-ugly \
-    gstreamer1.0-libav \
-    ros-humble-rosbridge-server \
-    ros-humble-rosbridge-suite \
-    ros-humble-std-msgs \
-    ros-humble-sensor-msgs \
-    ros-humble-trajectory-msgs \
-    ros-humble-joint-state-publisher \
-    ros-humble-robot-state-publisher \
-    ros-humble-kdl-parser \
-    liborocos-kdl-dev \
-    iproute2 \
-    net-tools \
-    lsof \
-    procps \
-    xdg-utils \
-    tmux \
-    && if [ "$(lsb_release -rs)" = "24.04" ]; then apt-get install -y --allow-unauthenticated --no-install-recommends cppzmq-dev; fi \
+# PX4 simulation, Gazebo Harmonic, ROS-Gazebo and MAVROS dependencies.
+#
+# ROS 2 Humble normally uses ros_gz packages paired with Gazebo Fortress.
+# The ros-humble-ros-gzharmonic package is the separate Humble/Harmonic
+# integration package and conflicts with the default ros-humble-ros-gz
+# metapackages, so the default packages are removed first.
+RUN apt-get update && \
+    apt-get purge -y --auto-remove \
+        ros-humble-ros-gz \
+        ros-humble-ros-gz-sim \
+    && apt-get install -y \
+        --no-install-recommends \
+        bc \
+        dmidecode \
+        gz-harmonic \
+        libeigen3-dev \
+        libgstreamer-plugins-base1.0-dev \
+        libgstreamer-plugins-bad1.0-dev \
+        libgstreamer1.0-dev \
+        libgstrtspserver-1.0-dev \
+        libimage-exiftool-perl \
+        libopencv-dev \
+        libprotobuf-dev \
+        libtinyxml2-dev \
+        libasio-dev \
+        libbullet-dev \
+        libgl1-mesa-dri \
+        libglx-mesa0 \
+        libglu1-mesa \
+        mesa-utils \
+        x11-apps \
+        dbus-x11 \
+        protobuf-compiler \
+        geographiclib-tools \
+        gstreamer1.0-tools \
+        gstreamer1.0-plugins-base \
+        gstreamer1.0-plugins-good \
+        gstreamer1.0-plugins-bad \
+        gstreamer1.0-plugins-ugly \
+        gstreamer1.0-libav \
+        ros-humble-ros-gzharmonic \
+        ros-humble-rosbridge-server \
+        ros-humble-rosbridge-suite \
+        ros-humble-std-msgs \
+        ros-humble-sensor-msgs \
+        ros-humble-trajectory-msgs \
+        ros-humble-joint-state-publisher \
+        ros-humble-robot-state-publisher \
+        ros-humble-kdl-parser \
+        liborocos-kdl-dev \
+        ros-humble-mavlink \
+        ros-humble-diagnostic-updater \
+        ros-humble-tf2-eigen \
+        ros-humble-angles \
+        ros-humble-eigen-stl-containers \
+        ros-humble-eigen3-cmake-module \
+        ros-humble-geographic-msgs \
+        libgeographic-dev \
+        iproute2 \
+        net-tools \
+        lsof \
+        procps \
+        xdg-utils \
+        tmux \
+    && if [ "$(lsb_release -rs)" = "24.04" ]; then \
+        apt-get install -y \
+            --no-install-recommends \
+            cppzmq-dev; \
+    fi \
     && rm -rf /var/lib/apt/lists/*
 
 # Embedded Gamma Arm Web Control GUI dependencies.
@@ -243,52 +336,123 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # PX4 Python dependencies.
 COPY Tools/setup/requirements.txt /tmp/px4-requirements.txt
 
-# Use Aliyun PyPI mirror for faster Python package downloads in CN
-RUN python3 -m pip install -i https://mirrors.aliyun.com/pypi/simple/ --no-cache-dir -r /tmp/px4-requirements.txt && \
-    python3 -m pip install -i https://mirrors.aliyun.com/pypi/simple/ --no-cache-dir \
+RUN python3 -m venv --system-site-packages /opt/px4_venv \
+    && printf '%s\n' \
+        'setuptools<80' \
+        'numpy<2' \
+        > /tmp/px4-python-constraints.txt \
+    && /opt/px4_venv/bin/python -m pip install \
+        --index-url "${PYPI_INDEX_URL}" \
+        --no-cache-dir \
+        --upgrade \
+        pip \
+        'setuptools<80' \
+        wheel \
+    && /opt/px4_venv/bin/python -m pip install \
+        --index-url "${PYPI_INDEX_URL}" \
+        --no-cache-dir \
+        --constraint /tmp/px4-python-constraints.txt \
+        --ignore-installed \
+        'sympy>=1.10.1' \
+    && /opt/px4_venv/bin/python -m pip install \
+        --index-url "${PYPI_INDEX_URL}" \
+        --no-cache-dir \
+        --constraint /tmp/px4-python-constraints.txt \
+        -r /tmp/px4-requirements.txt \
+    && /opt/px4_venv/bin/python -m pip install \
+        --index-url "${PYPI_INDEX_URL}" \
+        --no-cache-dir \
+        --constraint /tmp/px4-python-constraints.txt \
+        --only-binary=:all: \
+        PySide6 \
+    && /opt/px4_venv/bin/python -m pip install \
+        --index-url "${PYPI_INDEX_URL}" \
+        --no-cache-dir \
+        --constraint /tmp/px4-python-constraints.txt \
         MAVProxy \
         pymavlink \
-        PySide6
+        transforms3d \
+    && rm -f \
+        /tmp/px4-requirements.txt \
+        /tmp/px4-python-constraints.txt
 
 # Flight Review Python dependencies.
-COPY windshape_dev/flight_review/app/requirements.txt /tmp/flight_review_requirements.txt
+COPY windshape_dev/flight_review/app/requirements.txt \
+    /tmp/flight_review_requirements.txt
 
 RUN python3 -m venv /opt/flight_review_venv && \
-    /opt/flight_review_venv/bin/python -m pip install -i https://mirrors.aliyun.com/pypi/simple/ --no-cache-dir --upgrade pip setuptools wheel && \
-    /opt/flight_review_venv/bin/pip install -i https://mirrors.aliyun.com/pypi/simple/ --no-cache-dir -r /tmp/flight_review_requirements.txt
+    /opt/flight_review_venv/bin/python -m pip install \
+        --index-url "${PYPI_INDEX_URL}" \
+        --no-cache-dir \
+        --upgrade \
+        pip \
+        setuptools \
+        wheel && \
+    /opt/flight_review_venv/bin/pip install \
+        --index-url "${PYPI_INDEX_URL}" \
+        --no-cache-dir \
+        -r /tmp/flight_review_requirements.txt && \
+    rm -f /tmp/flight_review_requirements.txt
 
 ENV FLIGHT_REVIEW_VENV=/opt/flight_review_venv
+ENV PX4_PYTHON_VENV=/opt/px4_venv
+ENV PATH="${PX4_PYTHON_VENV}/bin:${PATH}"
 
 ARG USERNAME=px4
 ARG USER_UID=1000
 ARG USER_GID=1000
 
-RUN groupadd --gid ${USER_GID} ${USERNAME} || true && \
-    useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME} -s /bin/bash || true && \
-    echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} && \
-    chmod 0440 /etc/sudoers.d/${USERNAME}
+RUN groupadd --gid "${USER_GID}" "${USERNAME}" || true && \
+    useradd \
+        --uid "${USER_UID}" \
+        --gid "${USER_GID}" \
+        -m \
+        "${USERNAME}" \
+        -s /bin/bash || true && \
+    echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" \
+        > "/etc/sudoers.d/${USERNAME}" && \
+    chmod 0440 "/etc/sudoers.d/${USERNAME}"
 
 RUN mkdir -p \
-    /workspace \
-    /home/${USERNAME}/.ccache \
-    /home/${USERNAME}/.gz \
-    /home/${USERNAME}/.gz/sim \
-    /home/${USERNAME}/.gz/sim/8 && \
-    chown -R ${USER_UID}:${USER_GID} /workspace /home/${USERNAME} /opt/flight_review_venv
+        /workspace \
+        "/home/${USERNAME}/.ccache" \
+        "/home/${USERNAME}/.gz" \
+        "/home/${USERNAME}/.gz/sim" \
+        "/home/${USERNAME}/.gz/sim/8" && \
+    chown -R \
+        "${USER_UID}:${USER_GID}" \
+        /workspace \
+        "/home/${USERNAME}" \
+        /opt/flight_review_venv \
+        /opt/px4_venv
 
-RUN usermod -aG dialout ${USERNAME} || true
+RUN usermod -aG dialout "${USERNAME}" || true
 
 COPY docker/entrypoint.sh /entrypoint.sh
+
 RUN chmod +x /entrypoint.sh
 
+# Install GeographicLib datasets required by MAVROS.
+#
+# This must run before USER ${USERNAME}, because the upstream MAVROS
+# installation script requires root privileges and writes data under
+# /usr/share/GeographicLib.
+COPY thirdparty/mavros-humble/mavros/scripts/install_geographiclib_datasets.sh \
+    /tmp/install_geographiclib_datasets.sh
+
+RUN chmod +x /tmp/install_geographiclib_datasets.sh && \
+    /tmp/install_geographiclib_datasets.sh && \
+    rm -f /tmp/install_geographiclib_datasets.sh
+
 USER ${USERNAME}
+
 WORKDIR /workspace/VisionFlow-PX4
 
-ENV CCACHE_DIR=/home/${USERNAME}/.ccache
+ENV CCACHE_DIR="/home/${USERNAME}/.ccache"
 ENV QT_X11_NO_MITSHM=1
 ENV QTWEBENGINE_DISABLE_SANDBOX=1
 ENV QTWEBENGINE_CHROMIUM_FLAGS="--no-sandbox --disable-gpu --disable-dev-shm-usage"
-ENV XDG_RUNTIME_DIR=/tmp/runtime-${USERNAME}
+ENV XDG_RUNTIME_DIR="/tmp/runtime-${USERNAME}"
 ENV LIBGL_ALWAYS_SOFTWARE=0
 
 ENTRYPOINT ["/entrypoint.sh"]

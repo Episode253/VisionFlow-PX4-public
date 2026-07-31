@@ -21,6 +21,13 @@ source_ros_setup() {
 
 source_ros_setup /opt/ros/humble/setup.bash
 
+# Source PX4 and MAVROS workspaces if available.
+PX4_INSTALL="/workspace/VisionFlow-PX4/install/setup.bash"
+[ -f "${PX4_INSTALL}" ] && source_ros_setup "${PX4_INSTALL}"
+
+MAVROS_INSTALL="/workspace/VisionFlow-PX4/thirdparty/mavros-humble/install/setup.bash"
+[ -f "${MAVROS_INSTALL}" ] && source_ros_setup "${MAVROS_INSTALL}"
+
 export CCACHE_DIR="${CCACHE_DIR:-/home/px4/.ccache}"
 export QT_X11_NO_MITSHM="${QT_X11_NO_MITSHM:-1}"
 export QTWEBENGINE_DISABLE_SANDBOX="${QTWEBENGINE_DISABLE_SANDBOX:-1}"

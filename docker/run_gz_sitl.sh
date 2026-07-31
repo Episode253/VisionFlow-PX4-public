@@ -10,8 +10,15 @@ LIST_ONLY="false"
 CONTAINER_NAME="visionflow-px4-sitl"
 CONFIG_FILE="docker/gz_sitl_profiles.conf"
 CLEANED_UP="false"
+CLEANUP_ARMED="false"
 
 cleanup() {
+    # Read-only commands and failures before container replacement must not
+    # stop an already-running PX4/Gazebo container.
+    if [ "${CLEANUP_ARMED}" != "true" ]; then
+        return 0
+    fi
+
     if [ "${CLEANED_UP}" = "true" ]; then
         return 0
     fi
@@ -228,17 +235,63 @@ export USER_GID="$(id -g)"
 echo "[4/6] Allow Docker to access X11 display..."
 xhost +local:docker >/dev/null 2>&1 || true
 
+normalize_proxy_pair() {
+    local lower_name="$1"
+    local upper_name="$2"
+    local lower_value="${!lower_name:-}"
+    local upper_value="${!upper_name:-}"
+
+    if [ -n "${lower_value}" ] && [ -z "${upper_value}" ]; then
+        export "${upper_name}=${lower_value}"
+    elif [ -n "${upper_value}" ] && [ -z "${lower_value}" ]; then
+        export "${lower_name}=${upper_value}"
+    fi
+}
+
+mask_proxy_url() {
+    local value="$1"
+
+    if [ -z "${value}" ]; then
+        printf '%s' '<not set>'
+    elif [[ "${value}" =~ ^([^:]+://)([^/@]+)@(.*)$ ]]; then
+        printf '%s***@%s' "${BASH_REMATCH[1]}" "${BASH_REMATCH[3]}"
+    else
+        printf '%s' "${value}"
+    fi
+}
+
 if [ "${REBUILD}" = "true" ]; then
     echo "[5/6] Build docker image..."
-    # Use legacy builder to avoid BuildKit proxy routing issues.
-    # Explicitly unset proxy env vars so build doesn't try to route through unavailable proxy.
-    unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY ftp_proxy FTP_PROXY no_proxy NO_PROXY
-    DOCKER_BUILDKIT=0 docker compose -f docker/compose.yaml build
+
+    # Preserve host proxy settings. Compose forwards them as Docker build ARGs,
+    # while build.network=host makes host-local endpoints such as
+    # 127.0.0.1:12334 reachable from Dockerfile RUN commands.
+    normalize_proxy_pair http_proxy HTTP_PROXY
+    normalize_proxy_pair https_proxy HTTPS_PROXY
+    normalize_proxy_pair ftp_proxy FTP_PROXY
+    normalize_proxy_pair all_proxy ALL_PROXY
+    normalize_proxy_pair no_proxy NO_PROXY
+
+    echo "[build] http_proxy : $(mask_proxy_url "${http_proxy:-}")"
+    echo "[build] https_proxy: $(mask_proxy_url "${https_proxy:-}")"
+    echo "[build] all_proxy  : $(mask_proxy_url "${all_proxy:-}")"
+
+    # Keep the legacy builder for current project compatibility, but use plain,
+    # non-coloured progress output to avoid misleading red spinner text.
+    NO_COLOR=1 DOCKER_BUILDKIT=1 docker compose \
+        --progress plain \
+        -f docker/compose.yaml \
+        build px4-humble-gz
 else
     echo "[5/6] Skip docker build. Use '--build' if Dockerfile changed."
 fi
 
 echo "[cleanup] Remove old container if exists..."
+
+# From this point onward, this script invocation owns the SITL container
+# lifecycle. Earlier exits, --help, --list and image-build failures are safe.
+CLEANUP_ARMED="true"
+
 docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
 
 echo "[6/6] Run PX4 Gazebo SITL..."

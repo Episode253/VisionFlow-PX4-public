@@ -1,9 +1,0 @@
-# The Dockerfile only COPYs a few specific files.
-# Exclude everything else to keep build context minimal.
-*
-
-# Whitelist only what Dockerfile needs
-!Tools/setup/requirements.txt
-!windshape_dev/flight_review/app/requirements.txt
-!docker/entrypoint.sh
-!docker/Dockerfile.humble-gz
