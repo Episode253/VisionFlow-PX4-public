@@ -9,10 +9,8 @@ graph LR
     A["Host Machine"] --> B["Docker Container"]
     B --> C["PX4 SITL"]
     B --> D["Gazebo Simulator"]
-    B --> E["ROS 2 Bridge"]
-    B --> F["MAVLink Gateway"]
     C <--> D
-    D <--> E
+    C -.->|"gz_bridge module"| E["ROS 2 Topic Bridge"]
     E --> G["RViz / Other ROS Nodes"]
     C --> H["QGroundControl"]
 ```
@@ -25,13 +23,13 @@ graph LR
 bash docker/run_gz_sitl.sh --list
 ```
 
-### Launch Default Configuration (Entity 1)
+### Launch with Default Configuration (Entity 1)
 
 ```bash
-bash docker/run_gz_sitl.sh --profile "Entity 1"
+bash docker/run_gz_sitl.sh
 ```
 
-### Launch Specified Configuration
+### Launch with a Specified Configuration
 
 ```bash
 bash docker/run_gz_sitl.sh --profile "Entity 4"
@@ -62,9 +60,9 @@ bash docker/into_gz_sitl.sh
 ```
 
 After entering the container, you can:
-- Run ROS 2 nodes
-- Debug Gazebo plugins
-- Modify parameters and restart simulation
+- Launch custom ROS 2 nodes
+- Use the Gamma Arm Web Control panel (started automatically on entry)
+- Run other debugging or development commands
 
 ## Docker Architecture Details
 
@@ -76,30 +74,66 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.humble-gz
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              capabilities: [gpu]
+    image: visionflow-px4:humble-gz
+    container_name: visionflow-px4-sitl
+    working_dir: /workspace/VisionFlow-PX4
     volumes:
-      - ..:/workspace:rw
-      - ccache:/home/px4/.ccache
-      - gz_cache:/home/px4/.gz
-    shm_size: '2gb'
+      - ..:/workspace/VisionFlow-PX4:rw
+      - ./cache/ccache:/home/px4/.ccache:rw
+      - ./cache/gz:/home/px4/.gz:rw
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev/dri:/dev/dri
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - QTWEBENGINE_DISABLE_SANDBOX=1
+      - QTWEBENGINE_CHROMIUM_FLAGS=--no-sandbox --disable-gpu --disable-dev-shm-usage
+      - XDG_RUNTIME_DIR=/tmp/runtime-px4
+      - LIBGL_ALWAYS_SOFTWARE=0
+      - CCACHE_DIR=/home/px4/.ccache
+      - ROS_DISTRO=humble
+      - AMENT_TRACE_SETUP_FILES=
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    gpus: all
     privileged: true
     network_mode: host
+    ipc: host
+    shm_size: '2gb'
 ```
+
+### compose.yaml Configuration Reference
+
+| Configuration | Purpose |
+|---------------|---------|
+| `build.context` / `build.dockerfile` | Build context is the project root; uses `docker/Dockerfile.humble-gz` |
+| `image` | The resulting image name: `visionflow-px4:humble-gz` |
+| `container_name` | Fixed container name; `into_gz_sitl.sh` uses this to detect a running container |
+| `working_dir` | Working directory inside the container, mapped to the host codebase |
+| `environment.DISPLAY` | Forwards the host X11 display so Gazebo GUI renders on the host |
+| `environment.ROS_DISTRO` | Declares ROS 2 distribution as Humble; affects package lookup paths |
+| `environment.AMENT_TRACE_SETUP_FILES` | Cleared to prevent colcon install scripts from printing to the terminal |
+| `environment.QTWEBENGINE_*` | Disables Chromium sandbox and GPU acceleration to prevent QtWebEngine crashes without a GPU |
+| `environment.XDG_RUNTIME_DIR` | Provides a runtime directory for container processes, replacing the non-existent `/run/user/1000` |
+| `environment.LIBGL_ALWAYS_SOFTWARE` | Set to `0` to prefer hardware rendering over software fallback |
+| `environment.CCACHE_DIR` | Pins the ccache path to the container user's home, matching the volume mount |
+| `environment.NVIDIA_VISIBLE_DEVICES` | Tells NVIDIA Container Toolkit to expose all host GPUs to the container |
+| `environment.NVIDIA_DRIVER_CAPABILITIES` | Enables all NVIDIA driver capabilities (graphics, utility, compute) |
+| `gpus: all` | Passes through the entire host GPU to the container via `nvidia-container-toolkit` |
+| `privileged: true` | Runs the container in privileged mode, allowing direct control of Gazebo and hardware devices |
+| `network_mode: host` | Shares the host network namespace so QGroundControl can connect to MAVLink ports on `127.0.0.1` |
+| `ipc: host` | Shares the IPC namespace with the host, resolving ROS 2 shared-memory communication issues |
+| `shm_size: '2gb'` | Sets `/dev/shm` to 2 GB, preventing DDS shared-memory allocation failures for large messages (e.g. images) |
 
 ### Mount Volume Description
 
 | Mount Path | Type | Purpose |
 |---------|------|------|
-| `/workspace` (mapped from `..`) | Read-write (bidirectional) | Full codebase access |
-| `ccache` | Named volume | Compiler cache to speed up builds |
-| `gz_cache` | Named volume | Gazebo resource cache |
-| `/dev/dri` | Device | GPU passthrough |
-| `/tmp/.X11-unix` | Socket | X11 display |
+| `/workspace/VisionFlow-PX4` (mounted from host `..`) | Host directory (rw, bidirectional) | Full codebase access; changes inside container reflect on host immediately |
+| `docker/cache/ccache` → `/home/px4/.ccache` | Host directory | ccache compiler cache for faster repeated builds |
+| `docker/cache/gz` → `/home/px4/.gz` | Host directory | Gazebo model/material cache to avoid re-downloading |
+| `/tmp/.X11-unix` | Host socket | X11 display forwarding |
+| `/dev/dri` | Device | OpenGL / GPU passthrough |
 
 ## Troubleshooting
 
@@ -108,8 +142,8 @@ services:
 Use ccache to speed up subsequent builds:
 
 ```bash
-# Clear cache and rebuild
-docker volume rm visionflow-px4_ccache
+# Clear ccache and rebuild
+rm -rf docker/cache/ccache/*
 bash docker/run_gz_sitl.sh --build
 ```
 
@@ -130,11 +164,12 @@ sudo systemctl restart docker
 
 ### UCDR Header Stall
 
-You may encounter uORB ucdr header stalling during simulation startup. The system will automatically retry and recover. For manual intervention:
+You may encounter uORB ucdr header stalling during simulation startup. The system will automatically retry and recover. For manual intervention, clear the stale build cache:
 
 ```bash
-# Clear stale cache
-bash docker/run_gz_sitl.sh --build --clean
+# Clear stale PX4 SITL build cache and rebuild
+rm -rf build/docker/px4_sitl_default
+bash docker/run_gz_sitl.sh --build
 ```
 
 ### GUI Not Displaying

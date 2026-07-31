@@ -67,14 +67,90 @@ pip install \
 
 ## Docker Method (Recommended)
 
-For most users, the Docker method is recommended to get a complete environment:
+The Docker method is recommended for most users. It automatically handles all dependencies, eliminating the need to manually install ROS 2, Gazebo, or PX4 build tools.
+
+### Host Requirements
+
+| Component | Requirement |
+|------|------|
+| Docker | ≥ 20.10 |
+| Docker Compose | ≥ 2.0 (v2 plugin mode) |
+| NVIDIA Container Toolkit | Required for GPU acceleration (recommended) |
+
+### Install Docker
 
 ```bash
-# Build Docker image
+# Official installation script for Ubuntu 22.04
+curl -fsSL https://get.docker.com | sudo sh
+
+# Add current user to docker group (avoid sudo each time)
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+Verify installation:
+
+```bash
+docker info
+docker compose version
+```
+
+### Install NVIDIA Container Toolkit (GPU Acceleration)
+
+If your host has an NVIDIA GPU and you need GPU-accelerated Gazebo rendering, this component is required:
+
+```bash
+# Add NVIDIA Docker repository
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.repo \
+    | sudo tee /etc/yum.repos.d/nvidia-docker.repo
+
+# Install
+sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
+sudo systemctl restart docker
+
+# Verify
+docker run --rm --gpus all nvidia/cuda:12.2-base nvidia-smi
+```
+
+### X11 Display Permissions
+
+The Docker container needs access to the host X server to display the Gazebo GUI:
+
+```bash
+# Allow container access to X11 (temporary, lost after reboot)
+xhost +local:docker
+
+# Verify the setting
+xhost | grep docker
+# Should output: local:docker
+```
+
+> **Tip**: Add the above command to `~/.bashrc` for automatic execution on login.
+
+### Disk Space Estimation
+
+| Item | Size |
+|------|------|
+| Docker image | ~8 GB |
+| ccache compiler cache | Dynamic, default limit 20 GB |
+| Gazebo model cache | ~1-2 GB |
+| Build artifacts (`build/docker/`) | ~2-3 GB |
+| **Recommended free space** | **≥ 50 GB** |
+
+### First-Time Setup Flow
+
+```bash
+# 1. Build the Docker image (run once, or when Dockerfile changes)
 bash docker/run_gz_sitl.sh --build
 
-# Launch
+# 2. Launch simulation
 bash docker/run_gz_sitl.sh --profile "Entity 1"
+
+# 3. Enter the container for development and debugging
+bash docker/into_gz_sitl.sh
 ```
+
+The build process automatically syncs the host's `USER_UID` / `USER_GID` into the container, ensuring files created inside the container have the correct ownership on the host — avoiding permission issues entirely.
 
 The Docker image comes with all necessary dependencies pre-installed, including ROS 2 Humble, Gazebo Harmonic, PX4 build tools, and custom plugins.
