@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='utf-8'?>
+<sdf version="1.9">
+  <world name="yungu">
+    <physics type="ode">
+      <ode>
+        <solver>
+          <type>quick</type>
+          <iters>10</iters>
+          <sor>1.3</sor>
+          <use_dynamic_moi_rescaling>0</use_dynamic_moi_rescaling>
+        </solver>
+        <constraints>
+          <cfm>0</cfm>
+          <erp>0.2</erp>
+          <contact_max_correcting_vel>100</contact_max_correcting_vel>
+          <contact_surface_layer>0.001</contact_surface_layer>
+        </constraints>
+      </ode>
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>250</real_time_update_rate>
+    </physics>
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type="adiabatic" />
+    <scene>
+      <grid>false</grid>
+      <ambient>0.58 0.58 0.56 1</ambient>
+      <background>0.78 0.80 0.82 1</background>
+      <shadows>true</shadows>
+    </scene>
+
+    <!-- Ground plane so the vehicle can take off and land -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>500 500</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>50</mu2>
+              </ode>
+              <torsional>
+                <ode />
+              </torsional>
+            </friction>
+            <contact>
+              <ode />
+            </contact>
+            <bounce />
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>500 500</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.74 0.74 0.70 1</ambient>
+            <diffuse>0.74 0.74 0.70 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+          <cast_shadows>true</cast_shadows>
+        </visual>
+        <pose>0 0 0 0 0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
+      <pose>0 0 0 0 0 0</pose>
+      <self_collide>false</self_collide>
+    </model>
+
+    <!-- The yungu environment model (visual + collision mesh) -->
+    <model name="yungu">
+      <static>true</static>
+      <link name="link">
+        <!-- 视觉部分 (引用视觉模型) -->
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>yungu.glb</uri>
+            </mesh>
+          </geometry>
+        </visual>
+
+        <!-- 碰撞部分 (引用 STL 碰撞体) -->
+        <collision name="collision">
+          <geometry>
+            <mesh>
+              <!-- 路径指向 meshes 目录下的 STL 文件 -->
+              <uri>yungu_collider.stl</uri>
+            </mesh>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+    <light type="directional" name="sun">
+      <!-- 光源在世界中的位姿 -->
+      <pose>0 0 100 0 0 0</pose>
+      <!-- 是否投射阴影 -->
+      <cast_shadows>true</cast_shadows>
+      <!-- 漫射光颜色 (RGBA)，其中数值范围 0~1 -->
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <!-- 镜面光颜色 -->
+      <specular>0.2 0.2 0.2 1</specular>
+      <!-- 光照衰减属性 -->
+      <attenuation>
+        <range>1000</range>   <!-- 光照范围 -->
+        <constant>0.9</constant> <!-- 常数衰减因子 -->
+        <linear>0.01</linear> <!-- 线性衰减因子 -->
+        <quadratic>0.001</quadratic> <!-- 二次衰减因子 -->
+      </attenuation>
+      <!-- 光照方向 (仅对定向光和聚光灯有效) -->
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>30.334034</latitude_deg>
+      <longitude_deg>120.036295</longitude_deg>
+      <elevation>0</elevation>
+    </spherical_coordinates>
+  </world>
+</sdf>

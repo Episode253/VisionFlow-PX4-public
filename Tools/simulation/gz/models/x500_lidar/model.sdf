@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version="1.9">
+  <model name="x500_lidar">
+    <include merge="true">
+      <uri>model://x500</uri>
+    </include>
+
+    <!-- A roof-mounted solid-state LiDAR.  240 x 8 x 5 Hz keeps Gazebo
+         responsive under WSL while still providing a 3D obstacle cloud. -->
+    <link name="lidar_link">
+      <pose relative_to="base_link">0 0 0.16 0 0 0</pose>
+      <inertial>
+        <mass>0.265</mass>
+        <inertia>
+          <ixx>0.0002</ixx><iyy>0.0002</iyy><izz>0.0002</izz>
+        </inertia>
+      </inertial>
+      <visual name="housing">
+        <geometry><box><size>0.065 0.065 0.060</size></box></geometry>
+        <material><diffuse>0.08 0.08 0.08 1</diffuse></material>
+      </visual>
+      <collision name="housing_collision">
+        <geometry><box><size>0.065 0.065 0.060</size></box></geometry>
+      </collision>
+      <sensor name="lidar_3d" type="gpu_lidar">
+        <always_on>1</always_on>
+        <visualize>false</visualize>
+        <update_rate>5</update_rate>
+        <topic>/x500_lidar/scan</topic>
+        <gz_frame_id>lidar_link</gz_frame_id>
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>240</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.141593</min_angle>
+              <max_angle>3.141593</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>8</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.436332</min_angle>
+              <max_angle>0.436332</max_angle>
+            </vertical>
+          </scan>
+          <range><min>0.40</min><max>35.0</max><resolution>0.02</resolution></range>
+        </lidar>
+      </sensor>
+    </link>
+
+    <joint name="base_lidar_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>lidar_link</child>
+    </joint>
+
+    <plugin filename="gz-sim8-odometry-publisher-system"
+            name="gz::sim::systems::OdometryPublisher">
+      <odom_publish_frequency>30</odom_publish_frequency>
+      <odom_topic>odometry</odom_topic>
+      <robot_base_frame>base_link</robot_base_frame>
+      <odom_frame>world</odom_frame>
+      <dimensions>3</dimensions>
+    </plugin>
+  </model>
+</sdf>
