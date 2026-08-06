@@ -25,19 +25,19 @@
       <sensor name="lidar_3d" type="gpu_lidar">
         <always_on>1</always_on>
         <visualize>false</visualize>
-        <update_rate>5</update_rate>
+        <update_rate>10</update_rate>
         <topic>/x500_lidar/scan</topic>
         <gz_frame_id>lidar_link</gz_frame_id>
         <lidar>
           <scan>
             <horizontal>
-              <samples>240</samples>
+              <samples>720</samples>
               <resolution>1</resolution>
               <min_angle>-3.141593</min_angle>
               <max_angle>3.141593</max_angle>
             </horizontal>
             <vertical>
-              <samples>8</samples>
+              <samples>16</samples>
               <resolution>1</resolution>
               <min_angle>-0.436332</min_angle>
               <max_angle>0.436332</max_angle>
