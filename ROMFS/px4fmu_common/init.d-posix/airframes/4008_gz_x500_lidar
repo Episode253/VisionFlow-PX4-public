@@ -15,6 +15,17 @@ param set-default NAV_RCL_ACT 0
 param set-default NAV_DLL_ACT 0
 param set-default COM_ARM_WO_GPS 1
 
+# SITL: ignore power/health preflight so arming is not denied.
+param set-default COM_POWER_OVERRIDE 1
+
 # X500 with a roof-mounted solid-state 3D LiDAR and an odometry publisher.
 # Model SDF: Tools/simulation/gz/models/x500_lidar/model.sdf
 # The LiDAR cloud is published by the model on /x500_lidar/scan.
+
+# External vision (FAST-LIO) fusion for EKF2.
+# bit0=HPOS, bit1=VPOS, bit2=VEL, bit3=YAW → 15 = all enabled
+param set-default EKF2_EV_CTRL 15
+param set-default EKF2_EV_DELAY 5
+param set-default EKF2_EVP_NOISE 0.1
+param set-default EKF2_EVV_NOISE 0.1
+param set-default EKF2_EVA_NOISE 0.05
