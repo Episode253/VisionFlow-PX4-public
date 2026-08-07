@@ -1,12 +1,12 @@
-# 添加模块指南
+# Adding Modules Guide
 
-本页提供向 VisionFlow-PX4 添加新 PX4 模块的完整开发指南，包括模块结构规范、CMakeLists.txt 配置、uORB 消息定义、参数注册和启动脚本编写。
+This page provides a complete development guide for adding new PX4 modules to VisionFlow-PX4, including module structure conventions, CMakeLists.txt configuration, uORB message definitions, parameter registration, and startup script authoring.
 
-> **TODO**: 本页正在建设中，内容将逐步完善。
+> **TODO**: This page is under construction. Content will be added gradually.
 
-## 相关页面
+## Related Pages
 
-- [开发指南总览](index.md)
-- [编译指南](building.md)
-- [贡献指南](contributing.md)
-- [添加新板卡](../hardware/board-addition.md)
+- [Development Guide Overview](index.md)
+- [Build Guide](building.md)
+- [Contributing Guide](contributing.md)
+- [Adding New Boards](../hardware/board-addition.md)

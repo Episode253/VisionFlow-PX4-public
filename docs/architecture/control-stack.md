@@ -1,32 +1,32 @@
-# 控制栈
+# Control Stack
 
-控制栈是 VisionFlow-PX4 的核心，负责将状态估计转换为执行器命令。
+The control stack is the core of VisionFlow-PX4, responsible for converting state estimation into actuator commands.
 
-## 控制器架构
+## Controller Architecture
 
 ```mermaid
 graph TD
-    subgraph "位置控制层"
-        PosCtrl[PX4 位置设定值]
-        PregmePos[PreGME 位置控制]
-        StdPos[标准 MC 位置控制]
+    subgraph "Position Control Layer"
+        PosCtrl[PX4 Position Setpoint]
+        PregmePos[PreGME Position Control]
+        StdPos[Standard MC Position Control]
     end
 
-    subgraph "姿态控制层"
-        AttCtrl[姿态设定值]
-        PregmeAtt[PreGME 姿态控制]
-        StdAtt[标准 MC 姿态控制]
-        RateCtrl[速率控制]
+    subgraph "Attitude Control Layer"
+        AttCtrl[Attitude Setpoint]
+        PregmeAtt[PreGME Attitude Control]
+        StdAtt[Standard MC Attitude Control]
+        RateCtrl[Rate Control]
     end
 
-    subgraph "增强功能"
-        NN[神经网络控制]
-        CESO[复合误差状态观测器]
-        Lim[速率限制]
+    subgraph "Enhancement Features"
+        NN[Neural Network Control]
+        CESO[Composite Error State Observer]
+        Lim[Rate Limiter]
     end
 
-    subgraph "执行器分配"
-        CA[控制分配器]
+    subgraph "Actuator Allocation"
+        CA[Control Allocator]
     end
 
     PosCtrl --> PregmePos
@@ -48,52 +48,52 @@ graph TD
     StdAtt --> CA
 ```
 
-## PreGME 控制器
+## PreGME Controllers
 
-PreGME（Prescribed Performance Guidance and Management Estimator）是本项目的主要研究贡献。
+PreGME (Prescribed Performance Guidance and Management Estimator) is the primary research contribution of this project.
 
-### 预设性能控制（PPC）
+### Prescribed Performance Control (PPC)
 
-PPC 通过变换函数将约束误差映射到无约束空间，确保系统响应始终在预设的性能边界内：
+PPC maps constrained errors to an unconstrained space through transformation functions, ensuring that system responses always remain within prescribed performance bounds:
 
-- **收敛速度** — 通过预设函数控制误差收敛速率
-- **超调量** — 严格限制最大超调
-- **稳态精度** — 保证最终误差小于预定阈值
+- **Convergence Rate** — Controls the error convergence rate through prescribed functions
+- **Overshoot** — Strictly limits maximum overshoot
+- **Steady-State Accuracy** — Guarantees final error is less than a predetermined threshold
 
-### 复合误差状态观测器（CESO）
+### Composite Error State Observer (CESO)
 
-CESO 估计并补偿系统不确定性和外部扰动：
+CESO estimates and compensates for system uncertainties and external disturbances:
 
-| 估计量 | 说明 |
+| Estimate | Description |
 |--------|------|
-| 惯性矩阵 | 在线估计飞行器惯性参数变化 |
-| 扰动观测 | 估计风扰、机械臂反作用力等 |
-| 轨迹预设 | 支持多种预设轨迹模式 |
+| Inertia Matrix | Online estimation of aircraft inertia parameter variations |
+| Disturbance Observation | Estimates wind disturbances, arm reaction forces, etc. |
+| Trajectory Prescription | Supports multiple prescribed trajectory modes |
 
-### 参数文件
+### Parameter Files
 
-- 英文参数参考：`src/modules/pregme_att_control/pregme_att_control_params_en.yaml`
-- 中文参数参考：`src/modules/pregme_att_control/pregme_att_control_params_zh.yaml`
+- English parameter reference: `src/modules/pregme_att_control/pregme_att_control_params_en.yaml`
+- Chinese parameter reference: `src/modules/pregme_att_control/pregme_att_control_params_zh.yaml`
 
-## 标准控制器
+## Standard Controllers
 
-标准 PX4 控制器（MPC）保留用于对比测试和降级运行：
+Standard PX4 controllers (MPC) are retained for comparative testing and fallback operation:
 
-| 模块 | 说明 |
+| Module | Description |
 |------|------|
-| `mc_att_control` | 多旋翼姿态控制（MPC） |
-| `mc_pos_control` | 多旋翼位置控制（MPC） |
-| `mc_rate_control` | 多旋翼速率控制 |
-| `mc_autotune_attitude_control` | 自整定姿态控制 |
+| `mc_att_control` | Multicopter attitude control (MPC) |
+| `mc_pos_control` | Multicopter position control (MPC) |
+| `mc_rate_control` | Multicopter rate control |
+| `mc_autotune_attitude_control` | Autotune attitude control |
 
-## 切换机制
+## Switching Mechanism
 
-通过空机配置文件（airframe）选择使用的控制器：
+The active controller is selected via the airframe configuration file:
 
 ```bash
-# 使用 PreGME 控制器（默认）
-4004_gz_q940_ti_gripper3  # 使用 pregme_att_control + pregme_pos_control
+# Use PreGME controllers (default)
+4004_gz_q940_ti_gripper3  # Uses pregme_att_control + pregme_pos_control
 
-# 使用标准控制器
-4001_gz_x500              # 使用 mc_att_control + mc_pos_control
+# Use standard controllers
+4001_gz_x500              # Uses mc_att_control + mc_pos_control
 ```

@@ -1,124 +1,90 @@
-
-function restoreSetting(key) {
-	var value = localStorage.getItem(key);
-	if (value !== null) {
-		var field = $("#"+key)[0];
-		if (field.type == 'checkbox'){
-			field.checked = (value == 'true');
-		} else {
-			field.value = value;
-		}
-		console.log(key+', '+value);
-	}
-}
-function saveSetting(key) {
-	var field = $("#"+key)[0];
-	if (field.type == 'checkbox'){
-		var value = field.checked;
-	} else {
-		var value = field.value;
-	}
-	localStorage.setItem(key, value);
-	console.log(key+', '+value);
-}
-
-function saveSettings() {
-	saveSetting('email');
-	saveSetting('access');
-}
-
-function updateAccess() {
-    var access = document.getElementById('access').value;
-    var ids = ["flightreport", "personal"];
-    ids.forEach((value) => {
-        if (value == access) {
-            document.getElementById(value).style.display='table-row';
-        } else {
-            document.getElementById(value).style.display='none';
-        }
-        });
-    document.getElementById('public').value = access == "flightreport" ? "true" : "false";
-}
-
 function validateForm() {
     var valid = true;
     var error_html = "";
-    if (document.getElementById('access').value == "notset") {
-        error_html += "Access, "
-        valid = false;
-    }
-    var email = document.getElementById('email').value;
-    if (!email.includes("@") || email.length < 5) { // very simple check
-        error_html += "E-Mail, "
-        valid = false;
-    }
     if (document.getElementById('file').value.length == 0) {
         error_html += "Log File, "
         valid = false;
     }
 
-    // Report
     if (!valid) {
-        error_html = "<div><font color='red'>Missing fields: " + error_html.substring(0, error_html.length - 2) + "</font></div";
-    }
-    document.getElementById('feedback').innerHTML = error_html;
-
-    if (valid) {
-        saveSettings();
+        alert("Missing fields: " + error_html.substring(0, error_html.length - 2));
     }
 
+    console.log('validateForm result:', valid);
     return valid;
 }
 
+function doUpload() {
+    console.log('doUpload called');
+    if (!validateForm()) {
+        console.log('Validation failed, aborting upload');
+        return;
+    }
 
-$(function() { // on startup
-	restoreSetting('email');
-	restoreSetting('access');
-	updateAccess();
+    var upload_button = $('#upload-button');
+    upload_button.text('Uploading...').prop('disabled', true);
 
-    // Ajax file upload with progress updates
-    $("#upload-form").on('submit', function (e) {
-        e.preventDefault();
-        var form_data = new FormData(this);
-        var progress_bar = $('.progress');
-        progress_bar.show();
-        var upload_button = $('#upload-button');
-        upload_button.hide();
+    var progress_container = $('#progress-container');
+    var progress_bar = $('#progress-bar');
+    progress_container.show();
+    progress_bar.width('0%').html('0%');
 
-        $.ajax({
-            xhr: function () {
-                var xhr = new window.XMLHttpRequest();
-                xhr.upload.addEventListener("progress", function (evt) {
-                    if (evt.lengthComputable) {
-                        var percent_complete = (evt.loaded / evt.total) * 99; // max to 99, as the redirect will take time too
-                        progress_bar.find('.progress-bar').width(percent_complete + '%');
-                        progress_bar.find('.progress-bar').html(percent_complete.toFixed(0) + '%');
-                    }
-                }, false);
-                return xhr;
-            },
-            type: 'POST',
-            url: '/upload',
-            data: form_data,
-            cache: false,
-            contentType: false,
-            processData: false,
-            success: function (data) {
-                // Handle the response from the server
-                console.log(data);
-                var json_response = JSON.parse(data);
-                window.location.href = json_response.url
-            },
-            error: function (data, textStatus) {
-                // Handle errors, if any
-                console.error('Error uploading file.');
-                console.error(textStatus);
-                var progress_bar = $('.progress');
-                progress_bar.hide();
-                var upload_failure = $('#upload-failure');
-                upload_failure.show();
-            }
-        });
+    var form_data = new FormData($("#upload-form")[0]);
+    console.log('File selected:', form_data.get('filearg'));
+
+    $.ajax({
+        xhr: function () {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function (evt) {
+                if (evt.lengthComputable) {
+                    var percent_complete = (evt.loaded / evt.total) * 99;
+                    progress_bar.width(percent_complete + '%');
+                    progress_bar.html(percent_complete.toFixed(0) + '%');
+                }
+            }, false);
+            return xhr;
+        },
+        type: 'POST',
+        url: '/upload',
+        data: form_data,
+        cache: false,
+        contentType: false,
+        processData: false,
+        success: function (data) {
+            console.log('Upload success:', data);
+            var json_response = JSON.parse(data);
+            console.log('Redirecting to:', json_response.url);
+            window.location.href = json_response.url;
+        },
+        error: function (data, textStatus, errorThrown) {
+            console.error('Error uploading file:', textStatus, errorThrown);
+            progress_container.hide();
+            $('#upload-failure').show();
+            upload_button.text('Upload').prop('disabled', false);
+        }
+    });
+}
+
+$(function() {
+    console.log('jQuery loaded, page ready');
+    console.log('Upload button found:', $('#upload-button').length > 0);
+    console.log('File input found:', $('#file').length > 0);
+
+    // File input change handler
+    $('#file').on('change', function() {
+        var fileName = $(this).val().split('\\').pop();
+        if (fileName) {
+            $('#file-name').text(fileName);
+            $('#upload-zone').addClass('has-file');
+            console.log('File selected:', fileName);
+        } else {
+            $('#file-name').text('');
+            $('#upload-zone').removeClass('has-file');
+        }
+    });
+
+    $('#upload-button').on('click', function() {
+        console.log('Upload button clicked');
+        doUpload();
     });
 });
-

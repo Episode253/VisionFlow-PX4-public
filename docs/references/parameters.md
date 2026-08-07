@@ -1,11 +1,11 @@
-# 参数参考
+# Parameter Reference
 
-本页提供 VisionFlow-PX4 所有模块参数的完整参考，包括系统参数、PreGME 参数和仿真参数。每个参数列出名称、类型、默认值、取值范围和详细说明。
+This page provides a complete reference for all module parameters in VisionFlow-PX4, including system parameters, PreGME parameters, and simulation parameters. Each parameter lists its name, type, default value, value range, and detailed description.
 
-> **TODO**: 本页正在建设中，内容将逐步完善。
+> **TODO**: This page is under construction and content will be added progressively.
 
-## 相关页面
+## Related Pages
 
-- [空机配置参考](airframes.md)
-- [PreGME 参数参考](../modules/pregme-controllers/parameters.md)
-- [引用文献](citations.md)
+- [Airframe Configuration Reference](airframes.md)
+- [PreGME Parameter Reference](../modules/pregme-controllers/parameters.md)
+- [Citations](citations.md)

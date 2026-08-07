@@ -1,34 +1,34 @@
-# 工具链总览
+# Tools Overview
 
-VisionFlow-PX4 提供了丰富的工具链，涵盖 Docker 工作流、飞行日志审查、数据流桥接、机械臂控制和 UAV 控制脚本。
+VisionFlow-PX4 provides a collection of development and operational tools covering Docker workflows, flight log review, data streaming, arm control, and UAV offboard scripts.
 
-## 工具概览
+## Tool Overview
 
 ```mermaid
 graph LR
-    subgraph "仿真启动"
-        Docker[Docker 工作流]
-        Native[本地启动]
+    subgraph "Simulation Startup"
+        Docker[Docker Workflow]
+        Native[Native Launch]
     end
 
-    subgraph "数据分析"
-        Review[飞行日志审查]
-        Plot[数据绘图]
+    subgraph "Data Analysis"
+        Review[Flight Log Review]
+        Plot[Data Plotting]
     end
 
-    subgraph "通信桥接"
-        GzBridge[Gazebo-ROS 桥接]
-        CamStream[摄像头流]
+    subgraph "Communication Bridge"
+        GzBridge[Gazebo-ROS Bridge]
+        CamStream[Camera Stream]
     end
 
-    subgraph "控制界面"
-        ArmGUI[机械臂 GUI]
-        KBControl[键盘/摇杆控制]
-        Offboard[Offboard 脚本]
+    subgraph "Control Interface"
+        ArmGUI[Arm Control GUI]
+        KBControl[Keyboard / Joystick Control]
+        Offboard[Offboard Scripts]
     end
 
-    subgraph "参数管理"
-        ParamTools[参数管理工具]
+    subgraph "Parameter Management"
+        ParamTools[Parameter Tools]
     end
 
     Docker --> GzBridge
@@ -41,52 +41,53 @@ graph LR
     Docker --> ParamTools
 ```
 
-## 工具列表
+## Tool List
 
-| 工具 | 路径 | 说明 |
+| Tool | Path | Description |
 |------|------|------|
-| Docker SITL | `docker/run_gz_sitl.sh` | 容器化仿真启动 |
-| 飞行日志审查 | `windshape_dev/flight_review/` | Web 界面日志分析 |
-| 数据桥接 | `windshape_dev/data_stream/gz_bridge/` | Gazebo ↔ ROS2 桥接 |
-| 摄像头流 | `windshape_dev/data_stream/image_stream/` | 摄像头视频流可视化 |
-| 机械臂 GUI | `windshape_dev/arm_control/gamma_arm/` | Gamma 机械臂控制面板 |
-| 键盘控制 | `windshape_dev/uav_control/keyboard/` | 键盘/摇杆 UAV 控制 |
-| Offboard 脚本 | `windshape_dev/uav_control/offboard/` | 自动飞行轨迹跟踪 |
-| 数据绘图 | `windshape_dev/data_plotting/local_position/` | 局部位置航迹绘图 |
-| 参数工具 | `windshape_dev/parameter/` | 参数管理和配置文件 |
+| Docker SITL | `docker/run_gz_sitl.sh` | Containerized simulation launch |
+| Flight Log Review | `windshape_dev/flight_review/` | Web-based log analysis |
+| Data Bridge | `windshape_dev/image_stream/bridge_gz_ros.sh` | Gazebo ↔ ROS2 topic bridge |
+| Camera Stream | `windshape_dev/image_stream/camera_stream.sh` | Camera video streaming monitor |
+| Arm Web GUI | `windshape_dev/arm_control/gamma_arm/` | Gamma arm web control panel |
+| Keyboard Control | `windshape_dev/uav_control/keyboard/keyboard_control.py` | Keyboard UAV control via MAVROS |
+| Joystick Control | `windshape_dev/uav_control/keyboard/wfly_joystick_control.py` | WFLY joystick UAV control |
+| Offboard Scripts | `windshape_dev/uav_control/offboard/` | Automated trajectory tracking |
+| Data Plotting | `windshape_dev/data_plotting/local_position/odom_plotter.py` | Local position trajectory plot |
+| Parameter Tools | `windshape_dev/parameter/` | Parameter management and config files |
 
-## 快速参考
+## Quick Reference
 
-### Docker 工作流
-
-```bash
-bash docker/run_gz_sitl.sh --list          # 列出配置
-bash docker/run_gz_sitl.sh --profile "Entity 1"  # 启动
-bash docker/into_gz_sitl.sh                # 进入容器
-```
-
-### 数据桥接
+### Docker Workflow
 
 ```bash
-bash windshape_dev/data_stream/gz_bridge/bridge_gz_ros.sh
+bash docker/run_gz_sitl.sh --list           # List profiles
+bash docker/run_gz_sitl.sh --profile "Entity 1"  # Launch
+bash docker/into_gz_sitl.sh                 # Enter container
 ```
 
-### 飞行日志审查
+### Data Bridge (Gazebo ↔ ROS2)
+
+```bash
+bash windshape_dev/image_stream/bridge_gz_ros.sh
+```
+
+### Flight Log Review
 
 ```bash
 bash docker/run_flight_review.sh
 ```
 
-### 机械臂 Web 控制
+### Gamma Arm Web Control
 
 ```bash
 bash windshape_dev/arm_control/gamma_arm/gamma_arm_web_control.sh
 ```
 
-## 下一步
+## Next Steps
 
-- [Docker 工作流详解](docker-workflow.md)
-- [飞行日志审查](flight-review.md)
-- [数据流桥接](data-streaming.md)
-- [机械臂控制面板](arm-control-gui.md)
-- [UAV 控制脚本](uav-control-scripts.md)
+- [Docker Workflow Details](tools/docker-workflow.md)
+- [Flight Log Review](tools/flight-review.md)
+- [Data Streaming & Bridge](tools/data-streaming.md)
+- [Arm Control GUI](tools/arm-control-gui.md)
+- [UAV Control Scripts](tools/uav-control-scripts.md)

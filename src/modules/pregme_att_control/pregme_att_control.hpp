@@ -1,10 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Lead Developer       : Renwang Huang
+// Other Contributors   : Hangan Xu
+// Created              : 2026-07-29
+// ─────────────────────────────────────────────────────────────────────────────
+
 #pragma once
 
 #include <Att_control.hpp>
-
 #include <matrix/matrix/math.hpp>
 #include <perf/perf_counter.h>
 #include <drivers/drv_hrt.h>
+#include <lib/mathlib/math/filter/AlphaFilter.hpp>
 
 #include <px4_platform_common/px4_config.h>
 #include <px4_platform_common/defines.h>
@@ -25,15 +31,11 @@
 #include <uORB/topics/vehicle_control_mode.h>
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/vehicle_land_detected.h>
-
 #include <uORB/topics/battery_status.h>
 #include <uORB/topics/rate_ctrl_status.h>
 #include <uORB/topics/vehicle_angular_velocity.h>
 #include <uORB/topics/vehicle_torque_setpoint.h>
 #include <uORB/topics/vehicle_thrust_setpoint.h>
-#include <uORB/topics/vehicle_local_position.h>
-
-#include <lib/mathlib/math/filter/AlphaFilter.hpp>
 
 using namespace time_literals;
 
@@ -63,9 +65,12 @@ private:
 
 	void generate_attitude_setpoint(const matrix::Quatf &q, float dt, bool reset_yaw_sp);
 
+	bool apply_attitude_setpoint_if_valid(const vehicle_attitude_setpoint_s &attitude_setpoint);
+	void invalidate_attitude_setpoint();
+
 	void update_vehicle_status();
 	void update_landed_state();
-	void publish_torque_thrust_setpoint(const vehicle_attitude_s &v_att);
+	void publish_torque_thrust_setpoint(hrt_abstime timestamp_sample);
 
 	Att_Control _attitude_control;
 
@@ -77,11 +82,10 @@ private:
 	uORB::Subscription _vehicle_status_sub{ORB_ID(vehicle_status)};
 	uORB::Subscription _vehicle_land_detected_sub{ORB_ID(vehicle_land_detected)};
 	uORB::Subscription _battery_status_sub{ORB_ID(battery_status)};
+	uORB::Subscription _vehicle_attitude_sub{ORB_ID(vehicle_attitude)};
 
-	uORB::SubscriptionCallbackWorkItem _vehicle_attitude_sub{this, ORB_ID(vehicle_attitude)};
-
-	uORB::Subscription _local_pos_sub{ORB_ID(vehicle_local_position)};
-	uORB::Subscription _vehicle_angular_velocity_sub{ORB_ID(vehicle_angular_velocity)};
+	// Drive the control loop from every new gyro sample.
+	uORB::SubscriptionCallbackWorkItem _vehicle_angular_velocity_sub{this, ORB_ID(vehicle_angular_velocity)};
 
 	uORB::PublicationMulti<rate_ctrl_status_s> _controller_status_pub{ORB_ID(rate_ctrl_status)};
 
@@ -94,6 +98,7 @@ private:
 
 	hrt_abstime _last_run{0};
 	hrt_abstime _last_attitude_setpoint{0};
+	bool _attitude_setpoint_valid{false};
 
 	perf_counter_t _loop_perf{nullptr};
 
@@ -110,7 +115,7 @@ private:
 	float _man_yaw_sp{0.f};
 	uint8_t _quat_reset_counter{0};
 
-	// Yaw 从当前机头方向开始，主要在 Manul Stablize 模式参与的情况下使用
+	// Yaw is used starting from the current heading, primarily when Manual Stabilize mode is involved.
 	bool _reset_yaw_sp{true};
 
 	AlphaFilter<float> _man_x_input_filter;
@@ -120,17 +125,16 @@ private:
 	bool _maybe_landed{true};
 	bool _spooled_up{false};
 
-	// 默认四旋翼无人机，禁用VTOL逻辑
+	// Default to quadrotor UAV, disable VTOL logic
 	bool _vehicle_type_rotary_wing{true};
 	bool _vtol_in_transition_mode{false};
 	bool _vtol_tailsitter{false};
 
 	matrix::Vector3f _thrust_setpoint_body{0.f, 0.f, 0.f};
 
-	// 表示机体坐标系下的 Roll、Pitch、Yaw 三个轴上的控制力矩
+	// Representing the control torques about the Roll, Pitch, and Yaw axes in the body-fixed coordinate system
 	matrix::Vector3f _torque{0.f, 0.f, 0.f};
 
-	float pos_z{0.f};
 
 	DEFINE_PARAMETERS(
 		(ParamFloat<px4::params::USR_TAU_COE>) _param_usr_tau_coe,
@@ -176,6 +180,7 @@ private:
 		(ParamFloat<px4::params::USR_THR_HOVER>) _param_usr_thr_hover,
 		(ParamInt<px4::params::USR_THR_CURVE>) _param_usr_thr_curve,
 		(ParamBool<px4::params::USR_BAT_SCALE_EN>) _param_usr_bat_scale_en,
+		(ParamBool<px4::params::USR_COM_COMP_EN>) _param_usr_com_comp_en,
 
 		(ParamFloat<px4::params::COM_SPOOLUP_TIME>) _param_com_spoolup_time,
 		(ParamInt<px4::params::CBRK_RATE_CTRL>) _param_cbrk_rate_ctrl

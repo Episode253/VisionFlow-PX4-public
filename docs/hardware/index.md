@@ -1,12 +1,12 @@
-# 硬件支持
+# Hardware Support
 
-本页概述 VisionFlow-PX4 支持的硬件平台，包括标准 Pixhawk 飞控板、HKUST 定制板卡以及添加新硬件支持的流程指南。
+This page provides an overview of the hardware platforms supported by VisionFlow-PX4, including standard Pixhawk flight controller boards, HKUST custom boards, and a guide for adding new hardware support.
 
-> **TODO**: 本页正在建设中，内容将逐步完善。
+> **TODO**: This page is under construction, content will be gradually improved.
 
-## 相关页面
+## Related Pages
 
-- [HKUST 定制板](hkust-boards.md)
-- [支持板卡列表](supported-boards.md)
-- [添加新板卡](board-addition.md)
-- [编译指南](../development/building.md)
+- [HKUST Custom Boards](hkust-boards.md)
+- [Supported Boards List](supported-boards.md)
+- [Adding New Boards](board-addition.md)
+- [Build Guide](../development/building.md)

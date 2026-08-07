@@ -1,53 +1,53 @@
-# 快速开始
+# Quick Deployment Toolchain
 
-欢迎来到 VisionFlow-PX4 开发手册的快速开始指南。本章节将帮助您从零开始搭建开发环境并运行第一个仿真。
+Welcome to the Quick Start guide of the VisionFlow-PX4 development manual. This section will help you set up the development environment from scratch and run your first simulation.
 
-## 选择启动方式
+## Choose a Launch Method
 
-| 方式 | 优点 | 适用场景 |
+| Method | Advantages | Use Case |
 |------|------|---------|
-| **Docker（推荐）** | 环境隔离、一键部署、依赖完整 | 首次使用、团队协作 |
-| **本地部署** | 直接访问系统资源、调试方便 | 高级用户、GPU 直通需求 |
+| **Docker (Recommended)** | Environment isolation, one-click deployment, complete dependencies | First-time use, team collaboration |
+| **Native Deployment** | Direct access to system resources, easy debugging | Advanced users, GPU passthrough needs |
 
-## 快速上手
+## Getting Started
 
-### 第一步：确认环境
+### Step 1: Verify Environment
 
-参见 [环境要求](prerequisites.md)，确保满足操作系统、ROS2、Gazebo 等要求。
+See [Prerequisites](prerequisites.md) to ensure your system meets the OS, ROS2, Gazebo, and other requirements.
 
-### 第二步：启动仿真
+### Step 2: Launch Simulation
 
-**Docker 方式：**
+**Docker method:**
 ```bash
 bash docker/run_gz_sitl.sh --profile "Entity 1"
 ```
 
-**本地方式：**
+**Native method:**
 ```bash
 PX4_GZ_WORLD=laboratory_landingbox \
   make px4_sitl gz_q940_ti_gripper4_laboratory_landingbox \
   EXTRA_CMAKE_ARGS="-DENABLE_LOCKSTEP_SCHEDULER=ON"
 ```
 
-### 第三步：验证
+### Step 3: Verify
 
-参见 [快速验证](quick-start.md)，确认环境正常工作。
+See [Quick Verification](quick-start.md) to confirm the environment is working properly.
 
-## 仿真配置一览
+## Simulation Configuration Overview
 
-| Profile | 无人机 | 场景 | 说明 |
+| Profile | Drone | Scene | Description |
 |---------|--------|------|------|
-| Entity 1 | q940_ti_gripper4 | laboratory_landingbox | 主要测试平台 |
-| Entity 2 | q940_ti_gripper4 | vla_task0 | VLA 任务 |
-| Entity 3 | swan_gamma_v1 | laboratory_no_landingbox | 公司旧版 |
-| Entity 4 | swan_gamma_v2 | laboratory_no_landingbox | 公司新版 |
-| Entity 5 | swan_gamma_v2 | vla_task0 | VLA 任务 |
-| Entity 6 | x500_gimbal | laboratory_no_landingbox | 云台测试 |
-| Entity 7 | differential_rover | laboratory_no_landingbox | 小车测试 |
+| Entity 1 | q940_ti_gripper4 | laboratory_landingbox | Main test platform |
+| Entity 2 | q940_ti_gripper4 | vla_task0 | VLA task |
+| Entity 3 | swan_gamma_v1 | laboratory_no_landingbox | Company legacy version |
+| Entity 4 | swan_gamma_v2 | laboratory_no_landingbox | Company new version |
+| Entity 5 | swan_gamma_v2 | vla_task0 | VLA task |
+| Entity 6 | x500_gimbal | laboratory_no_landingbox | Gimbal test |
+| Entity 7 | differential_rover | laboratory_no_landingbox | Rover test |
 
-## 下一步
+## Next Steps
 
-- [Docker 启动详解](docker-launch.md)
-- [本地启动详解](native-launch.md)
-- [系统架构](../architecture/overview.md)
-- [核心模块](../modules/index.md)
+- [Docker Launch Details](docker-launch.md)
+- [Native Launch Details](native-launch.md)
+- [System Architecture](../architecture/overview.md)
+- [Core Modules](../modules/index.md)

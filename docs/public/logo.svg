@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" fill="none">
+  <defs>
+    <linearGradient id="body-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#536dfe"/>
+      <stop offset="100%" stop-color="#303f9f"/>
+    </linearGradient>
+    <linearGradient id="arm-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5c6bc0"/>
+      <stop offset="100%" stop-color="#303f9f"/>
+    </linearGradient>
+    <radialGradient id="lens-grad" cx="0.5" cy="0.4" r="0.6">
+      <stop offset="0%" stop-color="#ffab00"/>
+      <stop offset="100%" stop-color="#ff6d00"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Soft brand ring -->
+  <circle cx="250" cy="205" r="190" stroke="url(#body-grad)" stroke-width="6" fill="none" opacity="0.18"/>
+
+  <g transform="translate(250, 205)">
+    <!-- Quadcopter arms (X frame) -->
+    <g stroke="url(#body-grad)" stroke-width="14" stroke-linecap="round">
+      <line x1="0" y1="0" x2="-120" y2="-70"/>
+      <line x1="0" y1="0" x2="120" y2="-70"/>
+      <line x1="0" y1="0" x2="-120" y2="70"/>
+      <line x1="0" y1="0" x2="120" y2="70"/>
+    </g>
+
+    <!-- Rotor discs -->
+    <g fill="#536dfe" opacity="0.25">
+      <ellipse cx="-120" cy="-70" rx="52" ry="16"/>
+      <ellipse cx="120"  cy="-70" rx="52" ry="16"/>
+      <ellipse cx="-120" cy="70"  rx="52" ry="16"/>
+      <ellipse cx="120"  cy="70"  rx="52" ry="16"/>
+    </g>
+    <!-- Motor hubs -->
+    <g fill="url(#body-grad)">
+      <circle cx="-120" cy="-70" r="12"/>
+      <circle cx="120"  cy="-70" r="12"/>
+      <circle cx="-120" cy="70"  r="12"/>
+      <circle cx="120"  cy="70"  r="12"/>
+    </g>
+
+    <!-- Flight controller body -->
+    <rect x="-46" y="-40" width="92" height="80" rx="20" fill="url(#body-grad)"/>
+
+    <!-- Vision sensor / gimbal lens -->
+    <circle cx="0" cy="-4" r="24" fill="#0d1233"/>
+    <circle cx="0" cy="-4" r="16" fill="url(#lens-grad)"/>
+    <circle cx="-6" cy="-11" r="5" fill="#ffffff" opacity="0.85"/>
+
+    <!-- Robotic manipulator arm hanging below -->
+    <g stroke="url(#arm-grad)" stroke-width="12" stroke-linecap="round" fill="none">
+      <line x1="0" y1="40" x2="0" y2="92"/>
+      <line x1="0" y1="92" x2="34" y2="128"/>
+    </g>
+    <circle cx="0"  cy="92"  r="10" fill="#303f9f"/>
+    <!-- Gripper jaws -->
+    <g stroke="url(#arm-grad)" stroke-width="10" stroke-linecap="round" fill="none">
+      <path d="M34,128 q22,10 14,36"/>
+      <path d="M34,128 q4,24 -18,30"/>
+    </g>
+    <circle cx="34" cy="128" r="9" fill="#303f9f"/>
+  </g>
+
+  <!-- Text: VisionFlow -->
+  <text x="250" y="420" text-anchor="middle"
+        font-family="'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+        font-size="52" font-weight="800" fill="#1a1a2e"
+        letter-spacing="2">
+    VISION<tspan fill="#536dfe">FLOW</tspan>
+  </text>
+
+  <!-- Text: PX4 -->
+  <text x="250" y="465" text-anchor="middle"
+        font-family="'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+        font-size="28" font-weight="500" fill="#666666"
+        letter-spacing="6">
+    PX4
+  </text>
+</svg>

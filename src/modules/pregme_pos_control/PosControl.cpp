@@ -269,16 +269,20 @@ void PosControl::_positionControl(const float dt)
 	// 机械臂质心耦合补偿: Δv = -R·[ω×(ω×p_C^B)]
 	// 从 ArmJointSubscriber 读取最新系统质心
 	{
-		auto *arm = ArmJointSubscriber::instance();
-		_p_c_b = arm->getSystemCom();
+		if (_com_comp_enabled) {
+			auto *arm = ArmJointSubscriber::instance();
+			_p_c_b = arm->getSystemCom();
 
-		if (_p_c_b.norm() > 1e-6f) {
-			// 向心加速度补偿: a_c = ω × (ω × p_C^B)
-			const Vector3f w_cross_p = _omega_body.cross(_p_c_b);
-			const Vector3f a_c_body = _omega_body.cross(w_cross_p);
+			if (_p_c_b.norm() > 1e-6f) {
+				// 向心加速度补偿: a_c = ω × (ω × p_C^B)
+				const Vector3f w_cross_p = _omega_body.cross(_p_c_b);
+				const Vector3f a_c_body = _omega_body.cross(w_cross_p);
 
-			// Δv = -R · a_c_body (负号: 从机体系补偿转换到世界系速度增量)
-			_delta_v_comp = -(_R_body_to_world * a_c_body);
+				// Δv = -R · a_c_body (负号: 从机体系补偿转换到世界系速度增量)
+				_delta_v_comp = -(_R_body_to_world * a_c_body);
+			} else {
+				_delta_v_comp.setZero();
+			}
 		} else {
 			_delta_v_comp.setZero();
 		}

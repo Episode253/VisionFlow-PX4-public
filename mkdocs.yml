@@ -255,6 +255,7 @@ nav:
     - 编译流程: development/building.md
     - 添加新模块: development/adding-modules.md
     - 贡献指南: development/contributing.md
+    - 维护指南: development/maintenance.md
   - 参考资料:
     - references/index.md
     - references/airframes.md

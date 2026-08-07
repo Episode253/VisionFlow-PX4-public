@@ -1,74 +1,72 @@
-# Docker 启动指南
+# Docker Launch Guide
 
-Docker 方式封装了完整的 ROS2 Humble + Gazebo 环境，是推荐的启动方式。
+The Docker method encapsulates a complete ROS2 Humble + Gazebo environment and is the recommended launch method.
 
-## 工作原理
+## How It Works
 
 ```mermaid
 graph LR
-    A["宿主机"] --> B["Docker 容器"]
+    A["Host Machine"] --> B["Docker Container"]
     B --> C["PX4 SITL"]
     B --> D["Gazebo Simulator"]
-    B --> E["ROS 2 Bridge"]
-    B --> F["MAVLink 网关"]
     C <--> D
-    D <--> E
-    E --> G["RViz / 其他 ROS 节点"]
+    C -.->|"gz_bridge module"| E["ROS 2 Topic Bridge"]
+    E --> G["RViz / Other ROS Nodes"]
     C --> H["QGroundControl"]
 ```
 
-## 快速启动
+## Quick Launch
 
-### 列出可用配置
+### List Available Configurations
 
 ```bash
 bash docker/run_gz_sitl.sh --list
 ```
 
-### 启动默认配置（Entity 1）
+### Launch with Default Configuration (Entity 1)
 
 ```bash
-bash docker/run_gz_sitl.sh --profile "Entity 1"
+bash docker/run_gz_sitl.sh
 ```
 
-### 指定配置启动
+### Launch with a Specified Configuration
 
 ```bash
 bash docker/run_gz_sitl.sh --profile "Entity 4"
 ```
 
-### 重新构建镜像后启动
+### Rebuild Image and Launch
 
 ```bash
 bash docker/run_gz_sitl.sh --build --profile "Entity 1"
 ```
 
-## 可用仿真配置
+## Available Simulation Configurations
 
-| Profile | 描述 | 无人机型号 | 场景 |
+| Profile | Description | Drone Model | Scene |
 |---------|------|-----------|------|
-| Entity 1 | PreGME 季梦玉模型 | q940_ti_gripper4 | laboratory_landingbox |
-| Entity 2 | PreGME VLA 任务 | q940_ti_gripper4 | laboratory_landingbox_vla_task0 |
-| Entity 3 | PreGME 公司旧版本 | swan_gamma_v1 | laboratory_no_landingbox |
-| Entity 4 | PreGME 公司新版本 | swan_gamma_v2 | laboratory_no_landingbox |
-| Entity 5 | PreGME VLA 任务 | swan_gamma_v2 | laboratory_no_landingbox_vla_task0 |
-| Entity 6 | X500 云台 | x500_gimbal | laboratory_no_landingbox |
-| Entity 7 | 差动小车 | differential_rover | laboratory_no_landingbox |
+| Entity 1 | PreGME Jimengyu model | q940_ti_gripper4 | laboratory_landingbox |
+| Entity 2 | PreGME VLA task | q940_ti_gripper4 | laboratory_landingbox_vla_task0 |
+| Entity 3 | PreGME company legacy version | swan_gamma_v1 | laboratory_no_landingbox |
+| Entity 4 | PreGME company new version | swan_gamma_v2 | laboratory_no_landingbox |
+| Entity 5 | PreGME VLA task | swan_gamma_v2 | laboratory_no_landingbox_vla_task0 |
+| Entity 6 | X500 Gimbal | x500_gimbal | laboratory_no_landingbox |
+| Entity 7 | Differential Rover | differential_rover | laboratory_no_landingbox |
 
-## 进入运行中的容器
+## Enter Running Container
 
 ```bash
 bash docker/into_gz_sitl.sh
 ```
 
-进入容器后，可以：
-- 运行 ROS 2 节点
-- 调试 Gazebo 插件
-- 修改参数并重启仿真
+After entering the container, you can:
+- Launch custom ROS 2 nodes
+- Use the Gamma Arm Web Control panel (started automatically on entry)
+- Run other debugging or development commands
 
-## Docker 架构详情
+## Docker Architecture Details
 
-### compose.yaml 关键配置
+### Key compose.yaml Configuration
 
 ```yaml
 services:
@@ -76,52 +74,88 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.humble-gz
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              capabilities: [gpu]
+    image: visionflow-px4:humble-gz
+    container_name: visionflow-px4-sitl
+    working_dir: /workspace/VisionFlow-PX4
     volumes:
-      - ..:/workspace:rw
-      - ccache:/home/px4/.ccache
-      - gz_cache:/home/px4/.gz
-    shm_size: '2gb'
+      - ..:/workspace/VisionFlow-PX4:rw
+      - ./cache/ccache:/home/px4/.ccache:rw
+      - ./cache/gz:/home/px4/.gz:rw
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev/dri:/dev/dri
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - QTWEBENGINE_DISABLE_SANDBOX=1
+      - QTWEBENGINE_CHROMIUM_FLAGS=--no-sandbox --disable-gpu --disable-dev-shm-usage
+      - XDG_RUNTIME_DIR=/tmp/runtime-px4
+      - LIBGL_ALWAYS_SOFTWARE=0
+      - CCACHE_DIR=/home/px4/.ccache
+      - ROS_DISTRO=humble
+      - AMENT_TRACE_SETUP_FILES=
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    gpus: all
     privileged: true
     network_mode: host
+    ipc: host
+    shm_size: '2gb'
 ```
 
-### 挂载卷说明
+### compose.yaml Configuration Reference
 
-| 挂载路径 | 类型 | 用途 |
+| Configuration | Purpose |
+|---------------|---------|
+| `build.context` / `build.dockerfile` | Build context is the project root; uses `docker/Dockerfile.humble-gz` |
+| `image` | The resulting image name: `visionflow-px4:humble-gz` |
+| `container_name` | Fixed container name; `into_gz_sitl.sh` uses this to detect a running container |
+| `working_dir` | Working directory inside the container, mapped to the host codebase |
+| `environment.DISPLAY` | Forwards the host X11 display so Gazebo GUI renders on the host |
+| `environment.ROS_DISTRO` | Declares ROS 2 distribution as Humble; affects package lookup paths |
+| `environment.AMENT_TRACE_SETUP_FILES` | Cleared to prevent colcon install scripts from printing to the terminal |
+| `environment.QTWEBENGINE_*` | Disables Chromium sandbox and GPU acceleration to prevent QtWebEngine crashes without a GPU |
+| `environment.XDG_RUNTIME_DIR` | Provides a runtime directory for container processes, replacing the non-existent `/run/user/1000` |
+| `environment.LIBGL_ALWAYS_SOFTWARE` | Set to `0` to prefer hardware rendering over software fallback |
+| `environment.CCACHE_DIR` | Pins the ccache path to the container user's home, matching the volume mount |
+| `environment.NVIDIA_VISIBLE_DEVICES` | Tells NVIDIA Container Toolkit to expose all host GPUs to the container |
+| `environment.NVIDIA_DRIVER_CAPABILITIES` | Enables all NVIDIA driver capabilities (graphics, utility, compute) |
+| `gpus: all` | Passes through the entire host GPU to the container via `nvidia-container-toolkit` |
+| `privileged: true` | Runs the container in privileged mode, allowing direct control of Gazebo and hardware devices |
+| `network_mode: host` | Shares the host network namespace so QGroundControl can connect to MAVLink ports on `127.0.0.1` |
+| `ipc: host` | Shares the IPC namespace with the host, resolving ROS 2 shared-memory communication issues |
+| `shm_size: '2gb'` | Sets `/dev/shm` to 2 GB, preventing DDS shared-memory allocation failures for large messages (e.g. images) |
+
+### Mount Volume Description
+
+| Mount Path | Type | Purpose |
 |---------|------|------|
-| `/workspace` (原 `..`) | 双向读写 | 完整代码库访问 |
-| `ccache` | 命名卷 | 编译器缓存加速构建 |
-| `gz_cache` | 命名卷 | Gazebo 资源缓存 |
-| `/dev/dri` | 设备 | GPU 直通 |
-| `/tmp/.X11-unix` | 套接字 | X11 图形显示 |
+| `/workspace/VisionFlow-PX4` (mounted from host `..`) | Host directory (rw, bidirectional) | Full codebase access; changes inside container reflect on host immediately |
+| `docker/cache/ccache` → `/home/px4/.ccache` | Host directory | ccache compiler cache for faster repeated builds |
+| `docker/cache/gz` → `/home/px4/.gz` | Host directory | Gazebo model/material cache to avoid re-downloading |
+| `/tmp/.X11-unix` | Host socket | X11 display forwarding |
+| `/dev/dri` | Device | OpenGL / GPU passthrough |
 
-## 故障排查
+## Troubleshooting
 
-### 构建缓慢
+### Slow Build
 
-使用 ccache 加速后续构建：
+Use ccache to speed up subsequent builds:
 
 ```bash
-# 清除缓存后重新构建
-docker volume rm visionflow-px4_ccache
+# Clear ccache and rebuild
+rm -rf docker/cache/ccache/*
 bash docker/run_gz_sitl.sh --build
 ```
 
-### GPU 不被识别
+### GPU Not Recognized
 
-确保安装了 NVIDIA Container Toolkit：
+Ensure NVIDIA Container Toolkit is installed:
 
 ```bash
-# 检查安装
+# Check installation
 nvidia-smi
 
-# 安装（如未安装）
+# Install (if not installed)
 distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
 curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.repo | sudo tee /etc/yum.repos.d/nvidia-docker.repo
 sudo yum install -y nvidia-docker2
@@ -130,16 +164,17 @@ sudo systemctl restart docker
 
 ### UCDR Header Stall
 
-仿真启动时可能遇到 uORB ucdr header 停滞。系统会自动重试和恢复。如需手动干预：
+You may encounter uORB ucdr header stalling during simulation startup. The system will automatically retry and recover. For manual intervention, clear the stale build cache:
 
 ```bash
-# 清除 stale cache
-bash docker/run_gz_sitl.sh --build --clean
+# Clear stale PX4 SITL build cache and rebuild
+rm -rf build/docker/px4_sitl_default
+bash docker/run_gz_sitl.sh --build
 ```
 
-### 图形界面不显示
+### GUI Not Displaying
 
-确保 `DISPLAY` 环境变量正确设置，并且允许 Docker 容器访问 X server：
+Ensure the `DISPLAY` environment variable is correctly set and the Docker container is allowed to access the X server:
 
 ```bash
 xhost +local:docker

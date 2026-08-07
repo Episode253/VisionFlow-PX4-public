@@ -1,11 +1,11 @@
-# 参考资料
+# References
 
-本章节提供 VisionFlow-PX4 项目的参考资料，包括机架配置、参数列表和学术引用。
+This section provides reference materials for the VisionFlow-PX4 project, including airframe configurations, parameter listings, and academic citations.
 
-## 内容
+## Contents
 
-| 文档 | 说明 |
+| Document | Description |
 |------|------|
-| [机架配置](airframes.md) | 自定义 POSIX 机架配置参考 |
-| [参数参考](parameters.md) | PreGME 和关键模块参数说明 |
-| [引用文献](citations.md) | 学术论文和文献引用 |
+| [Airframes](airframes.md) | Custom POSIX airframe configuration reference |
+| [Parameters](parameters.md) | PreGME and key module parameter reference |
+| [Citations](citations.md) | Academic papers and literature citations |

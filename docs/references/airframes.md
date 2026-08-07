@@ -1,11 +1,11 @@
-# 空机配置参考
+# Airframe Configuration Reference
 
-本页列出 VisionFlow-PX4 支持的所有空机配置文件，包括每个机架的电机布局、几何参数、混控器配置和推荐的控制器参数。
+This page lists all airframe configuration files supported by VisionFlow-PX4, including motor layouts, geometry parameters, mixer configurations, and recommended controller parameters for each airframe.
 
-> **TODO**: 本页正在建设中，内容将逐步完善。
+> **TODO**: This page is under construction and content will be added progressively.
 
-## 相关页面
+## Related Pages
 
-- [参数参考](parameters.md)
-- [引用文献](citations.md)
-- [仿真模型](../simulation/models/index.md)
+- [Parameter Reference](parameters.md)
+- [Citations](citations.md)
+- [Simulation Models](../simulation/models/index.md)

@@ -1,112 +1,166 @@
 
 {% include 'header.html' %}
 
-<div class="row">
-	<div class="col-lg-6 mx-auto">
+<style>
+.upload-container {
+    max-width: 600px;
+    margin: 40px auto;
+}
 
-		<h3>Upload a Log File</h3>
+.upload-container h3 {
+    color: #06465c;
+    font-family: 'Play', sans-serif;
+    font-size: 24px;
+    font-weight: 400;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    text-align: center;
+}
 
-		<p>
-		Select and upload a log file for plotting and analysis.
-		You can browse through public log files on <a href="/browse">this page</a>.
-		</p>
+.upload-zone {
+    position: relative;
+    display: block;
+    width: 100%;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 30px 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: #fafafa;
+    margin-bottom: 20px;
+    cursor: pointer;
+    box-sizing: border-box;
+}
 
+.upload-zone:hover {
+    border-color: #008cba;
+    background: #f0f8ff;
+}
 
+.upload-zone.has-file {
+    border-color: #43ac6a;
+    background: #f0fff4;
+}
 
-		<table class="spaced">
-			<form enctype="multipart/form-data" id="upload-form">
-				<tr>
-					<td width="30%" class="left">Description <small>(optional)</small>:</td>
-					<td width="70%">
-						<input class="form-control" placeholder="" name="description" type="text">
-					</td>
-				</tr>
-				<tr>
-					<td class="left">Additional Feedback <small>(optional)</small>:</td>
-					<td>
-						<textarea class="form-control" cols="20" rows="3" name="feedback"></textarea>
-					</td>
-				</tr>
-				<tr>
-					<td class="left">E-Mail:</td>
-					<td>
-						<input class="form-control" type="text" name="email" id="email"/>
-					</td>
-				</tr>
-				<tr>
-					<td colspan="2"><small>Will only be used to send you a link to
-							the uploaded file (including a link to delete) and is not stored on the server.</small></td>
-				</tr>
-				<tr>
-					<td class="left">Access to the log:</td>
-					<td>
-						<select class="form-select w-100" name="type" id="access" onChange="updateAccess()">
-							<option value="flightreport" selected="selected">Public</option>
-							<option value="personal">Share by Link</option>
-						</select>
-					</td>
-				</tr>
-				<tr id="flightreport" style="display: none;">
-					<td class="left"></td>
-					<td>
-						Make this log <a href="browse">publicly available</a> under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC-BY PX4</a> license.
-						The PX4 community can use it to improve the flight stack.
-					</td>
-				</tr>
-				<tr id="personal" style="display: none;">
-					<td class="left"></td>
-					<td>
-						The log can only be accessed with the link you'll receive after uploading.
-						</br>
-						<b>Note</b>: The log may contain location data and if you
-						share the link, it will be accessible to others as well.
-					</td>
-				</tr>
-				<tr>
-					<td colspan="2">
-						<!-- automatically set depending on the "access" value -->
-						<input type="hidden" class="custom-control-input" name="public"
-								id="public" value="false">
-						<!-- instruct server not to redirect, but return the URL instead -->
-						<input type="hidden" class="custom-control-input" name="redirect"
-								id="redirect" value="false">
-					</td>
-				</tr>
-				<tr>
-					<td class="left">ULog File:</td>
-					<td>
-						<div class="input-group flex-row-reverse">
-							<input type="file" name="filearg" id="file" class="form-control">
-						</div>
-					</td>
-				</tr>
-				<tr>
-					<td id="feedback" colspan="2">
-					</td>
-				</tr>
-				<tr>
-					<td></td><td><br/><input class="btn btn-primary align-right"
-						id="upload-button" type="submit" value="Upload" onclick="return validateForm();" /></td>
-				</tr>
-				<tr>
-					<td colspan="2">
-						<div class="progress mt-3" style="height: 20px; display: none;">
-							<div class="progress-bar progress-bar-striped" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
-						</div>
-						<div id="upload-failure" class="align-right" style="display: none;">
-							<b>File upload failed.</b>
-						</div>
-					</td>
-				</tr>
-			</form>
-		</table>
+.upload-zone input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+}
 
-	</div>
+.upload-zone .zone-content {
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.upload-zone .label-text {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.upload-zone .file-name {
+    font-size: 14px;
+    color: #06465c;
+    font-weight: 500;
+    word-break: break-all;
+}
+
+.upload-btn {
+    display: block;
+    width: 100%;
+    padding: 14px 20px;
+    background: #008cba;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.upload-btn:hover:not(:disabled) {
+    background: #006d94;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,140,186,0.3);
+}
+
+.upload-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.progress-container {
+    margin-top: 20px;
+    display: none;
+}
+
+.progress {
+    height: 8px;
+    border-radius: 4px;
+    background: #eee;
+}
+
+.progress-bar {
+    background: #008cba;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.error-msg {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: #fff3f3;
+    border: 1px solid #f04124;
+    border-radius: 6px;
+    color: #f04124;
+    display: none;
+    text-align: center;
+}
+</style>
+
+<div class="upload-container">
+    <h3>Upload Log File</h3>
+
+    <form id="upload-form" enctype="multipart/form-data">
+        <label for="file" class="upload-zone" id="upload-zone">
+            <input type="file" name="filearg" id="file" accept=".ulg" style="display: none;">
+            <div class="zone-content">
+                <div class="label-text">Click to select a .ulg log file</div>
+                <div class="file-name" id="file-name"></div>
+            </div>
+        </label>
+
+        <button class="upload-btn" id="upload-button" type="button">
+            Upload
+        </button>
+
+        <div class="progress-container" id="progress-container">
+            <div class="progress">
+                <div class="progress-bar" id="progress-bar" role="progressbar" style="width: 0%;">0%</div>
+            </div>
+        </div>
+
+        <div class="error-msg" id="upload-failure">
+            File upload failed. Please try again.
+        </div>
+    </form>
 </div>
 
 {% include 'footer.html' %}
 
-<script type="text/javascript" src="plot_app/static/js/upload.js"></script>
+<script type="text/javascript" src="plot_app/static/js/upload.js?v=8"></script>
 
 </body>
 </html>

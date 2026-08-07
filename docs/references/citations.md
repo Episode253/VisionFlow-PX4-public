@@ -1,11 +1,11 @@
-# 引用文献
+# Citations
 
-本页收录 VisionFlow-PX4 项目涉及的所有学术论文引用，包括 PreGME 控制理论、预设性能控制、滑模控制和机械臂动力学等相关文献。
+This page collects all academic paper citations related to the VisionFlow-PX4 project, including PreGME control theory, prescribed performance control, sliding mode control, and manipulator dynamics literature.
 
-> **TODO**: 本页正在建设中，内容将逐步完善。
+> **TODO**: This page is under construction and content will be added progressively.
 
-## 相关页面
+## Related Pages
 
-- [空机配置参考](airframes.md)
-- [参数参考](parameters.md)
-- [PreGME 控制器概述](../modules/pregme-controllers/index.md)
+- [Airframe Configuration Reference](airframes.md)
+- [Parameter Reference](parameters.md)
+- [PreGME Controller Overview](../modules/pregme-controllers/index.md)

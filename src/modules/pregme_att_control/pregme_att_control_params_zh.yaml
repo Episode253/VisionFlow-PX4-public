@@ -7,9 +7,9 @@ parameters:
         short: 机体系 X 轴转动惯量 Ixx
         long: 机体绕滚转轴的主转动惯量 [kg m^2]。控制器会把它放入惯量矩阵，用于力矩计算和陀螺耦合补偿。该值应来自实测或估算的质量特性，填错会影响力矩前馈与补偿效果。
       type: float
-      default: 0.2
+      default: 0.35
       min: 0.0
-      max: 20.0
+      max: 2.0
       decimal: 2
       increment: 0.01
     USR_I_YY:
@@ -17,9 +17,9 @@ parameters:
         short: 机体系 Y 轴转动惯量 Iyy
         long: 机体绕俯仰轴的主转动惯量 [kg m^2]。控制器会把它放入惯量矩阵，用于力矩计算和陀螺耦合补偿。该值应来自实测或估算的质量特性，填错会影响力矩前馈与补偿效果。
       type: float
-      default: 0.19
+      default: 0.61
       min: 0.0
-      max: 20.0
+      max: 2.0
       decimal: 2
       increment: 0.01
     USR_I_ZZ:
@@ -27,9 +27,9 @@ parameters:
         short: 机体系 Z 轴转动惯量 Izz
         long: 机体绕偏航轴的主转动惯量 [kg m^2]。控制器会把它放入惯量矩阵，用于力矩计算和陀螺耦合补偿。该值应来自实测或估算的质量特性，填错会影响力矩前馈与补偿效果。
       type: float
-      default: 0.33
+      default: 0.68
       min: 0.0
-      max: 20.0
+      max: 2.0
       decimal: 2
       increment: 0.01
     USR_I_XY:
@@ -39,7 +39,7 @@ parameters:
       type: float
       default: 0.0
       min: 0.0
-      max: 20.0
+      max: 2.0
       decimal: 2
       increment: 0.01
     USR_I_XZ:
@@ -49,7 +49,7 @@ parameters:
       type: float
       default: 0.0
       min: 0.0
-      max: 20.0
+      max: 2.0
       decimal: 2
       increment: 0.01
     USR_I_YZ:
@@ -59,7 +59,7 @@ parameters:
       type: float
       default: 0.0
       min: 0.0
-      max: 20.0
+      max: 2.0
       decimal: 2
       increment: 0.01
     USR_LAMBDA_Q_X:
@@ -67,9 +67,9 @@ parameters:
         short: 滚转姿态误差收敛增益
         long: 滚转轴四元数向量误差滑模面的 lambda 增益。数值越大，姿态误差收敛越快，但所需力矩也会增大；如果角速度环、惯量参数或执行器能力不匹配，容易诱发振荡。
       type: float
-      default: 20.0
+      default: 11.0
       min: 0.0
-      max: 60.0
+      max: 30.0
       decimal: 2
       increment: 0.1
     USR_LAMBDA_Q_Y:
@@ -77,9 +77,9 @@ parameters:
         short: 俯仰姿态误差收敛增益
         long: 俯仰轴四元数向量误差滑模面的 lambda 增益。数值越大，姿态误差收敛越快，但所需力矩也会增大；如果角速度环、惯量参数或执行器能力不匹配，容易诱发振荡。
       type: float
-      default: 18.0
+      default: 14.0
       min: 0.0
-      max: 40.0
+      max: 30.0
       decimal: 2
       increment: 0.1
     USR_LAMBDA_Q_Z:
@@ -89,7 +89,7 @@ parameters:
       type: float
       default: 20.0
       min: 0.0
-      max: 40.0
+      max: 30.0
       decimal: 2
       increment: 0.1
     USR_K_Q_X:
@@ -97,7 +97,7 @@ parameters:
         short: 滚转滑模反馈增益
         long: 作用在滚转轴滑模面上的反馈增益。增大后抗扰和跟踪刚度更强，但过大会带来高频力矩命令、振动或执行器饱和。
       type: float
-      default: 7.8
+      default: 10.0
       min: 0.0
       max: 30.0
       decimal: 2
@@ -107,7 +107,7 @@ parameters:
         short: 俯仰滑模反馈增益
         long: 作用在俯仰轴滑模面上的反馈增益。增大后抗扰和跟踪刚度更强，但过大会带来高频力矩命令、振动或执行器饱和。
       type: float
-      default: 8.6
+      default: 12.0
       min: 0.0
       max: 30.0
       decimal: 2
@@ -117,7 +117,7 @@ parameters:
         short: 偏航滑模反馈增益
         long: 作用在偏航轴滑模面上的反馈增益。由于多旋翼偏航控制能力一般较弱，增大该参数时需要比滚转、俯仰更保守。
       type: float
-      default: 12.0
+      default: 18.0
       min: 0.0
       max: 30.0
       decimal: 2
@@ -127,27 +127,27 @@ parameters:
         short: 滚转 ESO 非线性增益
         long: 滚转轴扩张状态观测器的非线性增益 L。它决定观测器修正量和扰动估计强度。数值越大，对模型误差或外扰反应越快，但也会放大陀螺仪噪声和振动。
       type: float
-      default: 0.2
+      default: 0.1
       min: 0.0
-      max: 50.0
+      max: 10.0
       decimal: 2
     USR_ESO_L_Y:
       description:
         short: 俯仰 ESO 非线性增益
         long: 俯仰轴扩张状态观测器的非线性增益 L。它决定观测器修正量和扰动估计强度。数值越大，对模型误差或外扰反应越快，但也会放大陀螺仪噪声和振动。
       type: float
-      default: 0.2
+      default: 0.18
       min: 0.0
-      max: 50.0
+      max: 10.0
       decimal: 2
     USR_ESO_L_Z:
       description:
         short: 偏航 ESO 非线性增益
         long: 偏航轴扩张状态观测器的非线性增益 L。它决定观测器修正量和扰动估计强度。数值越大，对模型误差或外扰反应越快，但也会放大陀螺仪噪声和振动。
       type: float
-      default: 0.5
+      default: 0.05
       min: 0.0
-      max: 50.0
+      max: 10.0
       decimal: 2
     USR_ESO_EPSI:
       description:
@@ -156,7 +156,7 @@ parameters:
       type: float
       default: 1.0
       min: 0.0
-      max: 20.0
+      max: 10.0
       decimal: 2
     USR_ESO_C1:
       description:
@@ -165,7 +165,7 @@ parameters:
       type: float
       default: 0.3
       min: 0.0
-      max: 50.0
+      max: 10.0
       decimal: 2
     USR_ESO_C2:
       description:
@@ -174,7 +174,7 @@ parameters:
       type: float
       default: 0.5
       min: 0.0
-      max: 50.0
+      max: 10.0
       decimal: 2
     USR_A_PRESET_L:
       description:
@@ -183,7 +183,7 @@ parameters:
       type: float
       default: 1.0
       min: 0.0
-      max: 20.0
+      max: 10.0
       decimal: 2
     USR_A_PRESET_W:
       description:
@@ -208,7 +208,7 @@ parameters:
         short: 预设轨迹补偿增益
         long: 预设轨迹参与姿态误差整形前的增益 k。数值越大，控制器越强地跟随该瞬态整形项。
       type: float
-      default: 1.0
+      default: 0.0
       min: 0.0
       max: 1.0
       decimal: 2
@@ -217,9 +217,9 @@ parameters:
         short: 力矩归一化比例系数
         long: 用于把控制器计算出的力矩命令转换为 PX4 归一化力矩设定值。发布前执行 torque / USR_TAU_COE，然后限制在 [-1, 1]。数值越大，归一化力矩输出越小；数值越小，输出越强，也越容易饱和。
       type: float
-      default: 8.0
-      min: 6.0
-      max: 150
+      default: 72.0
+      min: 4.0
+      max: 200.0
       decimal: 2
       increment: 0.1
     USR_ROLLRATE_MAX:
@@ -310,7 +310,7 @@ parameters:
         short: 悬停推力
         long: 悬停对应的归一化推力。默认油门曲线下，油门杆居中会映射到该值。
       type: float
-      default: 0.68
+      default: 0.5
       min: 0.0
       max: 0.95
       decimal: 2
@@ -337,6 +337,12 @@ parameters:
       default: 0
       min: 0
       max: 2
+    USR_COM_COMP_EN:
+      description:
+        short: 启用质心耦合补偿
+        long: 启用机械臂质心耦合补偿。启用后，姿态控制器会根据机械臂质心偏移计算重力矩补偿，并叠加到 ESO 扰动估计中。关闭后不进行机械臂耦合补偿。
+      type: boolean
+      default: true
     CBRK_RATE_CTRL:
       description:
         short: 角速度控制输出断路器

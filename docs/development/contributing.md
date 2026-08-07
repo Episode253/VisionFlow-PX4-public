@@ -1,11 +1,11 @@
-# 贡献指南
+# Contributing Guide
 
-本页提供向 VisionFlow-PX4 项目贡献代码的指南，包括分支管理规范、Commit 消息格式、代码审查流程和 Pull Request 提交流程。
+This page provides guidance for contributing code to the VisionFlow-PX4 project, including branch management conventions, commit message format, code review process, and pull request submission workflow.
 
-> **TODO**: 本页正在建设中，内容将逐步完善。
+> **TODO**: This page is under construction. Content will be added gradually.
 
-## 相关页面
+## Related Pages
 
-- [开发指南总览](index.md)
-- [编译指南](building.md)
-- [添加模块](adding-modules.md)
+- [Development Guide Overview](index.md)
+- [Build Guide](building.md)
+- [Adding Modules](adding-modules.md)

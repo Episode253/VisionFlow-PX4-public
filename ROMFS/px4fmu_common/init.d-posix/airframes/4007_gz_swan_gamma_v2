@@ -8,7 +8,6 @@
 PX4_SIMULATOR=${PX4_SIMULATOR:=gz}
 PX4_GZ_WORLD=${PX4_GZ_WORLD:=laboratory_no_landingbox}
 PX4_SIM_MODEL=${PX4_SIM_MODEL:=swan_gamma_v2}
-# PX4_GZ_MODEL_POSE=${PX4_GZ_MODEL_POSE:="0,0,1.15392,0,0,0"}
 PX4_GZ_MODEL_POSE=${PX4_GZ_MODEL_POSE:="-4.0,-2.0,1.15392,0,0,0"}
 
 . ${R}etc/init.d/rc.mc_defaults

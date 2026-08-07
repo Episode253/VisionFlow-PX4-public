@@ -10,8 +10,15 @@ LIST_ONLY="false"
 CONTAINER_NAME="visionflow-px4-sitl"
 CONFIG_FILE="docker/gz_sitl_profiles.conf"
 CLEANED_UP="false"
+CLEANUP_ARMED="false"
 
 cleanup() {
+    # Read-only commands and failures before container replacement must not
+    # stop an already-running PX4/Gazebo container.
+    if [ "${CLEANUP_ARMED}" != "true" ]; then
+        return 0
+    fi
+
     if [ "${CLEANED_UP}" = "true" ]; then
         return 0
     fi
@@ -228,14 +235,63 @@ export USER_GID="$(id -g)"
 echo "[4/6] Allow Docker to access X11 display..."
 xhost +local:docker >/dev/null 2>&1 || true
 
+normalize_proxy_pair() {
+    local lower_name="$1"
+    local upper_name="$2"
+    local lower_value="${!lower_name:-}"
+    local upper_value="${!upper_name:-}"
+
+    if [ -n "${lower_value}" ] && [ -z "${upper_value}" ]; then
+        export "${upper_name}=${lower_value}"
+    elif [ -n "${upper_value}" ] && [ -z "${lower_value}" ]; then
+        export "${lower_name}=${upper_value}"
+    fi
+}
+
+mask_proxy_url() {
+    local value="$1"
+
+    if [ -z "${value}" ]; then
+        printf '%s' '<not set>'
+    elif [[ "${value}" =~ ^([^:]+://)([^/@]+)@(.*)$ ]]; then
+        printf '%s***@%s' "${BASH_REMATCH[1]}" "${BASH_REMATCH[3]}"
+    else
+        printf '%s' "${value}"
+    fi
+}
+
 if [ "${REBUILD}" = "true" ]; then
     echo "[5/6] Build docker image..."
-    docker compose -f docker/compose.yaml build
+
+    # Preserve host proxy settings. Compose forwards them as Docker build ARGs,
+    # while build.network=host makes host-local endpoints such as
+    # 127.0.0.1:12334 reachable from Dockerfile RUN commands.
+    normalize_proxy_pair http_proxy HTTP_PROXY
+    normalize_proxy_pair https_proxy HTTPS_PROXY
+    normalize_proxy_pair ftp_proxy FTP_PROXY
+    normalize_proxy_pair all_proxy ALL_PROXY
+    normalize_proxy_pair no_proxy NO_PROXY
+
+    echo "[build] http_proxy : $(mask_proxy_url "${http_proxy:-}")"
+    echo "[build] https_proxy: $(mask_proxy_url "${https_proxy:-}")"
+    echo "[build] all_proxy  : $(mask_proxy_url "${all_proxy:-}")"
+
+    # Keep the legacy builder for current project compatibility, but use plain,
+    # non-coloured progress output to avoid misleading red spinner text.
+    NO_COLOR=1 DOCKER_BUILDKIT=1 docker compose \
+        --progress plain \
+        -f docker/compose.yaml \
+        build px4-humble-gz
 else
     echo "[5/6] Skip docker build. Use '--build' if Dockerfile changed."
 fi
 
 echo "[cleanup] Remove old container if exists..."
+
+# From this point onward, this script invocation owns the SITL container
+# lifecycle. Earlier exits, --help, --list and image-build failures are safe.
+CLEANUP_ARMED="true"
+
 docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
 
 echo "[6/6] Run PX4 Gazebo SITL..."
@@ -263,36 +319,17 @@ docker compose -f docker/compose.yaml run \
             echo "[container] PX4_GZ_MODEL_POSE=<airframe default>"
         fi
 
-        build_gamma_arm_control_plugin() {
-            local plugin_dir="/workspace/VisionFlow-PX4/windshape_dev/plugins/gamma_arm_control"
-            local build_dir="${plugin_dir}/build"
-            local cache_file="${build_dir}/CMakeCache.txt"
-
-            if [ ! -f "${plugin_dir}/CMakeLists.txt" ]; then
-                echo "[container] Gamma arm control plugin source not found: ${plugin_dir}"
-                return 0
-            fi
-
-            if [ -f "${cache_file}" ] && ! grep -q "^CMAKE_HOME_DIRECTORY:INTERNAL=${plugin_dir}$" "${cache_file}"; then
-                echo "[container] Detected stale Gamma arm plugin CMake cache. Remove build/ and reconfigure..."
-                rm -rf "${build_dir}"
-            fi
-
-            echo "[container] Build and install Gamma arm control Gazebo plugin..."
-            cmake -S "${plugin_dir}" -B "${build_dir}"
-            cmake --build "${build_dir}"
-            sudo cmake --install "${build_dir}"
-        }
-
         run_px4_make() {
             if [ -n "${PX4_SELECTED_MODEL_POSE}" ]; then
                 PX4_GZ_MODEL_POSE="${PX4_SELECTED_MODEL_POSE}" \
                 PX4_GZ_WORLD="${PX4_SELECTED_WORLD}" \
                 make px4_sitl "${PX4_SELECTED_TARGET}" \
+                BUILD_BASE_DIR=build/docker \
                 EXTRA_CMAKE_ARGS="${PX4_SELECTED_EXTRA_CMAKE_ARGS}"
             else
                 PX4_GZ_WORLD="${PX4_SELECTED_WORLD}" \
                 make px4_sitl "${PX4_SELECTED_TARGET}" \
+                BUILD_BASE_DIR=build/docker \
                 EXTRA_CMAKE_ARGS="${PX4_SELECTED_EXTRA_CMAKE_ARGS}"
             fi
         }
@@ -377,14 +414,6 @@ docker compose -f docker/compose.yaml run \
             return "${build_status}"
         }
 
-        build_gamma_arm_control_plugin
-
-        sudo ldconfig
-        export GZ_SIM_SYSTEM_PLUGIN_PATH="/usr/local/lib:${GZ_SIM_SYSTEM_PLUGIN_PATH:-}"
-        export IGN_GAZEBO_SYSTEM_PLUGIN_PATH="/usr/local/lib:${IGN_GAZEBO_SYSTEM_PLUGIN_PATH:-}"
-        export LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH:-}"
-        export GAMMA_URDF_PATH="/workspace/VisionFlow-PX4/Tools/simulation/gz/models/gamma_arm/gamma_arm.urdf"
-
         BUILD_LOG="$(mktemp)"
         UCDR_RETRIES="${PX4_UCDR_HEADER_RETRIES:-1}"
         BUILD_ATTEMPT=1
@@ -407,8 +436,8 @@ docker compose -f docker/compose.yaml run \
 
             if [ "${STALE_CACHE_RETRIED}" = "false" ] && grep -Eq "CMakeCache.txt.*is different than the directory|needed by .* missing and no known rule to make it" "${BUILD_LOG}"; then
                 echo ""
-                echo "[container] Detected stale PX4 SITL build cache. Remove build/px4_sitl_default and retry..."
-                rm -rf /workspace/VisionFlow-PX4/build/px4_sitl_default
+                echo "[container] Detected stale PX4 SITL build cache. Remove build/docker/px4_sitl_default and retry..."
+                rm -rf /workspace/VisionFlow-PX4/build/docker/px4_sitl_default
                 STALE_CACHE_RETRIED="true"
                 BUILD_ATTEMPT=$((BUILD_ATTEMPT + 1))
                 continue

@@ -100,6 +100,11 @@ if [ -f /workspace/VisionFlow-PX4/install/setup.bash ]; then
     source_ros_setup /workspace/VisionFlow-PX4/install/setup.bash
 fi
 
+# MAVROS workspace (thirdparty/mavros-humble), built with colcon.
+if [ -f /workspace/VisionFlow-PX4/thirdparty/mavros-humble/install/setup.bash ]; then
+    source_ros_setup /workspace/VisionFlow-PX4/thirdparty/mavros-humble/install/setup.bash
+fi
+
 cd "${WORKDIR:-/workspace/VisionFlow-PX4}" 2>/dev/null || cd /
 
 if [ ! -f "${WEB_SCRIPT:-}" ]; then
@@ -159,6 +164,10 @@ source_ros_setup() {
 source_ros_setup /opt/ros/humble/setup.bash
 if [ -f /workspace/VisionFlow-PX4/install/setup.bash ]; then
     source_ros_setup /workspace/VisionFlow-PX4/install/setup.bash
+fi
+# MAVROS workspace (thirdparty/mavros-humble), built with colcon.
+if [ -f /workspace/VisionFlow-PX4/thirdparty/mavros-humble/install/setup.bash ]; then
+    source_ros_setup /workspace/VisionFlow-PX4/thirdparty/mavros-humble/install/setup.bash
 fi
 
 alias ls="ls --color=auto"

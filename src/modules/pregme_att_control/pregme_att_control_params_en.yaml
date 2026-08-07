@@ -8,9 +8,9 @@ parameters:
         long: Diagonal body inertia around the roll axis [kg m^2]. This value is used in the attitude controller inertia matrix.
           Tune it from vehicle mass properties; incorrect values change the torque feed-forward and gyroscopic compensation.
       type: float
-      default: 0.2
+      default: 0.35
       min: 0.0
-      max: 20.0
+      max: 2.0
       decimal: 2
       increment: 0.01
     USR_I_YY:
@@ -19,9 +19,9 @@ parameters:
         long: Diagonal body inertia around the pitch axis [kg m^2]. This value is used in the attitude controller inertia
           matrix. Tune it from vehicle mass properties; incorrect values change the torque feed-forward and gyroscopic compensation.
       type: float
-      default: 0.19
+      default: 0.61
       min: 0.0
-      max: 20.0
+      max: 2.0
       decimal: 2
       increment: 0.01
     USR_I_ZZ:
@@ -30,9 +30,9 @@ parameters:
         long: Diagonal body inertia around the yaw axis [kg m^2]. This value is used in the attitude controller inertia matrix.
           Tune it from vehicle mass properties; incorrect values change the torque feed-forward and gyroscopic compensation.
       type: float
-      default: 0.33
+      default: 0.68
       min: 0.0
-      max: 20.0
+      max: 2.0
       decimal: 2
       increment: 0.01
     USR_I_XY:
@@ -44,7 +44,7 @@ parameters:
       type: float
       default: 0.0
       min: 0.0
-      max: 20.0
+      max: 2.0
       decimal: 2
       increment: 0.01
     USR_I_XZ:
@@ -56,7 +56,7 @@ parameters:
       type: float
       default: 0.0
       min: 0.0
-      max: 20.0
+      max: 2.0
       decimal: 2
       increment: 0.01
     USR_I_YZ:
@@ -68,7 +68,7 @@ parameters:
       type: float
       default: 0.0
       min: 0.0
-      max: 20.0
+      max: 2.0
       decimal: 2
       increment: 0.01
     USR_LAMBDA_Q_X:
@@ -78,9 +78,9 @@ parameters:
           faster, but can increase required torque and excite oscillation if the rate loop, inertia values, or actuator authority
           are not matched.
       type: float
-      default: 20.0
+      default: 11.0
       min: 0.0
-      max: 60.0
+      max: 30.0
       decimal: 2
       increment: 0.1
     USR_LAMBDA_Q_Y:
@@ -90,9 +90,9 @@ parameters:
           faster, but can increase required torque and excite oscillation if the rate loop, inertia values, or actuator authority
           are not matched.
       type: float
-      default: 18.0
+      default: 14.0
       min: 0.0
-      max: 40.0
+      max: 30.0
       decimal: 2
       increment: 0.1
     USR_LAMBDA_Q_Z:
@@ -103,7 +103,7 @@ parameters:
       type: float
       default: 20.0
       min: 0.0
-      max: 40.0
+      max: 30.0
       decimal: 2
       increment: 0.1
     USR_K_Q_X:
@@ -112,7 +112,7 @@ parameters:
         long: Feedback gain applied to the roll-axis sliding surface. Increasing it improves disturbance rejection and tracking
           stiffness, but excessive values can cause high-frequency torque commands, vibration, or actuator saturation.
       type: float
-      default: 7.8
+      default: 10.0
       min: 0.0
       max: 30.0
       decimal: 2
@@ -123,7 +123,7 @@ parameters:
         long: Feedback gain applied to the pitch-axis sliding surface. Increasing it improves disturbance rejection and tracking
           stiffness, but excessive values can cause high-frequency torque commands, vibration, or actuator saturation.
       type: float
-      default: 8.6
+      default: 12.0
       min: 0.0
       max: 30.0
       decimal: 2
@@ -134,7 +134,7 @@ parameters:
         long: Feedback gain applied to the yaw-axis sliding surface. Increase carefully because yaw control authority is normally
           lower than roll and pitch on multicopters.
       type: float
-      default: 12.0
+      default: 18.0
       min: 0.0
       max: 30.0
       decimal: 2
@@ -145,9 +145,9 @@ parameters:
         long: Nonlinear gain L for the roll-axis extended-state observer. It scales the observer correction and disturbance
           estimate. Larger values react faster to model error or external disturbance, but also amplify gyro noise and vibration.
       type: float
-      default: 0.2
+      default: 0.1
       min: 0.0
-      max: 50.0
+      max: 10.0
       decimal: 2
     USR_ESO_L_Y:
       description:
@@ -155,9 +155,9 @@ parameters:
         long: Nonlinear gain L for the pitch-axis extended-state observer. It scales the observer correction and disturbance
           estimate. Larger values react faster to model error or external disturbance, but also amplify gyro noise and vibration.
       type: float
-      default: 0.2
+      default: 0.18
       min: 0.0
-      max: 50.0
+      max: 10.0
       decimal: 2
     USR_ESO_L_Z:
       description:
@@ -165,9 +165,9 @@ parameters:
         long: Nonlinear gain L for the yaw-axis extended-state observer. It scales the observer correction and disturbance
           estimate. Larger values react faster to model error or external disturbance, but also amplify gyro noise and vibration.
       type: float
-      default: 0.5
+      default: 0.05
       min: 0.0
-      max: 50.0
+      max: 10.0
       decimal: 2
     USR_ESO_EPSI:
       description:
@@ -178,7 +178,7 @@ parameters:
       type: float
       default: 1.0
       min: 0.0
-      max: 20.0
+      max: 10.0
       decimal: 2
     USR_ESO_C1:
       description:
@@ -188,7 +188,7 @@ parameters:
       type: float
       default: 0.3
       min: 0.0
-      max: 50.0
+      max: 10.0
       decimal: 2
     USR_ESO_C2:
       description:
@@ -198,7 +198,7 @@ parameters:
       type: float
       default: 0.5
       min: 0.0
-      max: 50.0
+      max: 10.0
       decimal: 2
     USR_A_PRESET_L:
       description:
@@ -208,7 +208,7 @@ parameters:
       type: float
       default: 1.0
       min: 0.0
-      max: 20.0
+      max: 10.0
       decimal: 2
     USR_A_PRESET_W:
       description:
@@ -237,7 +237,7 @@ parameters:
         long: Gain k applied to the preset trajectory before forming the shaped attitude error. Larger values make the controller
           follow the transient shaping term more strongly.
       type: float
-      default: 1.0
+      default: 0.0
       min: 0.0
       max: 1.0
       decimal: 2
@@ -248,9 +248,9 @@ parameters:
           torque is torque / USR_TAU_COE and then constrained to [-1, 1]. Larger values reduce normalized torque output; smaller
           values make the output stronger and easier to saturate.
       type: float
-      default: 8.0
-      min: 6.0
-      max: 40.0
+      default: 72.0
+      min: 4.0
+      max: 200.0
       decimal: 2
       increment: 0.1
     USR_ROLLRATE_MAX:
@@ -349,7 +349,7 @@ parameters:
         short: Hover thrust
         long: Normalized thrust corresponding to hover. With the default throttle curve, center stick maps to this value.
       type: float
-      default: 0.68
+      default: 0.50
       min: 0.0
       max: 0.95
       decimal: 2
@@ -379,6 +379,14 @@ parameters:
       default: 0
       min: 0
       max: 2
+    USR_COM_COMP_EN:
+      description:
+        short: Enable CoM coupling compensation
+        long: Enable the center-of-mass (CoM) coupling compensation from the robotic arm. When enabled, the attitude controller
+          computes gravity-torque compensation from the arm's CoM offset and adds it to the ESO disturbance estimate.
+          Disable to run without arm coupling compensation.
+      type: boolean
+      default: true
     CBRK_RATE_CTRL:
       description:
         short: Rate-control output circuit breaker

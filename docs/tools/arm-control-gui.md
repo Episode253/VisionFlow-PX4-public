@@ -1,11 +1,62 @@
-# 机械臂控制面板
+# Arm Control GUI
 
-本页介绍 Gamma 机械臂的 Web 控制面板（`gamma_arm_web_control`），包括关节控制界面、末端执行器姿态控制、抓取操作和实时状态反馈的使用方法。
+This page introduces the Gamma arm Web control panel (`gamma_arm_web_control`), which provides a browser-based interface for joint position control, end-effector pose manipulation, gripper operation, and real-time status feedback.
 
-> **TODO**: 本页正在建设中，内容将逐步完善。
+## Overview
 
-## 相关页面
+The arm control GUI is a QtWebEngine-based embedded web application that runs inside the Docker container. It connects to the simulation via rosbridge WebSocket and provides:
 
-- [工具链总览](index.md)
-- [UAV 控制脚本](uav-control-scripts.md)
-- [Gamma 机械臂集成](../modules/gamma-arm-integration/index.md)
+- **Joint position sliders** — control each of the 6 arm joints individually
+- **End-effector pose display** — real-time position and orientation of the gripper
+- **Gripper control** — open/close the gripper with position or velocity commands
+- **Status feedback** — current joint angles, velocities, and system state
+
+## Quick Start
+
+```bash
+# Launch from host (auto-starts inside running container)
+bash docker/into_gz_sitl.sh
+```
+
+After entering the container, the Web control starts automatically. Access it at:
+
+**http://127.0.0.1:9000/index.html**
+
+rosbridge WebSocket: **ws://127.0.0.1:9090**
+
+## Manual Launch
+
+```bash
+bash windshape_dev/arm_control/gamma_arm/gamma_arm_web_control.sh
+```
+
+### Environment Variables
+
+| Variable | Default | Description |
+|------|--------|------|
+| `GUI_ENABLE` | `1` | Launch embedded QtWebEngine GUI (0 = backend only) |
+| `WEB_PORT` | `9000` | Web UI port |
+| `ROSBRIDGE_PORT` | `9090` | rosbridge WebSocket port |
+| `WEB_HOST` | `127.0.0.1` | Bind address |
+| `AUTO_RESTART` | `1` | Auto-restart on process crash |
+| `GZ_KEEPALIVE` | `0` | Keep Gazebo command topics subscribed |
+| `LOG_ENABLE` | `0` | Write subprocess logs to `./log/` |
+
+## Helper Commands (inside container)
+
+| Command | Description |
+|------|------|
+| `webstart` | Start Web control with current settings |
+| `webstart_gui` | Start with embedded GUI enabled |
+| `webstart_headless` | Start backend only (no GUI window) |
+| `webstop` | Stop Web control |
+| `weblog` | Show recent logs |
+| `webattach` | Attach to tmux Web control session |
+| `webps` | Show related processes |
+| `webcheck` | Check processes, HTTP endpoint, and ROS topics |
+
+## Related Pages
+
+- [Tools Overview](index.md)
+- [UAV Control Scripts](uav-control-scripts.md)
+- [Gamma Arm Integration](../modules/gamma-arm-integration/index.md)

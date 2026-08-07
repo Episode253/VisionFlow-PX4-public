@@ -1,0 +1,22 @@
+{
+  "name": "visionflow-px4-docs",
+  "version": "1.0.0",
+  "description": "VisionFlow-PX4 developer manual — VitePress documentation site",
+  "license": "CC-BY-4.0",
+  "repository": "https://github.com/Renwang-Huang/VisionFlow-PX4.git",
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev .",
+    "build": "NODE_OPTIONS='--max-old-space-size=8192' vitepress build .",
+    "preview": "vitepress preview ."
+  },
+  "dependencies": {
+    "medium-zoom": "^1.1.0",
+    "mermaid": "^11.4.1",
+    "vitepress": "^1.6.3",
+    "vitepress-plugin-mermaid": "^2.0.17"
+  },
+  "devDependencies": {
+    "markdown-it-mathjax3": "^4.3.2"
+  }
+}

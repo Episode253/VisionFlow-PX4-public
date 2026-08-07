@@ -1,76 +1,76 @@
-# 快速验证
+# Quick Verification
 
-完成安装和启动后，通过以下步骤验证环境是否正常工作。
+After completing installation and launch, verify that the environment is working properly through the following steps.
 
-## 1. 验证 Docker 环境
+## 1. Verify Docker Environment
 
 ```bash
-# 检查 Docker 是否运行
+# Check if Docker is running
 docker info
 
-# 检查 NVIDIA GPU 是否可用
+# Check if NVIDIA GPU is available
 docker run --rm --gpus all nvidia/cuda:12.2-base nvidia-smi
 ```
 
-## 2. 验证 PX4 SITL
+## 2. Verify PX4 SITL
 
 ```bash
-# 进入 Docker 容器
+# Enter Docker container
 bash docker/into_gz_sitl.sh
 
-# 检查 PX4 版本
+# Check PX4 version
 px4 --version
 
-# 列出可用的仿真目标
+# List available simulation targets
 ninja -C build/px4_sitl_default -t targets | grep "^gz_"
 ```
 
-## 3. 验证 Gazebo 仿真
+## 3. Verify Gazebo Simulation
 
 ```bash
-# 启动最小化仿真
+# Launch minimal simulation
 gz sim -r Tools/simulation/gz/worlds/laboratory_landingbox.sdf
 ```
 
-应看到 Gazebo 窗口打开，显示实验室场景。
+You should see a Gazebo window open, displaying the laboratory scene.
 
-## 4. 验证 ROS 2 桥接
+## 4. Verify ROS 2 Bridge
 
-在另一个终端中：
+In another terminal:
 
 ```bash
-# 启动数据桥接
+# Start data bridge
 bash windshape_dev/data_stream/gz_bridge/bridge_gz_ros.sh
 
-# 检查话题
+# Check topics
 ros2 topic list
 ```
 
-应能看到 `/gz/camera/...` 和 `/camera/...` 等桥接话题。
+You should see bridged topics such as `/gz/camera/...` and `/camera/...`.
 
-## 5. 验证 QGroundControl 连接
+## 5. Verify QGroundControl Connection
 
-启动 QGroundControl 后，应能自动连接到 PX4 SITL（默认 UDP 端口 14550）。
+After launching QGroundControl, it should automatically connect to PX4 SITL (default UDP port 14550).
 
-检查连接状态：
-- 车辆状态显示为 "Ready"
-- 可以查看传感器数据
-- 可以发送控制指令
+Check connection status:
+- Vehicle status shows "Ready"
+- Sensor data can be viewed
+- Control commands can be sent
 
-## 6. 验证机械臂控制
+## 6. Verify Arm Control
 
 ```bash
-# 启动 Gamma 臂 Web 控制
+# Launch Gamma arm web control
 bash windshape_dev/arm_control/gamma_arm/gamma_arm_web_control.sh
 ```
 
-在浏览器中打开显示的地址，应能看到机械臂控制面板。
+Open the displayed address in a browser; you should see the arm control panel.
 
-## 验证清单
+## Verification Checklist
 
-- [ ] Docker 镜像构建成功
-- [ ] Gazebo 场景正常加载
-- [ ] PX4 SITL 运行无报错
-- [ ] ROS 2 话题桥接正常
-- [ ] QGroundControl 可连接
-- [ ] 机械臂控制界面可访问
+- [ ] Docker image built successfully
+- [ ] Gazebo scene loads correctly
+- [ ] PX4 SITL runs without errors
+- [ ] ROS 2 topic bridging works correctly
+- [ ] QGroundControl can connect
+- [ ] Arm control interface is accessible

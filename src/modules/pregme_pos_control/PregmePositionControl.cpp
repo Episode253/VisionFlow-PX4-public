@@ -219,6 +219,8 @@ int PregmePositionControl::parameters_update(bool force)
 		_control.setPresetTrajParas(_param_PresetTraj_l.get(), _param_PresetTraj_w.get(),
 					    _param_PresetTraj_epsilon.get(), _param_PresetTraj_k.get());
 
+		_control.setCoMCompensationEnabled(_param_pregme_com_comp_en.get());
+
 		if (_param_pregme_xy_cruise.get() > _param_pregme_xy_vel_max.get()) {
 			_param_pregme_xy_cruise.set(_param_pregme_xy_vel_max.get());
 			_param_pregme_xy_cruise.commit();
@@ -534,6 +536,7 @@ void PregmePositionControl::Run()
 				}
 
 				vehicle_local_position_setpoint_s failsafe_setpoint{};
+				reset_setpoint_to_nan(failsafe_setpoint);
 				failsafe(time_stamp_now, failsafe_setpoint, states, !was_in_failsafe);
 
 				_vehicle_constraints.timestamp = 0;

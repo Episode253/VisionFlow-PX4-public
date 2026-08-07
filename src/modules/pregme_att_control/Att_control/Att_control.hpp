@@ -1,3 +1,9 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Lead Developer       : Renwang Huang
+// Other Contributors   : Hangan Xu
+// Created              : 2026-07-29
+// ─────────────────────────────────────────────────────────────────────────────
+
 #pragma once
 
 #include <matrix/matrix/math.hpp>
@@ -49,19 +55,19 @@ public:
 	 * @param landed true when vehicle is landed; controller outputs are reset to zero
 	 * @param torque output body torque command [N*m before external normalization]
 	 * @param rates_sp output body rate setpoint for logging/compatibility [rad/s]
-	 * @param pos_z local position z in PX4 NED frame [m]
-	 * @param R_body_to_world rotation from body to world frame
 	 */
 	void update(const matrix::Quatf &q,
 		    const matrix::Vector3f &rate,
 		    float dt,
 		    bool landed,
 		    matrix::Vector3f &torque,
-		    matrix::Vector3f &rates_sp,
-		    float pos_z);
+		    matrix::Vector3f &rates_sp);
 
 	/** Pull latest system COM from ArmJointSubscriber and compute coupling compensation. */
 	void updateCouplingCompensation();
+
+	/** Enable or disable CoM coupling compensation. */
+	void setCoMCompensationEnabled(bool enabled) { _com_comp_enabled = enabled; }
 
 	void getRateControlStatus(rate_ctrl_status_s &rate_ctrl_status) const;
 
@@ -71,8 +77,9 @@ private:
 				float dt,
 				matrix::Vector3f &torque,
 				matrix::Vector3f &rates_sp,
-				float pos_z);
+				bool eso_enabled);
 
+	void initializeESO(const matrix::Vector3f &rate);
 	void UsrAttitudeESO(matrix::Vector3f bm_omega, matrix::Vector3f u, float dt);
 
 	using Vector4f = matrix::Vector<float, 4>;
@@ -97,6 +104,9 @@ private:
 		float c2{0.5f};
 	} _usr_eso;
 
+	// False after reset; initialized from measured body rate on the first airborne cycle.
+	bool _eso_initialized{false};
+
 	struct usr_att_controller {
 		Matrix3f lambda_q;
 		Matrix3f K_q;
@@ -111,6 +121,7 @@ private:
 	matrix::Vector3f _p_c_b{};                     // 系统总质心 (机体系 NED), 从 ArmJointSubscriber 读取
 	matrix::Vector3f _delta_omega_comp{};          // Δω = I⁻¹[m_total·p_C^B × R^T·g]
 	float _coupling_total_mass{0.f};               // 缓存的总质量
+	bool _com_comp_enabled{true};                  // 质心补偿开关
 
 	struct preset_traj {
 		float l{1.f};

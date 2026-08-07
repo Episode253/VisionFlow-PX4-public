@@ -1,0 +1,45 @@
+# Ignore the entire build context by default.
+**
+
+# Tools/setup/requirements.txt
+!Tools/
+Tools/**
+
+!Tools/setup/
+Tools/setup/**
+
+!Tools/setup/requirements.txt
+
+# windshape_dev/flight_review/app/requirements.txt
+!windshape_dev/
+windshape_dev/**
+
+!windshape_dev/flight_review/
+windshape_dev/flight_review/**
+
+!windshape_dev/flight_review/app/
+windshape_dev/flight_review/app/**
+
+!windshape_dev/flight_review/app/requirements.txt
+
+# Dockerfile and entrypoint
+!docker/
+docker/**
+
+!docker/Dockerfile.humble-gz
+!docker/entrypoint.sh
+
+# MAVROS GeographicLib dataset installer
+!thirdparty/
+thirdparty/**
+
+!thirdparty/mavros-humble/
+thirdparty/mavros-humble/**
+
+!thirdparty/mavros-humble/mavros/
+thirdparty/mavros-humble/mavros/**
+
+!thirdparty/mavros-humble/mavros/scripts/
+thirdparty/mavros-humble/mavros/scripts/**
+
+!thirdparty/mavros-humble/mavros/scripts/install_geographiclib_datasets.sh

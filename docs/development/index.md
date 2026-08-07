@@ -1,12 +1,13 @@
-# 开发指南
+# Development Guide
 
-本页提供 VisionFlow-PX4 的开发指南总览，包括编译流程、模块开发流程、代码风格规范和贡献流程。面向希望扩展或修改项目功能的开发者。
+This page provides an overview of the VisionFlow-PX4 development guide, including the build process, module development workflow, code style conventions, and contribution workflow. It is intended for developers who wish to extend or modify the project's functionality.
 
-> **TODO**: 本页正在建设中，内容将逐步完善。
+> **TODO**: This page is under construction. Content will be added gradually.
 
-## 相关页面
+## Related Pages
 
-- [编译指南](building.md)
-- [添加模块](adding-modules.md)
-- [贡献指南](contributing.md)
-- [系统架构](../architecture/index.md)
+- [Build Guide](building.md)
+- [Adding Modules](adding-modules.md)
+- [Contributing Guide](contributing.md)
+- [Maintenance Guide](maintenance.md)
+- [System Architecture](../architecture/index.md)

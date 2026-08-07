@@ -1,26 +1,26 @@
-# 通信栈
+# Communication Stack
 
-VisionFlow-PX4 支持多种通信协议和中间件，实现飞控、仿真、地面站和 ROS2 之间的数据交换。
+VisionFlow-PX4 supports multiple communication protocols and middleware, enabling data exchange between the flight controller, simulation, ground station, and ROS2.
 
-## 通信协议总览
+## Communication Protocol Overview
 
 ```mermaid
 graph LR
-    subgraph "飞控内部"
-        uORB[uORB 消息总线]
+    subgraph "Flight Controller Internal"
+        uORB[uORB Message Bus]
     end
 
-    subgraph "替代中间件"
+    subgraph "Alternative Middleware"
         Zenoh[Zenoh DDS]
-        MuORB[muORB 聚合器]
+        MuORB[muORB Aggregator]
     end
 
-    subgraph "外部通信"
+    subgraph "External Communication"
         MAV[MAVLink]
         DDS[uXRCE-DDS]
     end
 
-    subgraph "ROS2 集成"
+    subgraph "ROS2 Integration"
         Bridge[ros-gz Bridge]
         Topics[ROS2 Topics]
     end
@@ -33,65 +33,64 @@ graph LR
     Bridge --> Topics
 ```
 
-## uORB 消息总线
+## uORB Message Bus
 
-uORB（micro Object Request Broker）是 PX4 的内部消息总线，采用发布-订阅模式。
+uORB (micro Object Request Broker) is PX4's internal message bus, using a publish-subscribe pattern.
 
-### 消息数量
+### Message Count
 
-- 总计约 180+ `.msg` 文件
-- 包括标准 PX4 消息和自定义消息
+- Approximately 180+ `.msg` files in total
+- Includes standard PX4 messages and custom messages
 
-### 自定义消息
+### Custom Messages
 
-| 消息 | 用途 | 发布者 |
+| Message | Purpose | Publisher |
 |------|------|--------|
-| `ArmJointState.msg` | 机械臂关节状态 | gamma_arm_dynamics |
-| `CollisionConstraints.msg` | 碰撞避免约束 | pregme_pos_control |
-| `NeuralControl.msg` | 神经网络控制调试 | mc_nn_control |
-| `TrajectorySetpoint6dof.msg` | 6-DOF 轨迹设定值 | 位置控制器 |
-| `Rover*` 系列 | 小车专用控制消息 | rover_differential |
+| `ArmJointState.msg` | Arm joint state | gamma_arm_dynamics |
+| `CollisionConstraints.msg` | Collision avoidance constraints | pregme_pos_control |
+| `TrajectorySetpoint6dof.msg` | 6-DOF trajectory setpoint | position controller |
+| `Rover*` series | Rover-specific control messages | rover_differential |
 
-## Zenoh 中间件
+## Zenoh Middleware
 
-Zenoh 是 DDS 的轻量级替代方案，适用于资源受限的环境。
+Zenoh is a lightweight alternative to DDS, suitable for resource-constrained environments.
 
-### 特点
+### Features
 
-- 低开销，适合嵌入式部署
-- 支持 publish-subscribe 和 request-reply 两种模式
-- 可与标准 DDS 互操作
+- Low overhead, suitable for embedded deployment
+- Supports both publish-subscribe and request-reply modes
+- Interoperable with standard DDS
 
-### 配置
+### Configuration
 
-Zenoh 模块位于 `src/modules/zenoh/`，通过 uORB 消息与飞控核心通信。
+The Zenoh module is located at `src/modules/zenoh/` and communicates with the flight control core via uORB messages.
 
-## uXRCE-DDS 客户端
+## uXRCE-DDS Client
 
-uXRCE-DDS 通过串行链路（UART/CAN/USB）实现 DDS 通信。
+uXRCE-DDS implements DDS communication over serial links (UART/CAN/USB).
 
-### 用途
+### Use Cases
 
-- 将 PX4 数据桥接到远程 ROS2 节点
-- 支持低带宽环境下的实时控制
-- 硬件在环仿真的通信通道
+- Bridge PX4 data to remote ROS2 nodes
+- Support real-time control in low-bandwidth environments
+- Communication channel for hardware-in-the-loop simulation
 
-### 模块
+### Module
 
-位于 `src/modules/uxrce_dds_client/`，通过 UDP 端口 14540/14557 与 MAVROS 等工具通信。
+Located at `src/modules/uxrce_dds_client/`, communicates with tools like MAVROS via UDP ports 14540/14557.
 
 ## MAVLink
 
-MAVLink 是无人机领域的事实标准通信协议。
+MAVLink is the de facto standard communication protocol in the UAV domain.
 
-### 连接配置
+### Connection Configuration
 
-| 方向 | 地址 | 用途 |
+| Direction | Address | Purpose |
 |------|------|------|
-| SITL → GCS | `udp://:14540@localhost:14557` | 发送到 QGroundControl |
-| MAVROS | `udp://:14540@localhost:14557` | ROS2 与飞控通信 |
+| SITL -> GCS | `udp://:14540@localhost:14557` | Send to QGroundControl |
+| MAVROS | `udp://:14540@localhost:14557` | ROS2 to flight controller communication |
 
-### MAVROS 启动
+### MAVROS Launch
 
 ```bash
 source thirdparty/install/setup.bash && \
@@ -100,23 +99,23 @@ source thirdparty/install/setup.bash && \
 
 ## ros-gz Bridge
 
-ros-gz Bridge 实现 Gazebo 与 ROS2 之间的数据桥接。
+The ros-gz Bridge provides data bridging between Gazebo and ROS2.
 
-### 启动方式
+### Launch Commands
 
 ```bash
-# 数据桥接
+# Data bridging
 bash windshape_dev/data_stream/gz_bridge/bridge_gz_ros.sh
 
-# 摄像头流
+# Camera stream
 bash windshape_dev/data_stream/image_stream/camera_stream.sh
 ```
 
-### 桥接话题示例
+### Bridged Topic Examples
 
-| Gazebo Topic | ROS2 Topic | 说明 |
+| Gazebo Topic | ROS2 Topic | Description |
 |-------------|-----------|------|
-| `/camera/image_raw` | `/camera/image_raw` | 摄像头图像 |
-| `/imu` | `/imu` | 惯性测量单元 |
-| `/gps/fix` | `/gps/fix` | GPS 定位 |
-| `/joint_states` | `/joint_states` | 关节状态 |
+| `/camera/image_raw` | `/camera/image_raw` | Camera image |
+| `/imu` | `/imu` | Inertial measurement unit |
+| `/gps/fix` | `/gps/fix` | GPS positioning |
+| `/joint_states` | `/joint_states` | Joint state |

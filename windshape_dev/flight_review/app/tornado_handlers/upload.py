@@ -127,15 +127,11 @@ class UploadHandler(TornadoRequestHandlerBase):
                      'allowForAnalysis', 'obfuscated', 'source', 'type',
                      'feedback', 'windSpeed', 'rating', 'videoUrl', 'public',
                      'vehicleName', 'redirect'])
-                description = escape(form_data['description'].decode("utf-8"))
-                email = form_data['email'].decode("utf-8")
+                description = ''
+                email = ''
                 upload_type = 'personal'
-                if 'type' in form_data:
-                    upload_type = form_data['type'].decode("utf-8")
                 source = 'webui'
                 title = '' # may be used in future...
-                if 'source' in form_data:
-                    source = form_data['source'].decode("utf-8")
                 obfuscated = 0
                 if 'obfuscated' in form_data:
                     if form_data['obfuscated'].decode("utf-8") == 'true':
@@ -145,11 +141,7 @@ class UploadHandler(TornadoRequestHandlerBase):
                     if form_data['allowForAnalysis'].decode("utf-8") == 'true':
                         allow_for_analysis = 1
                 feedback = ''
-                if 'feedback' in form_data:
-                    feedback = escape(form_data['feedback'].decode("utf-8"))
-                should_redirect = source != 'QGroundControl'
-                if 'redirect' in form_data:
-                    should_redirect = form_data['redirect'].decode("utf-8") == 'true'
+                should_redirect = False
                 wind_speed = -1
                 rating = ''
                 stored_email = ''

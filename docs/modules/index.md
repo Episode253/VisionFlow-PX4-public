@@ -1,50 +1,43 @@
-# 模块索引
+# Module Index
 
-VisionFlow-PX4 包含 51 个 PX4 模块，分为标准模块和自定义模块两大类。
+VisionFlow-PX4 contains 51 PX4 modules, divided into standard modules and custom modules.
 
-## 模块分类
+## Module Categories
 
-| 类别 | 模块数 | 说明 |
+| Category | Module Count | Description |
 |------|--------|------|
-| 控制 | 12 | 姿态、位置、速率、自整定等 |
-| 状态估计 | 6 | EKF2、LPE、着陆点估计等 |
-| 仿真 | 8 | Gazebo 桥接、传感器模拟等 |
-| 通信 | 4 | MAVLink、Zenoh、uXRCE-DDS、muORB |
-| 传感器 | 3 | 传感器初始化、校准、温度补偿 |
-| 系统管理 | 6 | 指挥官、日志、负载监控等 |
-| 其他 | 12 | 电池、事件、数据管理等 |
+| Control | 12 | Attitude, position, rate, auto-tuning, etc. |
+| State Estimation | 6 | EKF2, LPE, landing point estimation, etc. |
+| Simulation | 8 | Gazebo bridges, sensor simulation, etc. |
+| Communication | 4 | MAVLink, Zenoh, uXRCE-DDS, muORB |
+| Sensors | 3 | Sensor initialization, calibration, temperature compensation |
+| System Management | 6 | Commander, logger, load monitoring, etc. |
+| Other | 12 | Battery, events, data management, etc. |
 
-## 自定义模块
+## Custom Modules
 
-以下模块是本项目的核心贡献：
+The following modules are the core contributions of this project:
 
-| 模块 | 说明 |
+| Module | Description |
 |------|------|
-| `pregme_att_control` | PreGME 滑模预设性能姿态控制 |
-| `pregme_pos_control` | PreGME 滑模预设性能位置控制 |
-| `mc_nn_control` | 基于 TensorFlow Lite Micro 的神经网络控制 |
-| `rover_differential` | 差动驱动小车控制器 |
-| `zenoh` | Zenoh DDS 替代中间件 |
-| `uxrce_dds_client` | uXRCE-DDS 客户端 |
-| `muorb` | micro-ORB 聚合器 |
-| `camera_feedback` | 相机反馈处理 |
+| `pregme_att_control` | PreGME sliding mode prescribed performance attitude control |
+| `pregme_pos_control` | PreGME sliding mode prescribed performance position control |
+| `uxrce_dds_client` | uXRCE-DDS client |
+| `muorb` | micro-ORB aggregator |
+| `camera_feedback` | Camera feedback processing |
 
-## 标准 PX4 模块（部分）
+## Standard PX4 Modules (Partial)
 
-| 模块 | 说明 |
+| Module | Description |
 |------|------|
-| `ekf2` | 扩展卡尔曼滤波器 v2 |
-| `commander` | 飞行模式和管理器 |
-| `navigator` | 任务导航 |
-| `control_allocator` | 执行器分配 |
-| `gimbal` | 云台管理器 |
-| `logger` | ULog 数据记录 |
-| `mavlink` | MAVLink 协议处理 |
+| `ekf2` | Extended Kalman Filter v2 |
+| `commander` | Flight mode and manager |
+| `navigator` | Mission navigation |
+| `control_allocator` | Actuator allocation |
+| `gimbal` | Gimbal manager |
+| `logger` | ULog data logging |
+| `mavlink` | MAVLink protocol processing |
 
-## 详细文档
+---
 
-- [PreGME 控制器](pregme-controllers/index.md) — 预设性能控制详解
-- [Gamma 机械臂集成](gamma-arm-integration/index.md) — 机械臂动力学与插件
-- [神经网络控制](neural-network-control/index.md) — TFLite 集成
-- [差动小车控制](rover-controller/index.md) — 地面机器人控制
-- [Zenoh 中间件](zenoh-middleware/index.md) — 轻量级 DDS 替代
+*Note: PreGME Controllers and Gamma Arm Integration docs have been moved to the top-level sidebar for direct access.

@@ -1,12 +1,12 @@
-# 添加新板卡
+# Adding New Boards
 
-本页提供向 VisionFlow-PX4 添加新飞控板支持的完整指南，包括 Bootloader 配置、驱动移植、设备树修改和参数文件创建的步骤说明。
+This page provides a complete guide for adding new flight controller board support to VisionFlow-PX4, including steps for Bootloader configuration, driver porting, device tree modification, and parameter file creation.
 
-> **TODO**: 本页正在建设中，内容将逐步完善。
+> **TODO**: This page is under construction, content will be gradually improved.
 
-## 相关页面
+## Related Pages
 
-- [硬件支持总览](index.md)
-- [支持板卡列表](supported-boards.md)
-- [编译指南](../development/building.md)
-- [添加模块](../development/adding-modules.md)
+- [Hardware Support Overview](index.md)
+- [Supported Boards List](supported-boards.md)
+- [Build Guide](../development/building.md)
+- [Adding Modules](../development/adding-modules.md)

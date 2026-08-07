@@ -28,10 +28,12 @@ endif()
 
 if(NOT microcdr_FOUND)
     ExternalProject_Add(microcdr
-        GIT_REPOSITORY
-            https://github.com/eProsima/Micro-CDR.git
-        GIT_TAG
-            ${_microcdr_tag}
+        SOURCE_DIR
+            ${CMAKE_CURRENT_LIST_DIR}/../../third_party/Micro-CDR
+        DOWNLOAD_COMMAND
+            ""
+        UPDATE_COMMAND
+            ""
         PREFIX
             ${PROJECT_BINARY_DIR}/microcdr
         INSTALL_DIR
