@@ -25,7 +25,7 @@ parameters:
         short: Z 轴位置 lambda 增益
         long: 垂向位置通道的 lambda_p 对角增益，用于塑造外环滑模面中的高度误差收敛过程。数值越大，高度修正越强，但垂向运动也会更加敏感。
       type: float
-      default: 2.4
+      default: 2.6
       min: 0.0
       max: 5.0
       decimal: 2

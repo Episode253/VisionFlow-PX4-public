@@ -68,3 +68,10 @@ param set-default USR_LAMBDA_Q_Z 12.00
 param set-default USR_I_YY 0.40
 param set-default USR_I_ZZ 0.40
 param set-default USR_YAWRATE_MAX 40.0
+
+# Allow arming without QGroundControl / RC.
+param set-default COM_RCL_EXCEPT 7
+param set-default NAV_RCL_ACT 0
+param set-default NAV_DLL_ACT 0
+param set-default COM_ARM_WO_GPS 1
+param set-default SIM_BAT_ENABLE 0
