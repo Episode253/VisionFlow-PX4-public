@@ -75,3 +75,18 @@ param set-default NAV_RCL_ACT 0
 param set-default NAV_DLL_ACT 0
 param set-default COM_ARM_WO_GPS 1
 param set-default SIM_BAT_ENABLE 0
+
+param set-default MC_ROLLRATE_K 1.2
+param set-default MC_ROLLRATE_D 0.0036
+param set-default MC_ROLLRATE_I 0.35
+param set-default MC_PITCHRATE_K 1.58
+param set-default MC_PITCHRATE_D 0.004
+param set-default MC_PITCHRATE_I 0.35
+param set-default MC_YAWRATE_K 1.45
+param set-default MC_YAWRATE_D 0.3
+
+param set-default MC_ROLL_P 4.5
+param set-default MC_PITCH_P 6.0
+
+param set-default MPC_XY_VEL_P_ACC 2.0
+param set-default MPC_XY_VEL_D_ACC 0.3
