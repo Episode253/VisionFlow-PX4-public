@@ -17,6 +17,8 @@ param set-default COM_ARM_WO_GPS 1
 
 # SITL: ignore power/health preflight so arming is not denied.
 param set-default COM_POWER_OVERRIDE 1
+# Force it (overrides any saved param cache) so SITL can arm.
+param set COM_POWER_OVERRIDE 1
 
 # X500 with a roof-mounted solid-state 3D LiDAR and an odometry publisher.
 # Model SDF: Tools/simulation/gz/models/x500_lidar/model.sdf
