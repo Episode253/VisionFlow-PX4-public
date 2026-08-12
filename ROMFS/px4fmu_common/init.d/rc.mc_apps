@@ -9,13 +9,13 @@
 control_allocator start
 
 # Start Official Multicopter Rate Controller.
-# mc_rate_control start
+mc_rate_control start
 
 # Start Official Multicopter Attitude Controller.
-# mc_att_control start
+mc_att_control start
 
 # Start Pregme Attitude Controller.
-pregme_att_control start
+# pregme_att_control start
 
 if param greater -s MC_AT_EN 0
 then
@@ -27,10 +27,10 @@ mc_hover_thrust_estimator start
 flight_mode_manager start
 
 # Start Official Position Controller.
-# mc_pos_control start
+mc_pos_control start
 
 # Start Pregme Position Controller.
-pregme_pos_control start
+# pregme_pos_control start
 
 # Start Multicopter Land Detector.
 land_detector start multicopter
