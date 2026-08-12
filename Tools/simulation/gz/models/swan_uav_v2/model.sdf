@@ -277,7 +277,7 @@
     <link name="rot1_Link">
       <pose relative_to="rot1_Joint">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0 0 -0.044441 0 0 0</pose>
+        <pose>0 0 -0.04471 0 0 0</pose>
         <mass>0.471</mass>
         <inertia>
           <ixx>2.787E-04</ixx>
@@ -370,7 +370,7 @@
     <link name="rot4_Link">
       <pose relative_to="rot4_Joint">0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0 0 -0.045023 0 0 0</pose>
+        <pose>0 0 -0.04471 0 0 0</pose>
         <mass>0.471</mass>
         <inertia>
           <ixx>2.787E-04</ixx>
@@ -403,7 +403,7 @@
       <parent>base_link</parent>
       <child>rot1_Link</child>
       <axis>
-        <xyz>0 0 -1</xyz>
+        <xyz>0 0 1</xyz>
         <limit>
           <lower>-1e+16</lower>
           <upper>1e+16</upper>
@@ -418,11 +418,11 @@
     </joint>
 
     <joint name="rot2_Joint" type="revolute">
-      <pose relative_to="base_link">-0.27747 0.4055 -0.058247 0.038594 0.0021601 1.48</pose>
+      <pose relative_to="base_link">-0.27747 0.4055 -0.058247 0 0 1.48</pose>
       <parent>base_link</parent>
       <child>rot2_Link</child>
       <axis>
-        <xyz>0 0 -1</xyz>
+        <xyz>0 0 1</xyz>
         <limit>
           <lower>-1e+16</lower>
           <upper>1e+16</upper>
@@ -437,11 +437,11 @@
     </joint>
 
     <joint name="rot3_Joint" type="revolute">
-      <pose relative_to="base_link">0.32013 0.38551 -0.058348 0.13586 -0.002121 -1.5902</pose>
+      <pose relative_to="base_link">0.32013 0.38551 -0.058348 0 0 -1.5902</pose>
       <parent>base_link</parent>
       <child>rot3_Link</child>
       <axis>
-        <xyz>0 0 -1</xyz>
+        <xyz>0 0 1</xyz>
         <limit>
           <lower>-1e+16</lower>
           <upper>1e+16</upper>
@@ -456,11 +456,11 @@
     </joint>
 
     <joint name="rot4_Joint" type="revolute">
-      <pose relative_to="base_link">-0.30506 -0.38852 -0.058253 0.050542 0.0021537 1.4933</pose>
+      <pose relative_to="base_link">-0.30506 -0.38852 -0.058253 0 0 1.4933</pose>
       <parent>base_link</parent>
       <child>rot4_Link</child>
       <axis>
-        <xyz>0 0 -1</xyz>
+        <xyz>0 0 1</xyz>
         <limit>
           <lower>-1e+16</lower>
           <upper>1e+16</upper>
@@ -486,7 +486,7 @@
       <motorConstant>6.0e-05</motorConstant>
       <momentConstant>0.06</momentConstant>
       <commandSubTopic>command/motor_speed</commandSubTopic>
-      <motorNumber>0</motorNumber>
+      <actuator_number>0</actuator_number>
       <rotorDragCoefficient>0.000175</rotorDragCoefficient>
       <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
       <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
@@ -503,7 +503,7 @@
       <motorConstant>6.0e-05</motorConstant>
       <momentConstant>0.06</momentConstant>
       <commandSubTopic>command/motor_speed</commandSubTopic>
-      <motorNumber>1</motorNumber>
+      <actuator_number>1</actuator_number>
       <rotorDragCoefficient>0.000175</rotorDragCoefficient>
       <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
       <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
@@ -520,7 +520,7 @@
       <motorConstant>6.0e-05</motorConstant>
       <momentConstant>0.06</momentConstant>
       <commandSubTopic>command/motor_speed</commandSubTopic>
-      <motorNumber>2</motorNumber>
+      <actuator_number>2</actuator_number>
       <rotorDragCoefficient>0.000175</rotorDragCoefficient>
       <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
       <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
@@ -537,7 +537,7 @@
       <motorConstant>6.0e-05</motorConstant>
       <momentConstant>0.06</momentConstant>
       <commandSubTopic>command/motor_speed</commandSubTopic>
-      <motorNumber>3</motorNumber>
+      <actuator_number>3</actuator_number>
       <rotorDragCoefficient>0.000175</rotorDragCoefficient>
       <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
       <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
