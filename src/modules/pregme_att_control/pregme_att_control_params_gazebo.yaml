@@ -1,0 +1,351 @@
+module_name: pregme_att_control
+parameters:
+- group: Pregme Attitude Control
+  definitions:
+    USR_I_XX:
+      description:
+        short: 机体系 X 轴转动惯量 Ixx
+        long: 机体绕滚转轴的主转动惯量 [kg m^2]。控制器会把它放入惯量矩阵，用于力矩计算和陀螺耦合补偿。该值应来自实测或估算的质量特性，填错会影响力矩前馈与补偿效果。
+      type: float
+      default: 0.35
+      min: 0.0
+      max: 2.0
+      decimal: 2
+      increment: 0.01
+    USR_I_YY:
+      description:
+        short: 机体系 Y 轴转动惯量 Iyy
+        long: 机体绕俯仰轴的主转动惯量 [kg m^2]。控制器会把它放入惯量矩阵，用于力矩计算和陀螺耦合补偿。该值应来自实测或估算的质量特性，填错会影响力矩前馈与补偿效果。
+      type: float
+      default: 0.61
+      min: 0.0
+      max: 2.0
+      decimal: 2
+      increment: 0.01
+    USR_I_ZZ:
+      description:
+        short: 机体系 Z 轴转动惯量 Izz
+        long: 机体绕偏航轴的主转动惯量 [kg m^2]。控制器会把它放入惯量矩阵，用于力矩计算和陀螺耦合补偿。该值应来自实测或估算的质量特性，填错会影响力矩前馈与补偿效果。
+      type: float
+      default: 0.34
+      min: 0.0
+      max: 2.0
+      decimal: 2
+      increment: 0.01
+    USR_I_XY:
+      description:
+        short: 机体系 XY 惯性积 Ixy
+        long: 机体系 X 与 Y 轴之间的惯性积 [kg m^2]。代码构造惯量矩阵时会在非对角位置使用 -Ixy。对称多旋翼通常接近 0，除非有明确的质量特性测量数据，否则不建议随意增大。
+      type: float
+      default: 0.0
+      min: 0.0
+      max: 2.0
+      decimal: 2
+      increment: 0.01
+    USR_I_XZ:
+      description:
+        short: 机体系 XZ 惯性积 Ixz
+        long: 机体系 X 与 Z 轴之间的惯性积 [kg m^2]。代码构造惯量矩阵时会在非对角位置使用 -Ixz。对称多旋翼通常接近 0，除非有明确的质量特性测量数据，否则不建议随意增大。
+      type: float
+      default: 0.0
+      min: 0.0
+      max: 2.0
+      decimal: 2
+      increment: 0.01
+    USR_I_YZ:
+      description:
+        short: 机体系 YZ 惯性积 Iyz
+        long: 机体系 Y 与 Z 轴之间的惯性积 [kg m^2]。代码构造惯量矩阵时会在非对角位置使用 -Iyz。对称多旋翼通常接近 0，除非有明确的质量特性测量数据，否则不建议随意增大。
+      type: float
+      default: 0.0
+      min: 0.0
+      max: 2.0
+      decimal: 2
+      increment: 0.01
+    USR_LAMBDA_Q_X:
+      description:
+        short: 滚转姿态误差收敛增益
+        long: 滚转轴四元数向量误差滑模面的 lambda 增益。数值越大，姿态误差收敛越快，但所需力矩也会增大；如果角速度环、惯量参数或执行器能力不匹配，容易诱发振荡。
+      type: float
+      default: 14.0
+      min: 0.0
+      max: 30.0
+      decimal: 2
+      increment: 0.1
+    USR_LAMBDA_Q_Y:
+      description:
+        short: 俯仰姿态误差收敛增益
+        long: 俯仰轴四元数向量误差滑模面的 lambda 增益。数值越大，姿态误差收敛越快，但所需力矩也会增大；如果角速度环、惯量参数或执行器能力不匹配，容易诱发振荡。
+      type: float
+      default: 16.0
+      min: 0.0
+      max: 30.0
+      decimal: 2
+      increment: 0.1
+    USR_LAMBDA_Q_Z:
+      description:
+        short: 偏航姿态误差收敛增益
+        long: 偏航轴四元数向量误差滑模面的 lambda 增益。数值越大，偏航误差收敛越快；但多旋翼偏航控制力矩通常弱于滚转和俯仰，所以增大时要更谨慎。
+      type: float
+      default: 22.0
+      min: 0.0
+      max: 30.0
+      decimal: 2
+      increment: 0.1
+    USR_K_Q_X:
+      description:
+        short: 滚转滑模反馈增益
+        long: 作用在滚转轴滑模面上的反馈增益。增大后抗扰和跟踪刚度更强，但过大会带来高频力矩命令、振动或执行器饱和。
+      type: float
+      default: 16.0
+      min: 0.0
+      max: 30.0
+      decimal: 2
+      increment: 0.1
+    USR_K_Q_Y:
+      description:
+        short: 俯仰滑模反馈增益
+        long: 作用在俯仰轴滑模面上的反馈增益。增大后抗扰和跟踪刚度更强，但过大会带来高频力矩命令、振动或执行器饱和。
+      type: float
+      default: 18.0
+      min: 0.0
+      max: 30.0
+      decimal: 2
+      increment: 0.1
+    USR_K_Q_Z:
+      description:
+        short: 偏航滑模反馈增益
+        long: 作用在偏航轴滑模面上的反馈增益。由于多旋翼偏航控制能力一般较弱，增大该参数时需要比滚转、俯仰更保守。
+      type: float
+      default: 20.0
+      min: 0.0
+      max: 30.0
+      decimal: 2
+      increment: 0.1
+    USR_ESO_L_X:
+      description:
+        short: 滚转 ESO 非线性增益
+        long: 滚转轴扩张状态观测器的非线性增益 L。它决定观测器修正量和扰动估计强度。数值越大，对模型误差或外扰反应越快，但也会放大陀螺仪噪声和振动。
+      type: float
+      default: 0.1
+      min: 0.0
+      max: 10.0
+      decimal: 2
+    USR_ESO_L_Y:
+      description:
+        short: 俯仰 ESO 非线性增益
+        long: 俯仰轴扩张状态观测器的非线性增益 L。它决定观测器修正量和扰动估计强度。数值越大，对模型误差或外扰反应越快，但也会放大陀螺仪噪声和振动。
+      type: float
+      default: 0.18
+      min: 0.0
+      max: 10.0
+      decimal: 2
+    USR_ESO_L_Z:
+      description:
+        short: 偏航 ESO 非线性增益
+        long: 偏航轴扩张状态观测器的非线性增益 L。它决定观测器修正量和扰动估计强度。数值越大，对模型误差或外扰反应越快，但也会放大陀螺仪噪声和振动。
+      type: float
+      default: 0.05
+      min: 0.0
+      max: 10.0
+      decimal: 2
+    USR_ESO_EPSI:
+      description:
+        short: ESO 时间尺度 epsilon
+        long: 扩张状态观测器的时间尺度分母。数值越小，观测器越快、越激进；过小会放大噪声并增加数值敏感性。代码内部会把它限制到安全的正下限。
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 10.0
+      decimal: 2
+    USR_ESO_C1:
+      description:
+        short: ESO 非线性分母参数 c1
+        long: 非线性 ESO 修正函数中的形状参数 c1，用于改变修正量随误差增大的变化方式。数值越大，大误差下的修正会更柔和；过小会让观测器过于激进。
+      type: float
+      default: 0.3
+      min: 0.0
+      max: 10.0
+      decimal: 2
+    USR_ESO_C2:
+      description:
+        short: ESO 非线性分母参数 c2
+        long: 非线性 ESO 修正函数中的偏置参数 c2，用于避免分母过小，并影响小误差附近的敏感度。数值越大，观测器修正强度越弱。
+      type: float
+      default: 0.5
+      min: 0.0
+      max: 10.0
+      decimal: 2
+    USR_A_PRESET_L:
+      description:
+        short: 预设轨迹衰减率
+        long: 姿态误差预设轨迹中的衰减率参数 l。数值越大，设定值变化后的参考误差衰减越快，响应速度可能提高，但瞬态力矩需求也会变大。
+      type: float
+      default: 1.0
+      min: 0.0
+      max: 10.0
+      decimal: 2
+    USR_A_PRESET_W:
+      description:
+        short: 预设轨迹初始误差权重
+        long: 预设轨迹中的初始误差缩放参数 w。用于缩放初始姿态误差和误差变化率，生成过渡整形轨迹。
+      type: float
+      default: 0.1
+      min: 0.0
+      max: 1.0
+      decimal: 2
+    USR_A_PRESET_EP:
+      description:
+        short: 预设轨迹重置阈值
+        long: 四元数向量设定值变化阈值 epsilon。当设定值变化超过该阈值时，预设轨迹计时会重置。阈值越小，越容易因很小的设定值变化触发重置；过小可能受数值噪声影响。
+      type: float
+      default: 0.05
+      min: 0.0
+      max: 0.5
+      decimal: 2
+    USR_A_PRESET_K:
+      description:
+        short: 预设轨迹补偿增益
+        long: 预设轨迹参与姿态误差整形前的增益 k。数值越大，控制器越强地跟随该瞬态整形项。
+      type: float
+      default: 0.0
+      min: 0.0
+      max: 1.0
+      decimal: 2
+    USR_TAU_COE:
+      description:
+        short: 力矩归一化比例系数
+        long: 用于把控制器计算出的力矩命令转换为 PX4 归一化力矩设定值。发布前执行 torque / USR_TAU_COE，然后限制在 [-1, 1]。数值越大，归一化力矩输出越小；数值越小，输出越强，也越容易饱和。
+      type: float
+      default: 45.0
+      min: 4.0
+      max: 200.0
+      decimal: 2
+      increment: 0.1
+    USR_ROLLRATE_MAX:
+      description:
+        short: 最大滚转角速度设定值
+        long: 姿态控制器使用的最大滚转体轴角速度设定值 [deg/s]。代码内部会转换为 rad/s。主要限制手动/增稳姿态行为中生成的滚转角速度参考，也用于兼容日志状态。
+      type: float
+      default: 220.0
+      unit: deg/s
+      min: 0.0
+      max: 1800.0
+      decimal: 1
+      increment: 5
+    USR_PITRATE_MAX:
+      description:
+        short: 最大俯仰角速度设定值
+        long: 姿态控制器使用的最大俯仰体轴角速度设定值 [deg/s]。代码内部会转换为 rad/s。主要限制手动/增稳姿态行为中生成的俯仰角速度参考，也用于兼容日志状态。
+      type: float
+      default: 220.0
+      unit: deg/s
+      min: 0.0
+      max: 1800.0
+      decimal: 1
+      increment: 5
+    USR_YAWRATE_MAX:
+      description:
+        short: 最大偏航角速度设定值
+        long: 姿态控制器使用的最大偏航体轴角速度设定值 [deg/s]。代码内部会转换为 rad/s，用于限制生成的偏航角速度参考。
+      type: float
+      default: 40.0
+      unit: deg/s
+      min: 0.0
+      max: 1800.0
+      decimal: 1
+      increment: 5
+    USR_MAN_Y_MAX:
+      description:
+        short: 手动偏航杆量角速度上限
+        long: 增稳模式下，手动偏航杆量可指令的最大偏航角速度 [deg/s]。摇杆输入会乘以该值，再积分形成偏航姿态设定值。
+      type: float
+      default: 150.0
+      unit: deg/s
+      min: 0.0
+      max: 360.0
+      decimal: 1
+    USR_MAN_TILT_TAU:
+      description:
+        short: 手动倾斜输入滤波时间常数
+        long: 手动滚转、俯仰摇杆输入的一阶滤波时间常数 [s]。设为 0 表示不滤波。数值越大，摇杆响应越平滑，但也越慢。
+      type: float
+      default: 0.0
+      unit: s
+      min: 0.0
+      max: 2.0
+      decimal: 2
+    USR_MAN_TILT_MAX:
+      description:
+        short: 最大手动倾斜角
+        long: 增稳模式下手动摇杆可生成的最大滚转/俯仰倾斜角 [deg]。该参数限制姿态设定值幅度，然后再生成四元数设定值。
+      type: float
+      default: 35.0
+      unit: deg
+      min: 0.0
+      max: 90.0
+      decimal: 1
+    USR_MANTHR_MIN:
+      description:
+        short: 最小手动推力
+        long: 增稳/手动油门映射中，飞机未落地时使用的最小归一化推力。落地状态下，代码会出于安全考虑把有效最小值强制为 0。
+      type: float
+      default: 0.08
+      min: 0.0
+      max: 0.95
+      decimal: 2
+      increment: 0.01
+    USR_THR_MAX:
+      description:
+        short: 最大手动推力
+        long: 增稳/手动油门映射中使用的最大归一化推力。最终推力命令会限制在 0 到该值之间。
+      type: float
+      default: 0.95
+      min: 0.0
+      max: 0.95
+      decimal: 2
+      increment: 0.01
+    USR_THR_HOVER:
+      description:
+        short: 悬停推力
+        long: 悬停对应的归一化推力。默认油门曲线下，油门杆居中会映射到该值。
+      type: float
+      default: 0.65
+      min: 0.0
+      max: 0.95
+      decimal: 2
+      increment: 0.01
+    USR_THR_CURVE:
+      description:
+        short: 手动油门曲线
+        long: 手动油门映射模式。0：带悬停点重映射，油门杆居中对应 USR_THR_HOVER。1：线性映射，将摇杆范围 [-1, 1] 直接映射到 [最小推力, USR_THR_MAX]，不进行悬停推力重映射。
+      type: int32
+      default: 0
+      min: 0
+      max: 1
+    USR_BAT_SCALE_EN:
+      description:
+        short: 启用电池电压缩放补偿
+        long: 启用 battery_status.scale 补偿。启用后，如果电池缩放系数有效，归一化力矩和推力设定值会乘以该系数，用于补偿电池电压下降。
+      type: boolean
+      default: true
+    USR_AIRMODE:
+      description:
+        short: 手动 Airmode 行为
+        long: 手动姿态设定值逻辑使用的 Airmode 选择。0：默认行为。2：即使低油门也保持偏航设定值积分，相当于 roll-pitch-yaw airmode 行为。
+      type: int32
+      default: 0
+      min: 0
+      max: 2
+    USR_COM_COMP_EN:
+      description:
+        short: 启用质心耦合补偿
+        long: 启用机械臂质心耦合补偿。启用后，姿态控制器会根据机械臂质心偏移计算重力矩补偿，并叠加到 ESO 扰动估计中。关闭后不进行机械臂耦合补偿。
+      type: boolean
+      default: true
+    CBRK_RATE_CTRL:
+      description:
+        short: 角速度控制输出断路器
+        long: 该自定义角速度控制输出路径的断路器。设置为代码期望的断路器键值时，模块会在发布有效 vehicle_torque_setpoint 和 vehicle_thrust_setpoint 前直接返回。正常飞行请保持为 0。
+      type: int32
+      default: 0

@@ -196,7 +196,7 @@ parameters:
         short: 固定悬停推力
         long: 维持悬停所需的名义归一化推力。在起飞前，以及悬停推力估计被禁用或尚未初始化时，控制器使用该固定悬停推力作为缩放基准。
       type: float
-      default: 0.5
+      default: 0.65
       min: 0.1
       max: 0.8
       decimal: 2
