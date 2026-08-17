@@ -45,6 +45,20 @@ param set-default CA_ROTOR3_KM 0.06
 # Gazebo ESC output mapping
 param set-default SIM_GZ_EN 1
 param set-default EKF2_SENS_EN 8191
+
+# External vision (FAST-LIO) fusion for EKF2 — standard PX4 VIO integration.
+# bit0=HPOS, bit1=VPOS, bit2=VEL, bit3=YAW.
+# 13 = HPOS+VEL+YAW (no VPOS): FAST-LIO has no absolute height reference
+# (camera_init z is relative to the first frame), so baro keeps the vertical.
+# EVP_NOISE is set to 1.0 (not 0.1): with a lower value the innovation gate
+# rejects the vision data whenever GPS and vision disagree by more than ~0.3 m
+# (the classic "vision never fuses" pitfall in the PX4 community docs).
+param set-default EKF2_EV_CTRL 13
+param set-default EKF2_EV_DELAY 5
+param set-default EKF2_EVP_NOISE 1.0
+param set-default EKF2_EVV_NOISE 0.5
+param set-default EKF2_EVA_NOISE 0.05
+
 param set-default SIM_GZ_EC_FUNC1 101
 param set-default SIM_GZ_EC_FUNC2 102
 param set-default SIM_GZ_EC_FUNC3 103
