@@ -59,12 +59,39 @@
       <collision name="housing_collision">
         <geometry><box><size>0.065 0.065 0.060</size></box></geometry>
       </collision>
-      <sensor name="lidar_3d" type="gpu_lidar">
+      <!-- top-mounted lidar removed: real hardware has only the two side
+           LiDARs (lidar_left_link / lidar_right_link) -->
+    </link>
+
+    <joint name="base_lidar_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>lidar_link</child>
+    </joint>
+
+    <!-- Side-mounted LiDARs (mirror real hardware): one on each side, tilted
+         down ~35° so the scan plane sees the ground/structures near the drone.
+         Left: roll -0.6 (outboard dips down), Right: roll +0.6. -->
+    <link name="lidar_left_link">
+      <pose relative_to="base_link">0 0.40 0.05 -0.6 0 0</pose>
+      <inertial>
+        <mass>0.13</mass>
+        <inertia>
+          <ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz>
+        </inertia>
+      </inertial>
+      <visual name="housing_l">
+        <geometry><box><size>0.065 0.065 0.060</size></box></geometry>
+        <material><diffuse>0.10 0.10 0.10 1</diffuse></material>
+      </visual>
+      <collision name="housing_l_collision">
+        <geometry><box><size>0.065 0.065 0.060</size></box></geometry>
+      </collision>
+      <sensor name="lidar_left" type="gpu_lidar">
         <always_on>1</always_on>
         <visualize>false</visualize>
         <update_rate>10</update_rate>
-        <topic>/swan_gamma_v2/scan</topic>
-        <gz_frame_id>lidar_link</gz_frame_id>
+        <topic>/swan_gamma_v2/scan_left</topic>
+        <gz_frame_id>lidar_left_link</gz_frame_id>
         <lidar>
           <scan>
             <horizontal>
@@ -85,9 +112,55 @@
       </sensor>
     </link>
 
-    <joint name="base_lidar_joint" type="fixed">
+    <joint name="base_lidar_left_joint" type="fixed">
       <parent>base_link</parent>
-      <child>lidar_link</child>
+      <child>lidar_left_link</child>
+    </joint>
+
+    <link name="lidar_right_link">
+      <pose relative_to="base_link">0 -0.40 0.05 0.6 0 0</pose>
+      <inertial>
+        <mass>0.13</mass>
+        <inertia>
+          <ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz>
+        </inertia>
+      </inertial>
+      <visual name="housing_r">
+        <geometry><box><size>0.065 0.065 0.060</size></box></geometry>
+        <material><diffuse>0.10 0.10 0.10 1</diffuse></material>
+      </visual>
+      <collision name="housing_r_collision">
+        <geometry><box><size>0.065 0.065 0.060</size></box></geometry>
+      </collision>
+      <sensor name="lidar_right" type="gpu_lidar">
+        <always_on>1</always_on>
+        <visualize>false</visualize>
+        <update_rate>10</update_rate>
+        <topic>/swan_gamma_v2/scan_right</topic>
+        <gz_frame_id>lidar_right_link</gz_frame_id>
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>720</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.141593</min_angle>
+              <max_angle>3.141593</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>16</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.436332</min_angle>
+              <max_angle>0.436332</max_angle>
+            </vertical>
+          </scan>
+          <range><min>1.0</min><max>35.0</max><resolution>0.02</resolution></range>
+        </lidar>
+      </sensor>
+    </link>
+
+    <joint name="base_lidar_right_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>lidar_right_link</child>
     </joint>
 
   </model>
